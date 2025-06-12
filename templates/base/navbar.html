@@ -1,0 +1,28 @@
+{% load static %}
+
+<nav class="relative z-10 bg-white">
+    <div class="flex px-4 md:px-12 py-6 items-center">
+      <button class="flex w-14 h-14 mr-12 items-center justify-center border border-gray-50 hover:border-gray-500 transform hover:rotate-45 rounded-full transition duration-300" x-on:click="mobileNavOpen = !mobileNavOpen">
+        <svg width="32" height="12" viewbox="0 0 32 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="32" height="2" fill="black"></rect>
+          <rect y="10" width="19" height="2" fill="black"></rect>
+        </svg>
+      </button><a class="inline-block text-2xl font-bold" href="{% url 'home' %}"><img src="{% static 'images\carfinity logo.png'%}" alt=""/></a>
+      <div class="hidden lg:flex items-center ml-auto removed">
+        <div class="mr-12">
+          <ul class="hidden xl:flex items-center">
+            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'search' %}">VIN Decoder</a></li>
+            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'about' %}">About</a></li>
+            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'blog' %}">Blog</a></li>
+            <li><a class="inline-block text-base font-medium text-black" href="{% url 'contact' %}">Contact</a></li>
+          </ul>
+        </div>
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}"><span class="relative z-10 text-black group-hover:text-white transition duration-500">Login</span>
+        <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
+
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'register' %}"><span class="relative z-10 text-black group-hover:text-white transition duration-500">Sign Up</span>
+          <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
+      </div>
+    </div>
+  </nav>

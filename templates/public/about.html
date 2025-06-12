@@ -1,0 +1,194 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content%}      
+      
+      <section class="py-20 lg:py-40 bg-black">
+        <div class="container px-4 mx-auto">
+          <div class="flex flex-wrap -mx-4">
+            <div class="w-full xl:w-1/2 px-4 mb-20 xl:mb-0">
+              <div class="max-w-md mx-auto">
+                <div class="inline-flex items-center px-5 py-2 bg-white rounded-full mb-8"><span class="block w-2 h-2 mr-2 rounded-full bg-blue-500"></span>                  
+                <span class="uppercase text-sm font-medium tracking-tighter">STATS</span></div>
+                <h1 class="text-5xl sm:text-7xl xl:text-8xl font-heading font-semibold text-white mb-10">Cafinity AutoCare.</h1>
+                <div class="max-w-sm mb-18">
+                  <p class="text-lg text-gray-200 mb-10">We'll help you take care of your vehicle the way it was intended. Our trained technicians ensure that your vehicle stayed on the road as long as possible.</p>
+                  <p class="text-sm text-gray-200 leading-6">Carfinity AutoCare is designed to keep your vehicle in good shape.</p>
+                </div><a class="group relative inline-block h-16 w-full sm:w-48 bg-white rounded" href="{% url 'register' %}">
+                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
+                    <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-white rounded"><span class="text-base font-semibold uppercase">Get started</span></div>
+                  </div></a>
+              </div>
+            </div>
+            <div class="w-full xl:w-1/2 px-4">
+              <div class="max-w-2xl mx-auto">
+                <div class="flex flex-wrap -mx-4 -mb-8">
+                  <div class="w-full sm:w-1/2 px-4 mb-8">
+                    <div class="h-full px-8 py-14 sm:px-14 bg-purple-900 bg-opacity-20 rounded-4xl border-2 border-purple-900">
+                      <h4 class="text-7xl font-heading text-white mb-8">160</h4>
+                      <p class="text-xl text-white">Points check every 6 months.</p>
+                    </div>
+                  </div>
+                  <div class="w-full sm:w-1/2 px-4 mb-8">
+                    <div class="h-full px-8 py-14 sm:px-14 bg-gray-900 rounded-4xl border-2 border-gray-700">
+                      <h4 class="text-7xl font-heading text-white mb-8">78%</h4>
+                      <p class="text-xl text-white">happy, really happy customers</p>
+                    </div>
+                  </div>
+                  <div class="w-full sm:w-1/2 px-4 mb-8">
+                    <div class="h-full px-8 py-14 sm:px-14 bg-gray-900 rounded-4xl border-2 border-gray-700">
+                      <h4 class="text-7xl font-heading text-white mb-8">23</h4>
+                      <p class="text-xl text-white">partner dealerships and workshops.</p>
+                    </div>
+                  </div>
+                  <div class="w-full sm:w-1/2 px-4 mb-8">
+                    <div class="h-full px-8 py-14 sm:px-14 bg-gray-900 rounded-4xl border-2 border-gray-700">
+                      <h4 class="text-7xl font-heading text-white mb-8">200</h4>
+                      <p class="text-xl text-white">datapoints collected on your vehicle</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-20 md:py-40 bg-purple-50" x-data="{ slideWidth: 0, activeSlide: 0, slideCount: 3 }">
+        <div class="container px-4 mx-auto">
+          <div class="text-center mb-24">
+            <h1 class="text-6xl sm:text-7xl xl:text-8xl font-heading font-semibold mb-10">Meet our great team</h1>
+            <p class="text-2xl">Our skilled technician are there to ensure you get the best AutoCare.</p>
+          </div>
+          <div class="max-w-lg lg:max-w-7xl mx-auto px-10 relative">
+            <button class="hidden lg:inline-block absolute top-0 left-0 mt-14 p-1" x-on:click.prevent="activeSlide &gt; 0 ? (activeSlide -= 1, slideWidth -= $refs['slide' + (activeSlide + 1)].offsetWidth) : null">
+              <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.99906 16L9.41406 14.585L3.82906 9L2.74902 8L3.82906 7L9.41406 1.415L7.99906 8.29971e-07L-0.000937445 8L7.99906 16Z" fill="#04082F"></path>
+              </svg>
+            </button>
+            <div class="md:max-w-3xl xl:max-w-5xl mx-auto">
+              <div class="overflow-hidden pt-6">
+                <div class="flex transition-transform duration-500 ease-in-out -m-5" :style="'transform: translateX(-' + slideWidth + 'px)'">
+                
+                  <div class="flex-shrink-0 w-full p-5" x-ref="slide1">
+                    <div class="flex flex-wrap justify-between -mx-4 2xl:-mx-10">
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10 mb-16 xl:mb-0">
+                        <div class="max-w-xs mx-auto">
+                          <div class="relative h-44 bg-yellow-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">JP</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="{% static 'template-assets/images/portait-without-background3.png' %}" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Fanelesiyibonge Menzi</h4><span>Head Mechanic</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10 sm:pt-6 mb-16 xl:mb-0">
+                        <div class="sm:animate-bouncingSlow max-w-xs mx-auto">
+                          <div class="relative h-44 bg-blue-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">MW</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="{% static 'template-assets/images/portait-without-background2.png' %}" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Marcus Wong</h4><span>Software Engineer</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10">
+                        <div class="max-w-xs mx-auto">
+                          <div class="relative h-44 bg-indigo-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">EC</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="{% static 'template-assets/images/portait-without-background1.png' %}" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Emily Chen</h4><span>UX Researcher</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!--
+                  <div class="flex-shrink-0 w-full p-5" x-ref="slide2">
+                    <div class="flex flex-wrap justify-between -mx-4 2xl:-mx-10">
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10 mb-16 xl:mb-0">
+                        <div class="max-w-xs mx-auto">
+                          <div class="relative h-44 bg-yellow-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">AR</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="template-assets/images/portait-without-background3.png" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Alex Reynolds</h4><span>Product Manager</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10 sm:pt-6 mb-16 xl:mb-0">
+                        <div class="sm:animate-bouncingSlow max-w-xs mx-auto">
+                          <div class="relative h-44 bg-blue-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">SP</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="template-assets/images/portait-without-background2.png" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Sarah Patel</h4><span>UI/UX Designer</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="w-full lg:w-1/3 px-4 2xl:px-10">
+                        <div class="max-w-xs mx-auto">
+                          <div class="relative h-44 bg-indigo-500 rounded-t-xl">
+                            <div class="absolute z-10 bottom-0 left-0 ml-8 mb-3 flex items-center justify-center w-15 h-15 bg-white rounded-full border-3 border-black text-2xl font-semibold text-black">RJ</div><img class="absolute bottom-0 left-1/2 transform -translate-x-1/2 xl:h-52 object-contain xl:object-cover" src="template-assets/images/portait-without-background1.png" alt=""/>
+                          </div>
+                          <div class="px-8 pt-6 pb-8 bg-white rounded-b-xl">
+                            <h4 class="text-2xl font-medium">Ryan Johnson</h4><span>Graphic Designer</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                -->
+                </div>
+              </div>
+            </div>
+            <button class="hidden lg:inline-block absolute top-0 right-0 mt-14 p-1" x-on:click.prevent="activeSlide &lt; slideCount - 1 ? (activeSlide += 1, slideWidth += $refs['slide' + activeSlide].offsetWidth) : activeSlide = slideCount - 1">
+              <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M2.00094 0L0.585938 1.415L6.17094 7L7.25098 8L6.17094 9L0.585938 14.585L2.00094 16L10.0009 8L2.00094 0Z" fill="#04082F"></path>
+              </svg>
+            </button>
+            <div class="text-center lg:hidden mt-16">
+              <button class="inline-block p-1 mr-4" x-on:click.prevent="activeSlide &gt; 0 ? (activeSlide -= 1, slideWidth -= $refs['slide' + (activeSlide + 1)].offsetWidth) : null">
+                <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M7.99906 16L9.41406 14.585L3.82906 9L2.74902 8L3.82906 7L9.41406 1.415L7.99906 8.29971e-07L-0.000937445 8L7.99906 16Z" fill="#04082F"></path>
+                </svg>
+              </button>
+              <button class="inline-block p-1" x-on:click.prevent="activeSlide &lt; slideCount - 1 ? (activeSlide += 1, slideWidth += $refs['slide' + activeSlide].offsetWidth) : activeSlide = slideCount - 1">
+                <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2.00094 0L0.585938 1.415L6.17094 7L7.25098 8L6.17094 9L0.585938 14.585L2.00094 16L10.0009 8L2.00094 0Z" fill="#04082F"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-20 md:py-40 bg-gray-900 overflow-hidden">
+        <div class="container px-4 mx-auto">
+          <div class="max-w-4xl mx-auto mb-32 text-center">
+            <h1 class="text-5xl sm:text-7xl md:text-8xl font-heading font-semibold text-white mb-12"><span>Our Values At</span>              <span></span>              <span class="text-yellow-500">Carfinity</span></h1>
+            <p class="text-lg text-white">Record your audio and upload it now.</p>
+          </div>
+        </div>
+        <div class="px-4 lg:px-10">
+          <div class="flex flex-wrap -mx-4">
+            <div class="w-full lg:w-1/3 px-4 mb-32">
+              <div><a class="group block sm:max-w-2xs mx-auto lg:mx-0" href="#"><img class="sm:transform group-hover:scale-105 w-64 xl:w-80 h-96 xl:h-118 mb-12 object-cover rounded-lg transition duration-500" src="{% static 'template-assets/images/paint-color-theme-portfolio.png' %}" alt=""/>
+                  <h5 class="text-sm text-white mb-12">SUMMER 2022</h5>
+                  <p class="text-xl text-gray-300">A real nice tools and app. It comes with a few free plug-ins that will be more than enough for beginners.</p></a></div>
+            </div>
+            <div class="w-full lg:w-2/3 px-4 flex flex-col">
+              <div class="self-end mb-18"><a class="group inline-flex flex-wrap sm:flex-nowrap" href="#">
+                  <div class="max-w-2xs text-right ml-auto mb-12 lg:mb-0 sm:mr-12">
+                    <h5 class="text-sm text-white mb-12">SUMMER 2022</h5>
+                    <p class="text-xl text-gray-300">A real nice tools and app. It comes with a few free plug-ins that will be more than enough for beginners.</p>
+                  </div><img class="ml-auto md:transform group-hover:scale-105 block w-full max-w-sm xl:max-w-lg h-72 xl:h-88 object-cover rounded-lg transition duration-500" src="{% static 'template-assets/images/shape-photo-portfolio.png' %}" alt=""/></a></div>
+              <div class="xl:self-center"><a class="group inline-flex flex-wrap sm:flex-nowrap" href="#">
+                  <div class="max-w-2xs text-right ml-auto mb-12 lg:mb-0 sm:mr-12">
+                    <h5 class="text-sm text-white mb-12">SUMMER 2022</h5>
+                    <p class="text-xl text-gray-300">A real nice tools and app. It comes with a few free plug-ins that will be more than enough for beginners.</p>
+                  </div><img class="ml-auto md:transform group-hover:scale-105 block w-full max-w-sm xl:max-w-lg h-72 xl:h-88 object-cover rounded-lg transition duration-500" src="{% static 'template-assets/images/woman-memory-photo.png' %}" alt=""/></a></div>
+            </div>
+          </div>
+        </div>
+      </section>
+{% endblock %}
