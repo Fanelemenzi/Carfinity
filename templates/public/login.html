@@ -15,15 +15,18 @@
                   <div class="h-px w-52 bg-gray-100"></div><span class="mx-6 text-xs text-gray-200">or</span>
                   <div class="h-px w-52 bg-gray-100"></div>
                 </div>
-                <form action="">
+
+
+                <form action="POST", action= "{% url 'login'%}">
+                  {% csrf_token %}
                   <div class="max-w-md xl:max-w-3xl mx-auto">
-                    <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg"><span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Your Email</span>
-                      <input class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" type="text" placeholder="nanneneydis"/>
+                    <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg"><span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Your Username</span>
+                      <input class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" type="text" placeholder="Enter your username", name="username"/>
                     </div>
                     <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg"><span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Your Password</span>
-                      <input class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" type="password" placeholder="Password"/>
+                      <input class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" type="password" placeholder="Password" name="password"/>
                     </div>
-                    <div class="text-center"><a class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded" href="#">
+                    <div class="text-center"><a class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded" href="">
                         <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
                           <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">LOGIN</span></div>
                         </div></a>
@@ -31,6 +34,8 @@
                     </div>
                   </div>
                 </form>
+
+
               </div>
             </div>
           </div>

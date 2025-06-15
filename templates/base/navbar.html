@@ -18,10 +18,17 @@
             <li><a class="inline-block text-base font-medium text-black" href="{% url 'contact' %}">Contact</a></li>
           </ul>
         </div>
-        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}"><span class="relative z-10 text-black group-hover:text-white transition duration-500">Login</span>
+  {% if user.is_authenticated %}
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}">
+          <span class="relative z-10 text-black group-hover:text-white transition duration-500">Logout</span>
         <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
-
-        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'register' %}"><span class="relative z-10 text-black group-hover:text-white transition duration-500">Sign Up</span>
+  {% else %}
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}">
+          <span class="relative z-10 text-black group-hover:text-white transition duration-500">Login</span>
+        <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
+  {% endif %}
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'register' %}">
+          <span class="relative z-10 text-black group-hover:text-white transition duration-500">Sign Up</span>
           <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
       </div>
     </div>

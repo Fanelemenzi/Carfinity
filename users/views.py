@@ -1,4 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from .models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
+
 
 # Create your views here.
 def home(request):
@@ -13,8 +17,24 @@ def blog(request):
 def contact(request):
     return render(request, 'public/contact.html', {})
 
-def login(request):
-    return render(request, 'public/login.html', {})
+def login_user(request):
+    if request.method =="POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.success(request, ("There was an error try again"))
+            return redirect('login')
+    else:
+        return render(request, 'public/login.html', {})
+
+def logout_user(request):
+    logout(request)
+    messages.success(request, ("You have been logged out"))
+    return redirect('home')
 
 def dashboard(request):
     return render(request, 'dashboard/dashboard.html', {})
