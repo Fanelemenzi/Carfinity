@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from django_countries.fields import CountryField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 
@@ -9,6 +10,7 @@ class Vehicle(models.Model):
     make = models.CharField(max_length=50)
     model = models.CharField(max_length=50)
     manufacture_year = models.PositiveIntegerField()
+    body_type = models.CharField(max_length=20, blank=True, null=True)
     engine_code = models.CharField(max_length=20, blank=True, null=True)
     interior_color =  models.CharField(max_length=30, null=True)
     exterior_color =  models.CharField(max_length=30, null=True)
@@ -16,7 +18,9 @@ class Vehicle(models.Model):
     license_plate = models.CharField(max_length=20, blank=True, null=True)
     fuel_type = models.CharField(max_length=50, blank=True, null=True)
     transmission_type = models.CharField(max_length=50, blank=True, null=True)
+    powertrain_displacement = models.CharField(max_length=50, blank=True, null=True)
     powertrain_power =  models.CharField(max_length=5, null=True)
+    plant_location = CountryField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
   

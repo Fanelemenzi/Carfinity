@@ -13,16 +13,28 @@
                   <div class="h-px w-52 bg-gray-100"></div><span class="mx-6 text-xs text-gray-200"> </span>
                   <div class="h-px w-52 bg-gray-100"></div>
                 </div>
-                <form method="GET" action = "{% url 'search_results' %}">
+                <form method="GET" action="{% url 'search_results' %}">
                   <div class="max-w-md xl:max-w-3xl mx-auto">
-                    <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg"><span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Enter Vin Number Here</span>
-                    
-                      <input class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" type="text" placeholder="Enter Vin Number Here"/>
+                    <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg">
+                      <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Enter VIN Number Here</span>
+                      <input 
+                        class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" 
+                        type="text" 
+                        name="vin"
+                        placeholder="Enter VIN Number Here"
+                        required
+                        pattern="[A-HJ-NPR-Z0-9]{17}"
+                        title="Please enter a valid 17-character VIN number"
+                      />
                     </div>
-                    <div class="text-center"><a class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded" href="{% url 'search_results' %}">
+                    <div class="text-center">
+                      <button type="submit" class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded">
                         <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                          <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded"><button class="text-base font-semibold uppercase", type="submit">Search</button></div>
-                        </div></a>
+                          <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded">
+                            <span class="text-base font-semibold uppercase">SEARCH</span>
+                          </div>
+                        </div>
+                      </button>
                     </div>
                   </div>
                 </form>

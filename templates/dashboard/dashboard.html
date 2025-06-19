@@ -3,127 +3,171 @@
 
 {% block content %}
 <br></br>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 text-gray-800 p-6">
-  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-    <!-- Left Cards -->
-    <div class="space-y-6 md:col-span-1">
-      <!-- Income Card -->
-      <div class="bg-white p-5 rounded-lg shadow">
-        <h2 class="text-lg font-semibold mb-2">Income</h2>
-        <div class="text-2xl font-bold">$9460.00</div>
-        <div class="text-sm text-red-500">▼ 1.5%</div>
-        <p class="text-sm text-gray-500">Compared to $9940 yesterday</p>
-        <p class="text-sm text-gray-500">Last week income <span class="font-medium">$25658.00</span></p>
-      </div>
-      <!-- Expenses Card -->
-      <div class="bg-white p-5 rounded-lg shadow">
-        <h2 class="text-lg font-semibold mb-2">Expenses</h2>
-        <div class="text-2xl font-bold">$5660.00</div>
-        <div class="text-sm text-green-500">▲ 2.5%</div>
-        <p class="text-sm text-gray-500">Compared to $5240 yesterday</p>
-        <p class="text-sm text-gray-500">Last week expenses <span class="font-medium">$22568.00</span></p>
-      </div>
-      <!-- Hire vs Cancel -->
-      <div class="bg-white p-5 rounded-lg shadow">
-        <h2 class="text-lg font-semibold mb-4">Hire vs Cancel</h2>
-        <div class="flex items-center justify-center mb-4">
-          <div class="w-24 h-24 rounded-full border-8 border-blue-500 border-t-green-500 border-l-red-500"></div>
-        </div>
-        <ul class="text-sm">
-          <li><span class="text-blue-500 font-semibold">●</span> Total Hired – 54%</li>
-          <li><span class="text-red-500 font-semibold">●</span> Total Canceled – 20%</li>
-          <li><span class="text-green-500 font-semibold">●</span> Total Pending – 26%</li>
-        </ul>
-      </div>
-    </div>
+{% if user.is_authenticated %}
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Dashboard</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+        </head>
+        <body class="bg-gray-100 text-gray-800 p-6">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Left Cards -->
+            <div class="space-y-6 md:col-span-1">
+              <!-- Income Card -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-2">Carfinity Evaluation</h2>
+                <div class="text-2xl font-bold">E19 460.00</div>
+                <div class="text-sm text-red-500">▼ 1.5%</div>
+                <p class="text-sm text-gray-500">Compared to E19 870 yesterday</p>
+                <p class="text-sm text-gray-500">Last week income</p>
+              </div>
+              <!-- Expenses Card -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-2">Total Maintainance Cost</h2>
+                <div class="text-2xl font-bold">E5 660.00</div>
+                <div class="text-sm text-green-500">▲ 2.5%</div>
+                <p class="text-sm text-gray-500">Compared to E3 240 previous period</p>
+                <p class="text-sm text-gray-500">Last total maintainance <span class="font-medium">E3 568.00</span></p>
+              </div>
+              <!-- Hire vs Cancel -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <h2 class="text-lg font-semibold mb-4">Maintainance Tips</h2>
+                <div class="flex items-center justify-center mb-4">
+                  <div class="w-24 h-24 rounded-full border-8 border-blue-500 border-t-green-500 border-l-red-500"></div>
+                </div>
+                <ul class="text-sm">
+                  <li><span class="text-blue-500 font-semibold">●</span> Total Hired – 54%</li>
+                  <li><span class="text-red-500 font-semibold">●</span> Total Canceled – 20%</li>
+                  <li><span class="text-green-500 font-semibold">●</span> Total Pending – 26%</li>
+                </ul>
+              </div>
+            </div>
 
-    <!-- Right Main Section -->
-    <div class="md:col-span-3 space-y-6">
-      <!-- Car Availability -->
-      <div class="bg-white p-5 rounded-lg shadow flex flex-wrap items-center gap-4">
-        <select class="p-2 border rounded-md">
-          <option>Car number</option>
-        </select>
-        <input type="date" class="p-2 border rounded-md" />
-        <input type="time" class="p-2 border rounded-md" />
-        <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Check</button>
-      </div>
+            <!-- Right Main Section -->
+            <div class="md:col-span-3 space-y-6">
+              <!-- Car Availability -->
+              <div class="bg-white p-5 rounded-lg shadow flex flex-wrap items-center gap-4">
+                <select class="p-2 border rounded-md">
+                  <option>Car number</option>
+                </select>
+                <input type="date" class="p-2 border rounded-md" />
+                <input type="time" class="p-2 border rounded-md" />
+                <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Check</button>
+              </div>
 
-      <!-- Live Car Status Table -->
-      <div class="bg-white p-5 rounded-lg shadow">
-        <div class="flex justify-between mb-4">
-          <h2 class="text-lg font-semibold">Live Car Status</h2>
-          <button class="text-blue-500 text-sm">Filter</button>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-left text-sm">
-            <thead>
-              <tr class="border-b font-semibold text-gray-700">
-                <th class="p-2">No.</th>
-                <th class="p-2">Car No.</th>
-                <th class="p-2">Driver</th>
-                <th class="p-2">Status</th>
-                <th class="p-2">Earning</th>
-                <th class="p-2"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr class="border-b">
-                <td class="p-2">01</td>
-                <td class="p-2">6465</td>
-                <td class="p-2">Alex Noman</td>
-                <td class="p-2 text-green-600">● Completed</td>
-                <td class="p-2">$35.44</td>
-                <td class="p-2"><button class="text-blue-500">Details</button></td>
-              </tr>
-              <tr class="border-b">
-                <td class="p-2">02</td>
-                <td class="p-2">5665</td>
-                <td class="p-2">Razib Rahman</td>
-                <td class="p-2 text-yellow-500">● Pending</td>
-                <td class="p-2">$0.00</td>
-                <td class="p-2"><button class="text-blue-500">Details</button></td>
-              </tr>
-              <tr>
-                <td class="p-2">03</td>
-                <td class="p-2">1755</td>
-                <td class="p-2">Luke Norton</td>
-                <td class="p-2 text-red-500">● In route</td>
-                <td class="p-2">$23.50</td>
-                <td class="p-2"><button class="text-blue-500">Details</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+              <!-- Live Car Status Table -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <div class="flex justify-between mb-4">
+                  <h2 class="text-lg font-semibold">Upcoming Maintainance</h2>
+                  <button class="text-blue-500 text-sm">Filter</button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b font-semibold text-gray-700">
+                        <th class="p-2">No.</th>
+                        <th class="p-2">Car No.</th>
+                        <th class="p-2">Driver</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Earning</th>
+                        <th class="p-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b">
+                        <td class="p-2">01</td>
+                        <td class="p-2">6465</td>
+                        <td class="p-2">Alex Noman</td>
+                        <td class="p-2 text-green-600">● Completed</td>
+                        <td class="p-2">$35.44</td>
+                        <td class="p-2"><button class="text-blue-500">Details</button></td>
+                      </tr>
+                      <tr class="border-b">
+                        <td class="p-2">02</td>
+                        <td class="p-2">5665</td>
+                        <td class="p-2">Razib Rahman</td>
+                        <td class="p-2 text-yellow-500">● Pending</td>
+                        <td class="p-2">$0.00</td>
+                        <td class="p-2"><button class="text-blue-500">Details</button></td>
+                      </tr>
+                      <tr>
+                        <td class="p-2">03</td>
+                        <td class="p-2">1755</td>
+                        <td class="p-2">Luke Norton</td>
+                        <td class="p-2 text-red-500">● In route</td>
+                        <td class="p-2">$23.50</td>
+                        <td class="p-2"><button class="text-blue-500">Details</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-      <!-- Earning Summary -->
-      <div class="bg-white p-5 rounded-lg shadow">
-        <div class="flex justify-between items-center mb-4">
-          <h2 class="text-lg font-semibold">Earning Summary</h2>
-          <select class="text-sm border rounded px-2 py-1">
-            <option>Mar 2022 - Oct 2022</option>
-          </select>
-        </div>
-        <div class="h-40 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex items-center justify-center text-gray-500 italic">
-          Chart Placeholder (Use Chart.js here)
-        </div>
-        <div class="text-sm mt-2 flex justify-between">
-          <span class="text-blue-500">● Last 6 months</span>
-          <span class="text-gray-400">● Same period last year</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-</html>
-<br></br>
+              <!-- Inspection Report Summary -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <div class="flex justify-between mb-4">
+                  <h2 class="text-lg font-semibold">Quarterly Inspection Reports</h2>
+                  <button class="text-blue-500 text-sm">Filter</button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="min-w-full text-left text-sm">
+                    <thead>
+                      <tr class="border-b font-semibold text-gray-700">
+                        <th class="p-2">No.</th>
+                        <th class="p-2">Car No.</th>
+                        <th class="p-2">Driver</th>
+                        <th class="p-2">Status</th>
+                        <th class="p-2">Earning</th>
+                        <th class="p-2"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr class="border-b">
+                        <td class="p-2">01</td>
+                        <td class="p-2">6465</td>
+                        <td class="p-2">Alex Noman</td>
+                        <td class="p-2 text-green-600">● Completed</td>
+                        <td class="p-2">$35.44</td>
+                        <td class="p-2"><button class="text-blue-500">Details</button></td>
+                      </tr>
+                      <tr class="border-b">
+                        <td class="p-2">02</td>
+                        <td class="p-2">5665</td>
+                        <td class="p-2">Razib Rahman</td>
+                        <td class="p-2 text-yellow-500">● Pending</td>
+                        <td class="p-2">$0.00</td>
+                        <td class="p-2"><button class="text-blue-500">Details</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Earning Summary -->
+              <div class="bg-white p-5 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-lg font-semibold">Carfinity Summary</h2>
+                  <select class="text-sm border rounded px-2 py-1">
+                    <option>Mar 2022 - Oct 2022</option>
+                  </select>
+                </div>
+                <div class="h-40 bg-gradient-to-br from-blue-100 to-blue-200 rounded-md flex items-center justify-center text-gray-500 italic">
+                  Chart Placeholder (Use Chart.js here)
+                </div>
+                <div class="text-sm mt-2 flex justify-between">
+                  <span class="text-blue-500">● Last 6 months</span>
+                  <span class="text-gray-400">● Same period last year</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </body>
+        </html>
+        <br></br>
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
 {% endblock %}

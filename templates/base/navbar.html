@@ -11,25 +11,40 @@
       <div class="hidden lg:flex items-center ml-auto removed">
         <div class="mr-12">
           <ul class="hidden xl:flex items-center">
+            
+            <li class="mr-16 relative" x-data="{ open: false }">
+              <button @click="open = !open" @click.away="open = false" class="inline-flex items-center text-base font-medium text-black hover:text-gray-600 transition duration-300">
+                Products
+                <svg class="w-4 h-4 ml-1 transition-transform duration-300" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <div x-show="open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 transform scale-95" x-transition:enter-end="opacity-100 transform scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 transform scale-100" x-transition:leave-end="opacity-0 transform scale-95" class="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">Carfinity AutoCare</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">Financial Services</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">General Mechanics</a>
+                <a href="{% url 'search' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">VIN Decoder</a>
+              </div>
+            </li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'search' %}">VIN Decoder</a></li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'about' %}">About</a></li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'blog' %}">Blog</a></li>
             <li><a class="inline-block text-base font-medium text-black" href="{% url 'contact' %}">Contact</a></li>
           </ul>
         </div>
   {% if user.is_authenticated %}
-        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}">
+        <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'logout' %}">
           <span class="relative z-10 text-black group-hover:text-white transition duration-500">Logout</span>
         <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
   {% else %}
         <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'login' %}">
           <span class="relative z-10 text-black group-hover:text-white transition duration-500">Login</span>
         <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
-  {% endif %}
+  
         <div class="w-px h-12 mx-6 bg-gray-50"></div><a class="relative group inline-flex h-12 w-24 items-center justify-center font-semibold rounded-lg border border-black overflow-hidden" href="{% url 'register' %}">
           <span class="relative z-10 text-black group-hover:text-white transition duration-500">Sign Up</span>
           <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
       </div>
+    {% endif %}
     </div>
   </nav>

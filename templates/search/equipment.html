@@ -1,0 +1,148 @@
+{% load static %}
+
+<!DOCTYPE html>
+<!--Equipment Section-->
+<section class="bg-white rounded-3xl shadow-md p-6 mt-10">
+    <h2 class="text-2xl font-semibold mb-6 text-gray-800">Vehicle Equipment</h2>
+    
+    <!--Powertrain and Drivetrain Systems Section-->
+    {% if powertrain %}
+    <h3 class="text-lg font-semibold">Powertrain & Drivetrain Systems</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Engine</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.base_engine }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Transmission</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.get_transmission_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Drive Layout</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.get_drive_layout_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Fuel System</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.get_fuel_system_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Emissions</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.get_emissions_standard_display }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <br></br>
+
+    <!--Chassis, Suspension and Braking-->
+    {% if chassis %}
+    <h3 class="text-lg font-semibold">Chassis, Suspension & Braking</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Front Suspension</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_front_suspension_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Rear Suspension</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_rear_suspension_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Front Brakes</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_front_brake_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Rear Brakes</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_rear_brake_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Brake System</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_brake_systems_display }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <br></br>
+
+    <!--Electrical Systems-->
+    {% if electrical %}
+    <h3 class="text-lg font-semibold">Electrical Systems</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Battery Type</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_primary_battery_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Battery Capacity</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.primary_battery_capacity }} Ah</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Operating Voltage</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_operating_voltage_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Headlight Type</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_headlight_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Instrument Cluster</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_instrument_cluster_type_display }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <br></br>
+
+    <!--Exterior Features and Body-->
+    {% if exterior %}
+    <h3 class="text-lg font-semibold">Exterior Features and Body</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Body Style</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_body_style_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Roof Type</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_roof_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Wheel Type</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_wheel_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Left Mirror</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_left_mirror_type_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Right Mirror</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_right_mirror_type_display }}</p>
+        </div>
+    </div>
+    {% endif %}
+    <br></br>
+
+    <!--Active Safety and ADAS-->
+    {% if safety %}
+    <h3 class="text-lg font-semibold">Active Safety & ADAS</h3>
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Cruise Control</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_cruise_control_system_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Lane Assist</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_lane_assist_system_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Blind Spot</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_blind_spot_monitoring_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Collision Warning</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_collision_warning_system_display }}</p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Park Assist</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_park_distance_control_display }}</p>
+        </div>
+    </div>
+    {% endif %}
+</section>
+<!--End of Equipment Section-->
+

@@ -18,57 +18,39 @@
       <div class="relative w-full md:max-w-xl lg:max-w-4xl mx-auto px-6 md:px-20 py-10 md:py-20 bg-white rounded-4xl h-auto">
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="flex items-center p-6 border-b">
-              <img src="path_to_image.jpg" alt="Car Image" class="w-24 h-24 object-cover rounded-lg mr-6">
+              <img src="{% static 'template-assets/images/gwm.jpg' %}" alt="Car Image" class="w-24 h-24 object-cover rounded-lg mr-6">
               <div>
-                  <h1 class="text-2xl font-semibold text-gray-800">Volkswagen Passat</h1>
-                  <p class="text-gray-600">VIN: 1VWBN7A35CCXXXXXX (2014)</p>
+                  <h1 class="text-2xl font-semibold text-gray-800">{{ vehicle.make }} {{ vehicle.model }}</h1>
+                  <p class="text-gray-600">VIN: {{ vehicle.vin }} ({{ vehicle.manufacture_year }})</p>
               </div>
           </div>
 
           <div class="p-6 grid grid-cols-3 gap-6">
-              <div class="flex items-center justify-center p-4 bg-yellow-100 rounded-lg border border-yellow-300">
-                  <div class="text-xl text-yellow-600">
+              <div class="flex items-center justify-center p-4 {% if status.theft_involvement == 'NHT' %}bg-green-100 border-green-300{% else %}bg-yellow-100 border-yellow-300{% endif %} rounded-lg border">
+                  <div class="text-xl {% if status.theft_involvement == 'NHT' %}text-green-600{% else %}text-yellow-600{% endif %}">
                       <i class="fas fa-user-lock"></i>
                   </div>
                   <div class="ml-4 text-center">
                       <p class="font-semibold text-gray-700">Theft</p>
-                      <p class="text-yellow-600">Needs attention</p>
+                      <p class="{% if status.theft_involvement == 'NHT' %}text-green-600{% else %}text-yellow-600{% endif %}">{{ status.get_theft_involvement_display }}</p>
                   </div>
               </div>
-              <div class="flex items-center justify-center p-4 bg-yellow-100 rounded-lg border border-yellow-300">
-                  <div class="text-xl text-yellow-600">
-                      <i class="fas fa-taxi"></i>
-                  </div>
-                  <div class="ml-4 text-center">
-                      <p class="font-semibold text-gray-700">Purpose</p>
-                      <p class="text-yellow-600">Needs attention</p>
-                  </div>
-              </div>
-              <div class="flex items-center justify-center p-4 bg-yellow-100 rounded-lg border border-yellow-300">
-                  <div class="text-xl text-yellow-600">
+              <div class="flex items-center justify-center p-4 {% if status.odometer_fraud == 'NOF' %}bg-green-100 border-green-300{% else %}bg-yellow-100 border-yellow-300{% endif %} rounded-lg border">
+                  <div class="text-xl {% if status.odometer_fraud == 'NOF' %}text-green-600{% else %}text-yellow-600{% endif %}">
                       <i class="fas fa-tachometer-alt"></i>
                   </div>
                   <div class="ml-4 text-center">
                       <p class="font-semibold text-gray-700">Odometer</p>
-                      <p class="text-yellow-600">Needs attention</p>
+                      <p class="{% if status.odometer_fraud == 'NOF' %}text-green-600{% else %}text-yellow-600{% endif %}">{{ status.get_odometer_fraud_display }}</p>
                   </div>
               </div>
-              <div class="flex items-center justify-center p-4 bg-green-100 rounded-lg border border-green-300">
-                  <div class="text-xl text-green-600">
+              <div class="flex items-center justify-center p-4 {% if status.legal_status == 'LG' %}bg-green-100 border-green-300{% else %}bg-yellow-100 border-yellow-300{% endif %} rounded-lg border">
+                  <div class="text-xl {% if status.legal_status == 'LG' %}text-green-600{% else %}text-yellow-600{% endif %}">
                       <i class="fas fa-balance-scale"></i>
                   </div>
                   <div class="ml-4 text-center">
                       <p class="font-semibold text-gray-700">Legal status</p>
-                      <p class="text-green-600">Looks good</p>
-                  </div>
-              </div>
-              <div class="flex items-center justify-center p-4 bg-yellow-100 rounded-lg border border-yellow-300">
-                  <div class="text-xl text-yellow-600">
-                      <i class="fas fa-car-crash"></i>
-                  </div>
-                  <div class="ml-4 text-center">
-                      <p class="font-semibold text-gray-700">Damage</p>
-                      <p class="text-yellow-600">Needs attention</p>
+                      <p class="{% if status.legal_status == 'LG' %}text-green-600{% else %}text-yellow-600{% endif %}">{{ status.get_legal_status_display }}</p>
                   </div>
               </div>
           </div>
@@ -78,141 +60,127 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p class="text-sm text-gray-500">Make</p>
-                <p class="font-semibold">Volkswagen</p>
+                <p class="font-semibold">{{ vehicle.make }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Model</p>
-                <p class="font-semibold">Passat</p>
+                <p class="font-semibold">{{ vehicle.model }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Body type</p>
-                <p class="font-semibold">Sedan</p>
+                <p class="font-semibold">{{ vehicle.body_type }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Manufacture year</p>
-                <p class="font-semibold">2014</p>
+                <p class="font-semibold">{{ vehicle.manufacture_year }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500">Powertrain displacement</p>
-                <p class="font-semibold">2 L</p>
+                <p class="text-sm text-gray-500">Engine Code</p>
+                <p class="font-semibold">{{ vehicle.engine_code }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500">Powertrain power</p>
-                <p class="font-semibold">103 kW (138 hp)</p>
+                <p class="text-sm text-gray-500">Interior Color</p>
+                <p class="font-semibold">{{ vehicle.interior_color }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500">Transmission type</p>
-                <p class="font-semibold">Automatic</p>
+                <p class="text-sm text-gray-500">Exterior Color</p>
+                <p class="font-semibold">{{ vehicle.exterior_color }}</p>
               </div>
-              <div class="flex items-center space-x-2">
-                <div class="w-5 h-5 rounded-full bg-gradient-to-r from-red-600 via-yellow-400 to-black"></div>
+              <div>
+                <p class="text-sm text-gray-500">Fuel Type</p>
+                <p class="font-semibold">{{ vehicle.fuel_type }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Transmission Type</p>
+                <p class="font-semibold">{{ vehicle.transmission_type }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Powertrain Displacement</p>
+                <p class="font-semibold">{{ vehicle.powertrain_displacement }}</p>
+              </div>
+              <div>
+                <p class="text-sm text-gray-500">Powertrain Power</p>
+                <p class="font-semibold">{{ vehicle.powertrain_power }}</p>
+              </div>
                 <div>
-                  <p class="text-sm text-gray-500">Plant location</p>
-                  <p class="font-semibold">Germany</p>
-                </div>
+                <p class="text-sm text-gray-500">Plant Location</p>
+                <p class="font-semibold">{{ vehicle.plant_location }}</p>
               </div>
             </div>
-          
           </div>
+
           <div class="h-px w-100 bg-gray-100"></div>
 
-          <!-- Quaturely Inspections -->
+          <!-- Inspections -->
             <div class="bg-white p-5 rounded-lg shadow">
               <div class="flex justify-between mb-4">
-                <h2 class="text-lg font-semibold">Quaturely Inspections</h2>
+              <h2 class="text-lg font-semibold">Inspections</h2>
               </div>
               <div class="overflow-x-auto">
                 <table class="min-w-full text-left text-sm">
                   <thead>
                     <tr class="border-b font-semibold text-gray-700">
                       <th class="p-2">No.</th>
-                      <th class="p-2">Car No.</th>
-                      <th class="p-2">Driver</th>
-                      <th class="p-2">Status</th>
-                      <th class="p-2">Earning</th>
-                      <th class="p-2"></th>
+                      <th class="p-2">Inspection No.</th>
+                      <th class="p-2">Year</th>
+                    <th class="p-2">Result</th>
+                    <th class="p-2">Rating</th>
+                    <th class="p-2">Date</th>
                     </tr>
                   </thead>
                   <tbody>
+                  {% for inspection in inspections %}
                     <tr class="border-b">
-                      <td class="p-2">01</td>
-                      <td class="p-2">6465</td>
-                      <td class="p-2">Alex Noman</td>
-                      <td class="p-2 text-green-600">● Completed</td>
-                      <td class="p-2">$35.44</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
+                    <td class="p-2">{{ forloop.counter }}</td>
+                    <td class="p-2">{{ inspection.inspection_number }}</td>
+                    <td class="p-2">{{ inspection.year }}</td>
+                    <td class="p-2">{{ inspection.get_inspection_result_display }}</td>
+                    <td class="p-2">{{ inspection.carfinity_rating }}</td>
+                    <td class="p-2">{{ inspection.inspection_date }}</td>
                     </tr>
-                    <tr class="border-b">
-                      <td class="p-2">02</td>
-                      <td class="p-2">5665</td>
-                      <td class="p-2">Razib Rahman</td>
-                      <td class="p-2 text-yellow-500">● Pending</td>
-                      <td class="p-2">$0.00</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
-                    </tr>
-                    <tr>
-                      <td class="p-2">03</td>
-                      <td class="p-2">1755</td>
-                      <td class="p-2">Luke Norton</td>
-                      <td class="p-2 text-red-500">● In route</td>
-                      <td class="p-2">$23.50</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
-                    </tr>
+                  {% endfor %}
                   </tbody>
                 </table>
               </div>
             </div>
-           <!--End of Quaturely Inpections -->
 
            <div class="h-px w-100 bg-gray-100"></div>
 
-            <!-- maintainance history-->
+          <!-- Equipment Section -->
+          {% include "search/equipment.html" %}
+
+          <!-- Maintenance History -->
             <div class="bg-white p-5 rounded-lg shadow">
               <div class="flex justify-between mb-4">
-                <h2 class="text-lg font-semibold">Maintainance History</h2>
+              <h2 class="text-2xl font-semibold mb-2 text-gray-800">Maintenance History</h2>
               </div>
               <div class="overflow-x-auto">
                 <table class="min-w-full text-left text-sm">
                   <thead>
                     <tr class="border-b font-semibold text-gray-700">
                       <th class="p-2">No.</th>
-                      <th class="p-2">Car No.</th>
-                      <th class="p-2">Driver</th>
-                      <th class="p-2">Status</th>
-                      <th class="p-2">Earning</th>
-                      <th class="p-2"></th>
+                    <th class="p-2">Work Done</th>
+                      <th class="p-2">Technician</th>
+                    <th class="p-2">Date</th>
+                      <th class="p-2">Mileage</th>
+                      <th class="p-2">Notes</th>
                     </tr>
                   </thead>
                   <tbody>
+                  {% for record in maintenance_records %}
                     <tr class="border-b">
-                      <td class="p-2">01</td>
-                      <td class="p-2">6465</td>
-                      <td class="p-2">Alex Noman</td>
-                      <td class="p-2 text-green-600">● Completed</td>
-                      <td class="p-2">$35.44</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
+                    <td class="p-2">{{ forloop.counter }}</td>
+                    <td class="p-2">{{ record.work_done }}</td>
+                    <td class="p-2">{{ record.technician.email|default:"N/A" }}</td>
+                    <td class="p-2">{{ record.date_performed|date:"Y-m-d" }}</td>
+                    <td class="p-2">{{ record.mileage }}</td>
+                    <td class="p-2">{{ record.notes|default:"-" }}</td>
                     </tr>
-                    <tr class="border-b">
-                      <td class="p-2">02</td>
-                      <td class="p-2">5665</td>
-                      <td class="p-2">Razib Rahman</td>
-                      <td class="p-2 text-yellow-500">● Pending</td>
-                      <td class="p-2">$0.00</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
-                    </tr>
-                    <tr>
-                      <td class="p-2">03</td>
-                      <td class="p-2">1755</td>
-                      <td class="p-2">Luke Norton</td>
-                      <td class="p-2 text-red-500">● In route</td>
-                      <td class="p-2">$23.50</td>
-                      <td class="p-2"><button class="text-blue-500">Details</button></td>
-                    </tr>
+                  {% endfor %}
                   </tbody>
                 </table>
               </div>
             </div>
-           <!-- end of maintainance history -->
 
         </div>
       </div>
@@ -220,6 +188,4 @@
   </section>
 </body>
 </html>
-
-
 {% endblock %}
