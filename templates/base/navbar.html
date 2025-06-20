@@ -23,11 +23,10 @@
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">Carfinity AutoCare</a>
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">Financial Services</a>
                 <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">General Mechanics</a>
-                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">VIN Decoder</a>
+                <a href="{% url 'search' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">VIN Decoder</a>
               </div>
             </li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'dashboard' %}">Dashboard</a></li>
-            <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'search' %}">VIN Decoder</a></li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'about' %}">About</a></li>
             <li class="mr-16"><a class="inline-block text-base font-medium text-black" href="{% url 'blog' %}">Blog</a></li>
             <li><a class="inline-block text-base font-medium text-black" href="{% url 'contact' %}">Contact</a></li>
@@ -47,5 +46,48 @@
           <div class="absolute top-0 left-0 h-full w-28 transform -translate-x-full -ml-1 group-hover:-translate-x-0 bg-black transition duration-500 ease-linear"></div></a>
       </div>
     {% endif %}
+    </div>
+
+    <!-- Mobile Sidebar -->
+    <div class="fixed inset-0 z-40 lg:hidden" x-show="mobileNavOpen" style="display: none;">
+      <div class="absolute inset-0 bg-black opacity-40" x-on:click="mobileNavOpen = false"></div>
+      <div class="fixed top-0 left-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform duration-300" x-show="mobileNavOpen" style="display: none;">
+        <div class="flex items-center justify-between px-6 py-4 border-b">
+          <span class="text-xl font-bold">Menu</span>
+          <button class="text-gray-700 hover:text-black" x-on:click="mobileNavOpen = false">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <nav class="px-6 py-4">
+          <ul class="space-y-4">
+            <li><a class="block text-base font-medium text-black" href="{% url 'dashboard' %}" x-on:click="mobileNavOpen = false">Dashboard</a></li>
+            <li><a class="block text-base font-medium text-black" href="{% url 'about' %}" x-on:click="mobileNavOpen = false">About</a></li>
+            <li><a class="block text-base font-medium text-black" href="{% url 'blog' %}" x-on:click="mobileNavOpen = false">Blog</a></li>
+            <li><a class="block text-base font-medium text-black" href="{% url 'contact' %}" x-on:click="mobileNavOpen = false">Contact</a></li>
+            <li class="relative" x-data="{ open: false }">
+              <button @click="open = !open" class="inline-flex items-center text-base font-medium text-black w-full text-left">
+                Products
+                <svg class="w-4 h-4 ml-1 transition-transform duration-300" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <div x-show="open" class="mt-2 ml-4 space-y-2" style="display: none;">
+                <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150">Carfinity AutoCare</a>
+                <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150">Financial Services</a>
+                <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150">General Mechanics</a>
+                <a href="{% url 'search' %}" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150">VIN Decoder</a>
+              </div>
+            </li>
+            {% if user.is_authenticated %}
+            <li><a class="block text-base font-medium text-black" href="{% url 'logout' %}" x-on:click="mobileNavOpen = false">Logout</a></li>
+            {% else %}
+            <li><a class="block text-base font-medium text-black" href="{% url 'login' %}" x-on:click="mobileNavOpen = false">Login</a></li>
+            <li><a class="block text-base font-medium text-black" href="{% url 'register' %}" x-on:click="mobileNavOpen = false">Sign Up</a></li>
+            {% endif %}
+          </ul>
+        </nav>
+      </div>
     </div>
   </nav>
