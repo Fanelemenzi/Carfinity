@@ -1,6 +1,6 @@
 from django.db import models
 from vehicles.models import Vehicle
-from users.models import User
+from django.contrib.auth.models import User
 
 # Create your models here.
 class ServiceType(models.Model):

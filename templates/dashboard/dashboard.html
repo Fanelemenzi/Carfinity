@@ -24,7 +24,7 @@
                 <p class="text-sm text-gray-500">Compared to E19 870 yesterday</p>
                 <p class="text-sm text-gray-500">Last week income</p>
               </div>
-              <!-- Expenses Card -->
+              <!-- Total Maintainance Cost Card -->
               <div class="bg-white p-5 rounded-lg shadow">
                 <h2 class="text-lg font-semibold mb-2">Total Maintainance Cost</h2>
                 <div class="text-2xl font-bold">E5 660.00</div>
@@ -46,19 +46,28 @@
               </div>
             </div>
 
-            <!-- Right Main Section -->
+            <!-- Vehciles Owned by User Section -->
             <div class="md:col-span-3 space-y-6">
               <!-- Car Availability -->
-              <div class="bg-white p-5 rounded-lg shadow flex flex-wrap items-center gap-4">
-                <select class="p-2 border rounded-md">
-                  <option>Car number</option>
-                </select>
-                <input type="date" class="p-2 border rounded-md" />
-                <input type="time" class="p-2 border rounded-md" />
-                <button class="bg-blue-600 text-white px-4 py-2 rounded-md">Check</button>
-              </div>
+              <form method="get" action="">
+                <div class="bg-white p-5 rounded-lg shadow flex flex-wrap items-center gap-4">
+                  <p>Owner</p>
+                  <select class="p-2 border rounded-md" name="vehicle_id">
+                    {% if owned_vehicles %}
+                      {% for ownership in owned_vehicles %}
+                        <option value="{{ ownership.vehicle.id }}" {% if ownership.vehicle.id|stringformat:'s' == request.GET.vehicle_id %}selected{% endif %}>
+                          {{ ownership.vehicle.make }} {{ ownership.vehicle.model }} ({{ ownership.vehicle.vin }}) - Start: {{ ownership.start_date }}
+                        </option>
+                      {% endfor %}
+                    {% else %}
+                      <option>No vehicles found</option>
+                    {% endif %}
+                  </select>
+                  <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md">Check</button>
+                </div>
+              </form>
 
-              <!-- Live Car Status Table -->
+              <!-- Schedules Maintainance Section -->
               <div class="bg-white p-5 rounded-lg shadow">
                 <div class="flex justify-between mb-4">
                   <h2 class="text-lg font-semibold">Upcoming Maintainance</h2>
@@ -69,44 +78,34 @@
                     <thead>
                       <tr class="border-b font-semibold text-gray-700">
                         <th class="p-2">No.</th>
-                        <th class="p-2">Car No.</th>
-                        <th class="p-2">Driver</th>
+                        <th class="p-2">Task</th>
+                        <th class="p-2">Due Date</th>
+                        <th class="p-2">Due Mileage</th>
                         <th class="p-2">Status</th>
-                        <th class="p-2">Earning</th>
                         <th class="p-2"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="border-b">
-                        <td class="p-2">01</td>
-                        <td class="p-2">6465</td>
-                        <td class="p-2">Alex Noman</td>
-                        <td class="p-2 text-green-600">● Completed</td>
-                        <td class="p-2">$35.44</td>
-                        <td class="p-2"><button class="text-blue-500">Details</button></td>
-                      </tr>
-                      <tr class="border-b">
-                        <td class="p-2">02</td>
-                        <td class="p-2">5665</td>
-                        <td class="p-2">Razib Rahman</td>
-                        <td class="p-2 text-yellow-500">● Pending</td>
-                        <td class="p-2">$0.00</td>
-                        <td class="p-2"><button class="text-blue-500">Details</button></td>
-                      </tr>
-                      <tr>
-                        <td class="p-2">03</td>
-                        <td class="p-2">1755</td>
-                        <td class="p-2">Luke Norton</td>
-                        <td class="p-2 text-red-500">● In route</td>
-                        <td class="p-2">$23.50</td>
-                        <td class="p-2"><button class="text-blue-500">Details</button></td>
-                      </tr>
+                      {% if scheduled_maintenance and scheduled_maintenance|length > 0 %}
+                        {% for sm in scheduled_maintenance %}
+                          <tr class="border-b">
+                            <td class="p-2">{{ forloop.counter }}</td>
+                            <td class="p-2">{{ sm.task.name }}</td>
+                            <td class="p-2">{{ sm.due_date }}</td>
+                            <td class="p-2">{{ sm.due_mileage }}</td>
+                            <td class="p-2">{{ sm.get_status_display }}</td>
+                            <td class="p-2"><button class="text-blue-500">Details</button></td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr><td colspan="6" class="p-2 text-center text-gray-400">No scheduled maintenance found.</td></tr>
+                      {% endif %}
                     </tbody>
                   </table>
                 </div>
               </div>
 
-              <!-- Inspection Report Summary -->
+              <!-- Inspection Reports Summary -->
               <div class="bg-white p-5 rounded-lg shadow">
                 <div class="flex justify-between mb-4">
                   <h2 class="text-lg font-semibold">Quarterly Inspection Reports</h2>
@@ -117,30 +116,30 @@
                     <thead>
                       <tr class="border-b font-semibold text-gray-700">
                         <th class="p-2">No.</th>
-                        <th class="p-2">Car No.</th>
-                        <th class="p-2">Driver</th>
-                        <th class="p-2">Status</th>
-                        <th class="p-2">Earning</th>
+                        <th class="p-2">Inspection #</th>
+                        <th class="p-2">Year</th>
+                        <th class="p-2">Result</th>
+                        <th class="p-2">Carfinity Rating</th>
+                        <th class="p-2">Date</th>
                         <th class="p-2"></th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr class="border-b">
-                        <td class="p-2">01</td>
-                        <td class="p-2">6465</td>
-                        <td class="p-2">Alex Noman</td>
-                        <td class="p-2 text-green-600">● Completed</td>
-                        <td class="p-2">$35.44</td>
-                        <td class="p-2"><button class="text-blue-500">Details</button></td>
-                      </tr>
-                      <tr class="border-b">
-                        <td class="p-2">02</td>
-                        <td class="p-2">5665</td>
-                        <td class="p-2">Razib Rahman</td>
-                        <td class="p-2 text-yellow-500">● Pending</td>
-                        <td class="p-2">$0.00</td>
-                        <td class="p-2"><button class="text-blue-500">Details</button></td>
-                      </tr>
+                      {% if inspections and inspections|length > 0 %}
+                        {% for insp in inspections %}
+                          <tr class="border-b">
+                            <td class="p-2">{{ forloop.counter }}</td>
+                            <td class="p-2">{{ insp.inspection_number }}</td>
+                            <td class="p-2">{{ insp.year }}</td>
+                            <td class="p-2">{{ insp.get_inspection_result_display }}</td>
+                            <td class="p-2">{{ insp.carfinity_rating }}</td>
+                            <td class="p-2">{{ insp.inspection_date }}</td>
+                            <td class="p-2"><a href="{{ insp.link_to_results }}" class="text-blue-500" target="_blank">Results</a></td>
+                          </tr>
+                        {% endfor %}
+                      {% else %}
+                        <tr><td colspan="7" class="p-2 text-center text-gray-400">No inspection reports found.</td></tr>
+                      {% endif %}
                     </tbody>
                   </table>
                 </div>

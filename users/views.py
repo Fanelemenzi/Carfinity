@@ -1,11 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from vehicles.models import Vehicle, VehicleStatus
+from vehicles.models import Vehicle, VehicleStatus, VehicleOwnership
 from maintenance_history.models import MaintenanceRecord, Inspection
 from vehicle_equip.models import PowertrainAndDrivetrain, ChassisSuspensionAndBraking, ElectricalSystem, ExteriorFeaturesAndBody, ActiveSafetyAndADAS
 from django.http import JsonResponse
@@ -45,7 +44,29 @@ def logout_user(request):
     return redirect('home')
 
 def dashboard(request):
-    return render(request, 'dashboard/dashboard.html', {})
+    owned_vehicles = []
+    scheduled_maintenance = []
+    inspections = []
+    selected_vehicle = None
+    if request.user.is_authenticated:
+        owned_vehicles = VehicleOwnership.objects.filter(user=request.user, is_current_owner=True).select_related('vehicle')
+        vehicle_id = request.GET.get('vehicle_id')
+        if vehicle_id:
+            from maintenance.models import ScheduledMaintenance
+            from maintenance_history.models import Inspection
+            selected_vehicle = Vehicle.objects.get(id=vehicle_id)
+            # Scheduled Maintenance
+            scheduled_maintenance = ScheduledMaintenance.objects.filter(
+                assigned_plan__vehicle=selected_vehicle
+            )
+            # Inspections
+            inspections = Inspection.objects.filter(vehicle=selected_vehicle)
+    return render(request, 'dashboard/dashboard.html', {
+        'owned_vehicles': owned_vehicles,
+        'scheduled_maintenance': scheduled_maintenance,
+        'inspections': inspections,
+        'selected_vehicle': selected_vehicle,
+    })
 
 def login_dashboard(request):
     return render(request, 'dashboard/login_dashboard.html', {})

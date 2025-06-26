@@ -1,38 +1,11 @@
 from django.db import models
+from django.conf import settings
+from django.contrib.auth.models import User
 import datetime
-from django.contrib.auth.models import AbstractUser
 from django.db.models import JSONField
 import json
 
 # Create your models here.
-class User(AbstractUser):
-    # Additional fields
-    phone = models.CharField(max_length=15, blank=True, null=True, help_text="User's phone number (optional, for SMS notifications).")
-    email_verified = models.BooleanField(default=False, help_text="Boolean to track if the user's email is verified.")
-    phone_verified = models.BooleanField(default=False, help_text="Boolean to track if the user's phone is verified.")
-    # Override the email field to make it unique
-    email = models.EmailField(unique=True, help_text="Unique email address (used for login).")
-
-    # Override groups and user_permissions to avoid reverse accessor clashes
-    groups = models.ManyToManyField(
-        'auth.Group',
-        verbose_name='groups',
-        blank=True,
-        help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.',
-        related_name='custom_user_set',  # Unique related_name
-        related_query_name='user',
-    )
-    user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        verbose_name='user permissions',
-        blank=True,
-        help_text='Specific permissions for this user.',
-        related_name='custom_user_set',  # Unique related_name
-        related_query_name='user',
-    )
-
-    def __str__(self):
-        return self.email
 
 class Profile(models.Model):
      # One-to-One relationship with the User model

@@ -6,11 +6,6 @@ from django_json_widget.widgets import JSONEditorWidget
 # Register your models here.
 
 
-@admin.register(User)
-class UserAdmin(admin.ModelAdmin):
-    list_display = ('email', 'first_name', 'last_name', 'is_active', 'is_staff')
-    search_fields = ('email', 'first_name', 'last_name')
-
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'city', 'country')

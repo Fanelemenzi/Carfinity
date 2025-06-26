@@ -1,13 +1,12 @@
 from django.db import models
-from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import date
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
-from users.models import User
 from vehicles.models import Vehicle  # Import from your vehicles app
 from maintenance.models import ScheduledMaintenance, Part  # Import from your maintenance app
+from django.contrib.auth.models import User
 
 
 class MaintenanceRecord(models.Model):
