@@ -89,12 +89,12 @@ WSGI_APPLICATION = 'carfinity.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-#DATABASES = {
-#    'default': {
-#        'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
 
 #database_url = os.environ.get("DATABASE_URL")
 DATABASES ["default"] = dj_database_url.parse("postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render")
