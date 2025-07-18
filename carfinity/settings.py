@@ -96,8 +96,8 @@ WSGI_APPLICATION = 'carfinity.wsgi.application'
 #    }
 #}
 
-database_url = os.environ.get("DATABASE_URL")
-#DATABASES ["default"] = dj_database_url.parse("postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render")
+#database_url = os.environ.get("DATABASE_URL")
+DATABASES ["default"] = dj_database_url.parse("postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
