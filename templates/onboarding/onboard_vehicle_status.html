@@ -1,0 +1,43 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="max-w-xl mx-auto py-10">
+  <!-- Stepper -->
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex-1 flex items-center">
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Client</span>
+      </div>
+      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Vehicle</span>
+      </div>
+      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Status</span>
+      </div>
+      <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold">4</div>
+        <span class="text-xs mt-1 font-semibold text-gray-500">Equipment</span>
+      </div>
+    </div>
+  </div>
+  <h2 class="text-2xl font-bold mb-6">Step 3: Vehicle Status</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+    {% include 'onboarding/field.html' with field=form.accident_history %}
+    {% include 'onboarding/field.html' with field=form.odometer_fraud %}
+    {% include 'onboarding/field.html' with field=form.theft_involvement %}
+    {% include 'onboarding/field.html' with field=form.legal_status %}
+    {% include 'onboarding/field.html' with field=form.owner_history %}
+    <div class="flex justify-between pt-6">
+      <button name="wizard_goto_step" type="submit" value="prev" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold shadow hover:bg-gray-400 transition">Back</button>
+      <button type="submit" class="px-6 py-3 bg-blue-600 text-black rounded-lg font-semibold shadow hover:bg-blue-700 transition">Next</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

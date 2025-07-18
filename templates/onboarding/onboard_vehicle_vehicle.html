@@ -1,0 +1,314 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="max-w-4xl mx-auto py-10 px-6">
+  <!-- Stepper -->
+  <div class="flex items-center justify-between mb-12">
+    <div class="flex-1 flex items-center">
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+        <span class="text-sm mt-2 font-medium text-blue-600">Client</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-blue-600 mx-4"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+        <span class="text-sm mt-2 font-medium text-blue-600">Vehicle</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">3</div>
+        <span class="text-sm mt-2 font-medium text-gray-500">Status</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">4</div>
+        <span class="text-sm mt-2 font-medium text-gray-500">Equipment</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Title -->
+  <div class="mb-10">
+    <h2 class="text-2xl font-semibold text-gray-900 mb-2">Step 2: Vehicle Information</h2>
+    <p class="text-gray-600">Please provide details about your vehicle</p>
+  </div>
+
+  <form method="post" class="space-y-8">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+    
+    <!-- Vehicle Identification Section -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-6 pb-3 border-b border-gray-100">Vehicle Identification</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.vin.label }}</label>
+          <div class="relative">
+            {{ form.vin }}
+            {% if form.vin.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.vin.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.license_plate.label }}</label>
+          <div class="relative">
+            {{ form.license_plate }}
+            {% if form.license_plate.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.license_plate.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Details Section -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-6 pb-3 border-b border-gray-100">Vehicle Details</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.make.label }}</label>
+          <div class="relative">
+            {{ form.make }}
+            {% if form.make.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.make.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.model.label }}</label>
+          <div class="relative">
+            {{ form.model }}
+            {% if form.model.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.model.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.manufacture_year.label }}</label>
+          <div class="relative">
+            {{ form.manufacture_year }}
+            {% if form.manufacture_year.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.manufacture_year.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.body_type.label }}</label>
+          <div class="relative">
+            {{ form.body_type }}
+            {% if form.body_type.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.body_type.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.purchase_date.label }}</label>
+          <div class="relative">
+            {{ form.purchase_date }}
+            {% if form.purchase_date.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.purchase_date.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Engine & Performance Section -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-6 pb-3 border-b border-gray-100">Engine & Performance</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.engine_code.label }}</label>
+          <div class="relative">
+            {{ form.engine_code }}
+            {% if form.engine_code.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.engine_code.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.fuel_type.label }}</label>
+          <div class="relative">
+            {{ form.fuel_type }}
+            {% if form.fuel_type.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.fuel_type.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.transmission_type.label }}</label>
+          <div class="relative">
+            {{ form.transmission_type }}
+            {% if form.transmission_type.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.transmission_type.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.powertrain_displacement.label }}</label>
+          <div class="relative">
+            {{ form.powertrain_displacement }}
+            {% if form.powertrain_displacement.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.powertrain_displacement.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.powertrain_power.label }}</label>
+          <div class="relative">
+            {{ form.powertrain_power }}
+            {% if form.powertrain_power.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.powertrain_power.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance Section -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-6 pb-3 border-b border-gray-100">Appearance</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.interior_color.label }}</label>
+          <div class="relative">
+            {{ form.interior_color }}
+            {% if form.interior_color.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.interior_color.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.exterior_color.label }}</label>
+          <div class="relative">
+            {{ form.exterior_color }}
+            {% if form.exterior_color.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.exterior_color.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Additional Information Section -->
+    <div class="bg-white rounded-xl border border-gray-200 p-8">
+      <h3 class="text-lg font-medium text-gray-900 mb-6 pb-3 border-b border-gray-100">Additional Information</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.plant_location.label }}</label>
+          <div class="relative">
+            {{ form.plant_location }}
+            {% if form.plant_location.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.plant_location.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.start_date.label }}</label>
+          <div class="relative">
+            {{ form.start_date }}
+            {% if form.start_date.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.start_date.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.created_at.label }}</label>
+          <div class="relative">
+            {{ form.created_at }}
+            {% if form.created_at.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.created_at.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="block text-sm font-medium text-gray-700 mb-3">{{ form.updated_at.label }}</label>
+          <div class="relative">
+            {{ form.updated_at }}
+            {% if form.updated_at.errors %}
+              <div class="text-red-500 text-sm mt-1">{{ form.updated_at.errors }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-between pt-8">
+      <button name="wizard_goto_step" type="submit" value="prev" 
+              class="px-8 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg font-medium hover:bg-gray-50 transition-colors duration-200 shadow-sm">
+        Previous
+      </button>
+      <button type="submit" 
+              class="px-8 py-3 bg-blue-600 text-black rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 shadow-sm">
+        Next
+      </button>
+    </div>
+  </form>
+</div>
+
+<style>
+/* Custom styles for form elements to match the design */
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background-color: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #ffffff;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+  border-color: #9ca3af;
+  background-color: #ffffff;
+}
+
+/* Radio button styling (if applicable) */
+.form-group input[type="radio"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+/* Checkbox styling (if applicable) */
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+}
+
+/* Date input styling */
+.form-group input[type="date"] {
+  color: #6b7280;
+}
+
+.form-group input[type="date"]:focus {
+  color: #111827;
+}
+</style>
+{% endblock %}

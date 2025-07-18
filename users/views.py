@@ -10,6 +10,9 @@ from vehicle_equip.models import PowertrainAndDrivetrain, ChassisSuspensionAndBr
 from django.http import JsonResponse
 from .forms import SignUpForm
 from .models import Profile, DataConsent
+from django.urls import reverse_lazy
+from django.views.generic.edit import CreateView
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def home(request):
@@ -106,7 +109,7 @@ def register_user(request):
             messages.success(request, "Registration successful! Welcome to Carfinity.")
             
             # Redirect to dashboard
-            return redirect('dashboard')
+            return redirect('typeform_onboarding')
     else:
         form = SignUpForm()
     
@@ -168,3 +171,7 @@ def search_results(request):
 
 #def create_record(request):
 #    return render(request, 'maintenance/create_record.html', {})
+
+@login_required
+def typeform_redirect(request):
+    return render(request, 'public/typeform_embed.html')

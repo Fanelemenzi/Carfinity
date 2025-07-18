@@ -1,0 +1,115 @@
+{% extends 'base/base.html' %}
+{% block content %}
+<div class="max-w-3xl mx-auto py-10">
+  <!-- Stepper -->
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex-1 flex items-center">
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Client</span>
+      </div>
+      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Vehicle</span>
+      </div>
+      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Status</span>
+      </div>
+      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">4</div>
+        <span class="text-xs mt-1 font-semibold text-blue-600">Equipment</span>
+      </div>
+    </div>
+  </div>
+  <h2 class="text-2xl font-bold mb-6">Step 4: Vehicle Equipment & Features</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ wizard.management_form }}
+    <!-- Powertrain & Drivetrain -->
+    <h3 class="text-lg font-semibold mt-8 mb-2">Powertrain & Drivetrain</h3>
+    {% include 'onboarding/field.html' with field=form.base_engine %}
+    {% include 'onboarding/field.html' with field=form.engine_displacement %}
+    {% include 'onboarding/field.html' with field=form.engine_power %}
+    {% include 'onboarding/field.html' with field=form.transmission_specifications %}
+    {% include 'onboarding/field.html' with field=form.transmission_type %}
+    {% include 'onboarding/field.html' with field=form.gear_count %}
+    {% include 'onboarding/field.html' with field=form.drive_layout %}
+    {% include 'onboarding/field.html' with field=form.fuel_system %}
+    {% include 'onboarding/field.html' with field=form.emissions_standard %}
+    {% include 'onboarding/field.html' with field=form.has_start_stop %}
+    {% include 'onboarding/field.html' with field=form.has_regenerative_braking %}
+    {% include 'onboarding/field.html' with field=form.gearshift_position %}
+    {% include 'onboarding/field.html' with field=form.gearshift_material %}
+    {% include 'onboarding/field.html' with field=form.notes %}
+    <!-- Chassis, Suspension & Braking -->
+    <h3 class="text-lg font-semibold mt-8 mb-2">Chassis, Suspension & Braking</h3>
+    {% include 'onboarding/field.html' with field=form.front_suspension %}
+    {% include 'onboarding/field.html' with field=form.rear_suspension %}
+    {% include 'onboarding/field.html' with field=form.front_brake_type %}
+    {% include 'onboarding/field.html' with field=form.rear_brake_type %}
+    {% include 'onboarding/field.html' with field=form.brake_systems %}
+    {% include 'onboarding/field.html' with field=form.parking_brake_type %}
+    {% include 'onboarding/field.html' with field=form.steering_system %}
+    {% include 'onboarding/field.html' with field=form.steering_wheel_features %}
+    {% include 'onboarding/field.html' with field=form.has_park_distance_control %}
+    <!-- Electrical System -->
+    <h3 class="text-lg font-semibold mt-8 mb-2">Electrical System</h3>
+    {% include 'onboarding/field.html' with field=form.primary_battery_type %}
+    {% include 'onboarding/field.html' with field=form.primary_battery_capacity %}
+    {% include 'onboarding/field.html' with field=form.has_second_battery %}
+    {% include 'onboarding/field.html' with field=form.second_battery_type %}
+    {% include 'onboarding/field.html' with field=form.second_battery_capacity %}
+    {% include 'onboarding/field.html' with field=form.alternator_output %}
+    {% include 'onboarding/field.html' with field=form.operating_voltage %}
+    {% include 'onboarding/field.html' with field=form.headlight_type %}
+    {% include 'onboarding/field.html' with field=form.headlight_control %}
+    {% include 'onboarding/field.html' with field=form.headlight_range_control %}
+    {% include 'onboarding/field.html' with field=form.instrument_cluster_type %}
+    {% include 'onboarding/field.html' with field=form.socket_type %}
+    {% include 'onboarding/field.html' with field=form.horn_type %}
+    <!-- Exterior Features & Body -->
+    <h3 class="text-lg font-semibold mt-8 mb-2">Exterior Features & Body</h3>
+    {% include 'onboarding/field.html' with field=form.body_style %}
+    {% include 'onboarding/field.html' with field=form.windshield_type %}
+    {% include 'onboarding/field.html' with field=form.side_windows_type %}
+    {% include 'onboarding/field.html' with field=form.has_chrome_package %}
+    {% include 'onboarding/field.html' with field=form.has_roof_rails %}
+    {% include 'onboarding/field.html' with field=form.roof_type %}
+    {% include 'onboarding/field.html' with field=form.has_front_fog_lamp %}
+    {% include 'onboarding/field.html' with field=form.has_rear_fog_lamp %}
+    {% include 'onboarding/field.html' with field=form.has_headlight_range_control %}
+    {% include 'onboarding/field.html' with field=form.has_scuff_plates %}
+    {% include 'onboarding/field.html' with field=form.has_loading_edge_protection %}
+    {% include 'onboarding/field.html' with field=form.has_front_underbody_guard %}
+    {% include 'onboarding/field.html' with field=form.wheel_type %}
+    {% include 'onboarding/field.html' with field=form.has_wheel_covers %}
+    {% include 'onboarding/field.html' with field=form.has_lockable_wheel_bolts %}
+    {% include 'onboarding/field.html' with field=form.has_spare_wheel %}
+    {% include 'onboarding/field.html' with field=form.has_trailer_hitch %}
+    {% include 'onboarding/field.html' with field=form.tailgate_lock_type %}
+    {% include 'onboarding/field.html' with field=form.left_mirror_type %}
+    {% include 'onboarding/field.html' with field=form.right_mirror_type %}
+    {% include 'onboarding/field.html' with field=form.antenna_type %}
+    <!-- Active Safety & ADAS -->
+    <h3 class="text-lg font-semibold mt-8 mb-2">Active Safety & ADAS</h3>
+    {% include 'onboarding/field.html' with field=form.cruise_control_system %}
+    {% include 'onboarding/field.html' with field=form.has_speed_limiter %}
+    {% include 'onboarding/field.html' with field=form.park_distance_control %}
+    {% include 'onboarding/field.html' with field=form.driver_alert_system %}
+    {% include 'onboarding/field.html' with field=form.tire_pressure_monitoring %}
+    {% include 'onboarding/field.html' with field=form.lane_assist_system %}
+    {% include 'onboarding/field.html' with field=form.blind_spot_monitoring %}
+    {% include 'onboarding/field.html' with field=form.collision_warning_system %}
+    {% include 'onboarding/field.html' with field=form.has_cross_traffic_alert %}
+    {% include 'onboarding/field.html' with field=form.has_traffic_sign_recognition %}
+    <div class="flex justify-between pt-6">
+      <button name="wizard_goto_step" type="submit" value="prev" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold shadow hover:bg-gray-400 transition">Back</button>
+      <button type="submit" class="px-6 py-3 bg-green-600 text-black rounded-lg font-semibold shadow hover:bg-green-700 transition">Submit</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

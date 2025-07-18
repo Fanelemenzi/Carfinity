@@ -28,7 +28,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-
+#DEBUG = 'True'
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 #ALLOWED_HOSTS = ['*']
 
@@ -44,12 +44,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_json_widget',
     'django_countries',
+    'formtools',
     'users',
     'vehicles',
     'organizations',
     'maintenance',
     'maintenance_history',
-    'vehicle_equip'
+    'vehicle_equip',
+    'onboarding',
 ]
 
 MIDDLEWARE = [
@@ -94,9 +96,9 @@ DATABASES = {
     }
 }
 
-database_url = os.environ.get("DATABASE_URL")
+#database_url = os.environ.get("DATABASE_URL")
 DATABASES ["default"] = dj_database_url.parse(database_url)
-# postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render
+#DATABASES ["default"] = dj_database_url.parse("postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
