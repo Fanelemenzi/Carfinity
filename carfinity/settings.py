@@ -96,8 +96,7 @@ DATABASES = {
     }
 }
 
-#database_url = os.environ.get("DATABASE_URL")
-DATABASES ["default"] = dj_database_url.parse(database_url)
+database_url = os.environ.get("DATABASE_URL")
 #DATABASES ["default"] = dj_database_url.parse("postgresql://carfinity_django_render_user:ofYbhIaTABpMWHEOFlDJSihvgeIgNE5P@dpg-d1a6tqvgi27c73f6q740-a.oregon-postgres.render.com/carfinity_django_render")
 
 # Password validation
