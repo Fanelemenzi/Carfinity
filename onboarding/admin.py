@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import PendingVehicleOnboarding
 from django.utils import timezone
-from vehicles.models import Vehicle, VehicleOwnership, VehicleStatus
+from vehicles.models import Vehicle, VehicleOwnership, VehicleStatus, VehicleImage
 from django_countries.fields import Country
 from django.contrib.auth import get_user_model
 from vehicle_equip.models import (
@@ -9,17 +9,92 @@ from vehicle_equip.models import (
 )
 import datetime
 from decimal import Decimal
+from django.utils.html import format_html
+from django.urls import reverse
 
 User = get_user_model()
 
 @admin.register(PendingVehicleOnboarding)
 class PendingVehicleOnboardingAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'client', 'submitted_by', 'status', 'submitted_at', 'reviewed_at', 'reviewed_by'
+        'id', 'client', 'submitted_by', 'status', 'submitted_at', 'reviewed_at', 'reviewed_by', 'get_image_count'
     )
     list_filter = ('status', 'submitted_at', 'reviewed_at')
     search_fields = ('client__username', 'submitted_by__username', 'vehicle_data__vin')
-    actions = ['approve_onboarding', 'reject_onboarding', 'create_full_vehicle_from_onboarding']
+    actions = ['approve_onboarding', 'reject_onboarding', 'create_full_vehicle_from_onboarding', 'create_vehicle_images_from_onboarding']
+    readonly_fields = ('submitted_at', 'reviewed_at', 'get_image_previews', 'get_vehicle_data_display', 'get_image_data_display')
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('client', 'submitted_by', 'status', 'submitted_at', 'reviewed_at', 'reviewed_by')
+        }),
+        ('Vehicle Data', {
+            'fields': ('get_vehicle_data_display',),
+            'classes': ('collapse',)
+        }),
+        ('Image Data', {
+            'fields': ('get_image_previews', 'get_image_data_display'),
+            'classes': ('collapse',)
+        }),
+        ('All Data', {
+            'fields': ('vehicle_data', 'ownership_data', 'status_data', 'history_data', 'equipment_data', 'image_data'),
+            'classes': ('collapse',)
+        }),
+    )
+
+    def get_image_count(self, obj):
+        if obj.image_data:
+            count = len(obj.image_data)
+            if count > 0:
+                return format_html(
+                    '<span style="color: green; font-weight: bold;">{} image{}</span>',
+                    count, 's' if count != 1 else ''
+                )
+        return format_html('<span style="color: red;">No images</span>')
+    get_image_count.short_description = 'Images'
+
+    def get_image_previews(self, obj):
+        if not obj.image_data:
+            return "No images uploaded"
+        
+        html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;">'
+        for field_name, image_info in obj.image_data.items():
+            if isinstance(image_info, dict) and 'url' in image_info:
+                html += f'''
+                <div style="border: 1px solid #ddd; padding: 10px; border-radius: 5px;">
+                    <h4 style="margin: 0 0 5px 0; font-size: 12px; text-transform: capitalize;">{field_name.replace('_', ' ')}</h4>
+                    <img src="{image_info['url']}" style="max-width: 100%; height: 150px; object-fit: cover; border-radius: 3px;" />
+                    <p style="margin: 5px 0 0 0; font-size: 10px; color: #666;">{image_info.get('filename', 'N/A')}</p>
+                </div>
+                '''
+        html += '</div>'
+        return format_html(html)
+    get_image_previews.short_description = 'Image Previews'
+
+    def get_vehicle_data_display(self, obj):
+        if not obj.vehicle_data:
+            return "No vehicle data"
+        
+        html = '<div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">'
+        for key, value in obj.vehicle_data.items():
+            html += f'<p><strong>{key}:</strong> {value}</p>'
+        html += '</div>'
+        return format_html(html)
+    get_vehicle_data_display.short_description = 'Vehicle Data'
+
+    def get_image_data_display(self, obj):
+        if not obj.image_data:
+            return "No image data"
+        
+        html = '<div style="background: #f9f9f9; padding: 10px; border-radius: 5px;">'
+        for key, value in obj.image_data.items():
+            if isinstance(value, dict):
+                html += f'<p><strong>{key}:</strong> {value.get("url", "No URL")}</p>'
+            else:
+                html += f'<p><strong>{key}:</strong> {value}</p>'
+        html += '</div>'
+        return format_html(html)
+    get_image_data_display.short_description = 'Image Data'
 
     def approve_onboarding(self, request, queryset):
         updated = queryset.filter(status='pending').update(
@@ -38,6 +113,56 @@ class PendingVehicleOnboardingAdmin(admin.ModelAdmin):
         )
         self.message_user(request, f"{updated} onboarding(s) rejected.")
     reject_onboarding.short_description = "Reject selected onboardings"
+
+    def create_vehicle_images_from_onboarding(self, request, queryset):
+        created = 0
+        for onboarding in queryset.filter(status='approved'):
+            if not onboarding.image_data:
+                continue
+                
+            # Get the vehicle for this onboarding
+            try:
+                vehicle = Vehicle.objects.get(vin=onboarding.vehicle_data.get('vin'))
+            except Vehicle.DoesNotExist:
+                self.message_user(request, f"Vehicle with VIN {onboarding.vehicle_data.get('vin')} not found for onboarding {onboarding.id}", level='error')
+                continue
+            
+            # Create VehicleImage objects
+            for field_name, image_info in onboarding.image_data.items():
+                if isinstance(image_info, dict) and 'url' in image_info:
+                    # Map field names to image types
+                    image_type_mapping = {
+                        'front_image': 'FRONT',
+                        'rear_image': 'REAR',
+                        'left_side_image': 'SIDE_LEFT',
+                        'right_side_image': 'SIDE_RIGHT',
+                        'interior_image': 'INTERIOR',
+                        'engine_bay_image': 'ENGINE',
+                        'dashboard_image': 'DASHBOARD',
+                        'damage_images': 'DAMAGE',
+                        'document_images': 'DOCUMENTS',
+                    }
+                    
+                    image_type = image_type_mapping.get(field_name, 'OTHER')
+                    
+                    # Check if image already exists
+                    existing_image = VehicleImage.objects.filter(
+                        vehicle=vehicle,
+                        image_type=image_type
+                    ).first()
+                    
+                    if not existing_image:
+                        VehicleImage.objects.create(
+                            vehicle=vehicle,
+                            image_type=image_type,
+                            description=f"Uploaded during onboarding - {field_name.replace('_', ' ')}",
+                            uploaded_by=onboarding.submitted_by,
+                            is_primary=(field_name == 'front_image')  # Make front image primary
+                        )
+                        created += 1
+        
+        self.message_user(request, f"{created} vehicle image(s) created from onboarding records.")
+    create_vehicle_images_from_onboarding.short_description = "Create VehicleImage objects from onboarding images"
 
     def parse_date(self, value):
         if not value:

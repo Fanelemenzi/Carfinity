@@ -20,6 +20,8 @@ class PendingVehicleOnboarding(models.Model):
     status_data = models.JSONField()
     history_data = models.JSONField(blank=True, null=True)
     equipment_data = models.JSONField()
+    # New field for image data
+    image_data = models.JSONField(blank=True, null=True, help_text="Stores image URLs and metadata")
     # Approval status
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     submitted_at = models.DateTimeField(auto_now_add=True)

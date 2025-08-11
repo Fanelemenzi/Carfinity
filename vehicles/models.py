@@ -162,3 +162,44 @@ class VehicleHistory(models.Model):
     class Meta:
         verbose_name = "Vehicle History"
         verbose_name_plural = "Vehicle History"
+
+class VehicleImage(models.Model):
+    """
+    Model to store vehicle images with categorization
+    """
+    IMAGE_TYPES = [
+        ('FRONT', 'Front View'),
+        ('REAR', 'Rear View'),
+        ('SIDE_LEFT', 'Left Side'),
+        ('SIDE_RIGHT', 'Right Side'),
+        ('INTERIOR', 'Interior'),
+        ('ENGINE', 'Engine Bay'),
+        ('DASHBOARD', 'Dashboard'),
+        ('TRUNK', 'Trunk/Cargo Area'),
+        ('WHEELS', 'Wheels/Tires'),
+        ('DAMAGE', 'Damage/Issues'),
+        ('DOCUMENTS', 'Documents'),
+        ('OTHER', 'Other'),
+    ]
+    
+    vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='vehicle_images/')
+    image_type = models.CharField(max_length=20, choices=IMAGE_TYPES)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='uploaded_vehicle_images')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    is_primary = models.BooleanField(default=False, help_text="Mark as primary image for the vehicle")
+    
+    class Meta:
+        verbose_name = "Vehicle Image"
+        verbose_name_plural = "Vehicle Images"
+        ordering = ['-is_primary', '-uploaded_at']
+    
+    def __str__(self):
+        return f"{self.get_image_type_display()} - {self.vehicle.vin}"
+    
+    def save(self, *args, **kwargs):
+        # If this image is marked as primary, unmark others
+        if self.is_primary:
+            VehicleImage.objects.filter(vehicle=self.vehicle, is_primary=True).update(is_primary=False)
+        super().save(*args, **kwargs)

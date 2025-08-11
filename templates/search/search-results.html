@@ -55,6 +55,34 @@
               </div>
           </div>
 
+          <!-- Vehicle Images Section - Add this new section -->
+          {% if vehicle_images %}
+          <div class="p-6 border-b border-gray-200">
+            <h2 class="text-xl font-semibold mb-4">Vehicle Images</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {% for image in vehicle_images %}
+              <div class="relative group">
+                <div class="aspect-w-4 aspect-h-3 bg-gray-100 rounded-lg overflow-hidden">
+                  <img src="{{ image.image.url }}" 
+                       alt="{{ image.get_image_type_display }} - {{ vehicle.vin }}" 
+                       class="w-full h-48 object-cover rounded-lg hover:scale-105 transition-transform duration-200 cursor-pointer"
+                       onclick="openImageModal('{{ image.image.url }}', '{{ image.get_image_type_display }}', '{{ image.description|default:"" }}')">
+                </div>
+                <div class="mt-2 text-center">
+                  <p class="text-sm font-medium text-gray-700">{{ image.get_image_type_display }}</p>
+                  {% if image.is_primary %}
+                  <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mt-1">Primary</span>
+                  {% endif %}
+                  {% if image.description %}
+                  <p class="text-xs text-gray-500 mt-1">{{ image.description }}</p>
+                  {% endif %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+
           <div class="p-6">
             <h2 class="text-xl font-semibold mb-4">Identification and Technical Specifications</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -186,6 +214,57 @@
       </div>
     </div>
   </section>
+
+  <!-- Image Modal for larger view -->
+  <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
+    <div class="relative max-w-4xl max-h-full mx-4">
+      <button onclick="closeImageModal()" class="absolute top-4 right-4 text-white text-2xl font-bold hover:text-gray-300 z-10">
+        &times;
+      </button>
+      <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain rounded-lg">
+      <div id="modalCaption" class="text-white text-center mt-4"></div>
+    </div>
+  </div>
+
+  <script>
+    function openImageModal(imageUrl, imageType, description) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      const modalCaption = document.getElementById('modalCaption');
+      
+      modalImage.src = imageUrl;
+      modalImage.alt = imageType;
+      
+      let caption = imageType;
+      if (description) {
+        caption += ' - ' + description;
+      }
+      modalCaption.textContent = caption;
+      
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeImageModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+    
+    // Close modal when clicking outside the image
+    document.getElementById('imageModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeImageModal();
+      }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeImageModal();
+      }
+    });
+  </script>
 </body>
 </html>
 {% endblock %}

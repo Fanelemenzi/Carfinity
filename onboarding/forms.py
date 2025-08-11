@@ -1,6 +1,11 @@
 from django import forms
 from django.contrib.auth.models import User
 from django_countries.fields import CountryField
+from vehicles.models import Vehicle, VehicleImage
+from onboarding.models import PendingVehicleOnboarding
+from django.core.serializers import serialize
+import datetime
+import cloudinary.uploader
 
 # --- Step 1: Client Info ---
 class ClientForm(forms.Form):
@@ -242,3 +247,64 @@ class VehicleEquipmentForm(forms.Form):
     )
     has_cross_traffic_alert = forms.BooleanField(required=False, label="Rear Cross Traffic Alert")
     has_traffic_sign_recognition = forms.BooleanField(required=False, label="Traffic Sign Recognition")
+
+# --- Step 5: Vehicle Images ---
+class VehicleImagesForm(forms.Form):
+    front_image = forms.ImageField(
+        required=False,
+        label="Front View",
+        help_text="Front view of the vehicle"
+    )
+    rear_image = forms.ImageField(
+        required=False,
+        label="Rear View", 
+        help_text="Rear view of the vehicle"
+    )
+    left_side_image = forms.ImageField(
+        required=False,
+        label="Left Side View",
+        help_text="Left side view of the vehicle"
+    )
+    right_side_image = forms.ImageField(
+        required=False,
+        label="Right Side View",
+        help_text="Right side view of the vehicle"
+    )
+    interior_image = forms.ImageField(
+        required=False,
+        label="Interior View",
+        help_text="Interior view of the vehicle"
+    )
+    engine_bay_image = forms.ImageField(
+        required=False,
+        label="Engine Bay",
+        help_text="Engine bay view"
+    )
+    dashboard_image = forms.ImageField(
+        required=False,
+        label="Dashboard",
+        help_text="Dashboard and instrument cluster"
+    )
+    damage_images = forms.ImageField(
+        required=False,
+        label="Damage/Issues",
+        help_text="Any visible damage or issues"
+    )
+    document_images = forms.ImageField(
+        required=False,
+        label="Documents",
+        help_text="Registration, title, or other documents"
+    )
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        # Ensure at least one image is uploaded
+        image_fields = ['front_image', 'rear_image', 'left_side_image', 'right_side_image', 
+                       'interior_image', 'engine_bay_image', 'dashboard_image', 
+                       'damage_images', 'document_images']
+        
+        has_images = any(cleaned_data.get(field) for field in image_fields)
+        if not has_images:
+            raise forms.ValidationError("Please upload at least one image of the vehicle.")
+        
+        return cleaned_data

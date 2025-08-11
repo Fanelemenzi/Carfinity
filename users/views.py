@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
-from vehicles.models import Vehicle, VehicleStatus, VehicleOwnership
+from vehicles.models import Vehicle, VehicleStatus, VehicleOwnership, VehicleImage  # Add VehicleImage
 from maintenance_history.models import MaintenanceRecord, Inspection
 from vehicle_equip.models import PowertrainAndDrivetrain, ChassisSuspensionAndBraking, ElectricalSystem, ExteriorFeaturesAndBody, ActiveSafetyAndADAS
 from django.http import JsonResponse
@@ -139,6 +139,9 @@ def search_results(request):
         # Get inspections
         inspections = Inspection.objects.filter(vehicle=vehicle).order_by('-inspection_date')
         
+        # Get vehicle images - Add this section
+        vehicle_images = VehicleImage.objects.filter(vehicle=vehicle).order_by('-is_primary', '-uploaded_at')
+        
         # Get vehicle equipment information
         powertrain = PowertrainAndDrivetrain.objects.filter(vehicle=vehicle).first()
         chassis = ChassisSuspensionAndBraking.objects.filter(vehicle=vehicle).first()
@@ -151,6 +154,7 @@ def search_results(request):
             'status': vehicle_status,
             'maintenance_records': maintenance_records,
             'inspections': inspections,
+            'vehicle_images': vehicle_images,  # Add this to context
             'powertrain': powertrain,
             'chassis': chassis,
             'electrical': electrical,

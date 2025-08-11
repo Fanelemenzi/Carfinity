@@ -1,9 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from .models import PendingVehicleOnboarding
-from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm
+from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm, VehicleImagesForm
 import datetime
 from decimal import Decimal
+import cloudinary.uploader
 
 def serialize_form_data(cleaned_data):
     # Convert date/datetime/decimal fields to string for session storage
@@ -56,24 +57,59 @@ def onboard_equipment(request):
         form = VehicleEquipmentForm(request.POST)
         if form.is_valid():
             request.session['onboarding_equipment'] = serialize_form_data(form.cleaned_data)
-            return redirect('onboard_complete')
+            return redirect('onboard_images')
     else:
         form = VehicleEquipmentForm()
     return render(request, 'onboarding/onboard_vehicle_equipment.html', {'form': form})
+
+def onboard_images(request):
+    if request.method == 'POST':
+        form = VehicleImagesForm(request.POST, request.FILES)
+        if form.is_valid():
+            # Upload images to Cloudinary and store URLs
+            image_data = {}
+            for field_name, image_file in request.FILES.items():
+                if image_file:
+                    # Upload to Cloudinary
+                    result = cloudinary.uploader.upload(
+                        image_file,
+                        folder="vehicle_onboarding",
+                        public_id=f"{request.user.id}_{field_name}_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                        transformation=[
+                            {'width': 1200, 'height': 800, 'crop': 'limit'},
+                            {'quality': 'auto'}
+                        ]
+                    )
+                    image_data[field_name] = {
+                        'url': result['secure_url'],
+                        'public_id': result['public_id'],
+                        'filename': image_file.name
+                    }
+            
+            request.session['onboarding_images'] = image_data
+            return redirect('onboard_complete')
+    else:
+        form = VehicleImagesForm()
+    return render(request, 'onboarding/onboard_vehicle_images.html', {'form': form})
 
 def onboard_complete(request):
     client_data = request.session.get('onboarding_client', {})
     vehicle_data = request.session.get('onboarding_vehicle', {})
     status_data = request.session.get('onboarding_status', {})
     equipment_data = request.session.get('onboarding_equipment', {})
+    image_data = request.session.get('onboarding_images', {})
+    
     data = {**client_data, **vehicle_data, **status_data, **equipment_data}
+    
     # Fetch the User object using the stored ID
     client_user = User.objects.get(id=client_data.get('client')) if client_data.get('client') else None
+    
     # Build ownership_data (assign client and start_date)
     ownership_data = {
         'owner_id': client_data.get('client'),
         'start_date': vehicle_data.get('start_date'),
     }
+    
     PendingVehicleOnboarding.objects.create(
         submitted_by=request.user,
         client=client_user,
@@ -81,8 +117,12 @@ def onboard_complete(request):
         ownership_data=ownership_data,
         status_data=status_data,
         equipment_data=equipment_data,
+        image_data=image_data,
     )
-    for key in ['onboarding_client', 'onboarding_vehicle', 'onboarding_status', 'onboarding_equipment']:
+    
+    # Clear session data
+    for key in ['onboarding_client', 'onboarding_vehicle', 'onboarding_status', 'onboarding_equipment', 'onboarding_images']:
         if key in request.session:
             del request.session[key]
+    
     return render(request, 'onboarding/onboard_vehicle_done.html', {'data': data})

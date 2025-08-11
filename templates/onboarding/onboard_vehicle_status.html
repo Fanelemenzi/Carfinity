@@ -2,26 +2,31 @@
 {% block content %}
 <div class="max-w-xl mx-auto py-10">
   <!-- Stepper -->
-  <div class="flex items-center justify-between mb-8">
+  <div class="flex items-center justify-between mb-12">
     <div class="flex-1 flex items-center">
       <div class="flex flex-col items-center">
-        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">1</div>
-        <span class="text-xs mt-1 font-semibold text-blue-600">Client</span>
+        <div class="w-10 h-10 rounded-full bg-green-600 text-black flex items-center justify-center font-bold text-sm">✓</div>
+        <span class="text-sm mt-2 font-medium text-green-600">Client</span>
       </div>
-      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex-1 h-0.5 bg-green-600 mx-4"></div>
       <div class="flex flex-col items-center">
-        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">2</div>
-        <span class="text-xs mt-1 font-semibold text-blue-600">Vehicle</span>
+        <div class="w-10 h-10 rounded-full bg-green-600 text-black flex items-center justify-center font-bold text-sm">✓</div>
+        <span class="text-sm mt-2 font-medium text-green-600">Vehicle</span>
       </div>
-      <div class="flex-1 h-1 bg-blue-600 mx-2"></div>
+      <div class="flex-1 h-0.5 bg-green-600 mx-4"></div>
       <div class="flex flex-col items-center">
-        <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">3</div>
-        <span class="text-xs mt-1 font-semibold text-blue-600">Status</span>
+        <div class="w-10 h-10 rounded-full bg-blue-600 text-black flex items-center justify-center font-bold text-sm">3</div>
+        <span class="text-sm mt-2 font-medium text-blue-600">Status</span>
       </div>
-      <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+      <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
       <div class="flex flex-col items-center">
-        <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold">4</div>
-        <span class="text-xs mt-1 font-semibold text-gray-500">Equipment</span>
+        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">4</div>
+        <span class="text-sm mt-2 font-medium text-gray-500">Equipment</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-gray-200 mx-4"></div>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold text-sm">5</div>
+        <span class="text-sm mt-2 font-medium text-gray-500">Images</span>
       </div>
     </div>
   </div>
@@ -36,7 +41,7 @@
     {% include 'onboarding/field.html' with field=form.owner_history %}
     <div class="flex justify-between pt-6">
       <button name="wizard_goto_step" type="submit" value="prev" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold shadow hover:bg-gray-400 transition">Back</button>
-      <button type="submit" class="px-6 py-3 bg-blue-600 text-black rounded-lg font-semibold shadow hover:bg-blue-700 transition">Next</button>
+      <button type="submit" class="px-6 py-3 bg-black text-white rounded-lg font-semibold shadow hover:bg-gray-800 transition">Next</button>
     </div>
   </form>
 </div>

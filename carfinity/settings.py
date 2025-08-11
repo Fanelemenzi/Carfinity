@@ -100,7 +100,7 @@ DATABASES = {
     'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
 }
 
-#database_url = os.environ.get("DATABASE_URL")
+database_url = os.environ.get("DATABASE_URL")
 #DATABASES ["default"] = dj_database_url.parse("postgresql://neondb_owner:npg_YtSVe2TFHml6@ep-aged-star-a8fds20c-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 # Password validation
