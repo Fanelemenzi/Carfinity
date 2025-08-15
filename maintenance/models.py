@@ -21,8 +21,23 @@ class Part(models.Model):
     manufacturer = models.CharField(max_length=100, blank=True, null=True)
     part_number = models.CharField(max_length=100, blank=True, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    stock_quantity = models.PositiveIntegerField(default=0)
+    minimum_stock_level = models.PositiveIntegerField(default=5)
+    category = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def is_low_stock(self):
+        return self.stock_quantity <= self.minimum_stock_level
+        
+    def reduce_stock(self, quantity):
+        """Safely reduce stock with validation"""
+        if self.stock_quantity >= quantity:
+            self.stock_quantity -= quantity
+            self.save()
+            return True
+        return False
 
     def __str__(self):
         return self.name

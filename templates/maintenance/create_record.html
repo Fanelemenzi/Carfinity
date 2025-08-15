@@ -14,6 +14,57 @@
     <link rel="stylesheet" href="{% static 'css\tailwind\tailwind.css' %}"/>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png"/>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer="defer"></script>
+    
+    <style>
+      
+      /* Visual feedback for form validation */
+      .field-error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+        background-color: #fef2f2;
+      }
+      
+      .field-success {
+        border-color: #10b981 !important;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+      }
+      
+      .field-error-message {
+        animation: slideInError 0.3s ease-out;
+      }
+      
+      @keyframes slideInError {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      
+      /* Form submission states */
+      .form-submitting {
+        pointer-events: none;
+        opacity: 0.7;
+      }
+      
+      .form-submitting .btn-submit {
+        cursor: not-allowed;
+      }
+      
+      /* Validation summary styling */
+      .validation-summary {
+        animation: slideInFade 0.3s ease-out;
+      }
+      
+      /* Focus states for better accessibility */
+      .form-field:focus-within {
+        transform: translateY(-1px);
+        transition: transform 0.2s ease;
+      }
+    </style>
   </head>
   <body class="antialiased bg-body text-body font-body">
     <div>
@@ -27,55 +78,121 @@
 
           <form method="post" action="" class="max-w-md xl:max-w-3xl mx-auto">
             {% csrf_token %}
+            
+            <!-- General Form Errors -->
+            {% if form.non_field_errors %}
+              <div class="validation-summary mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="flex">
+                  <svg class="w-5 h-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
             <!-- Vehicle -->
-            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
+            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg form-field {% if form.vehicle.errors %}border-2 border-red-300{% endif %}">
               <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Vehicle</span>
               {{ form.vehicle }}
               <div class="text-gray-500 text-xs mt-1">Select the vehicle for which this maintenance record applies.</div>
               {% if form.vehicle.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.vehicle.errors }}</div>
+                <div class="field-error-message text-red-600 text-sm mt-2 font-medium">
+                  {% for error in form.vehicle.errors %}
+                    <p class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ error }}
+                    </p>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
 
             <!-- Scheduled Maintenance -->
-            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
+            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg form-field {% if form.scheduled_maintenance.errors %}border-2 border-red-300{% endif %}">
               <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Scheduled Maintenance</span>
               {{ form.scheduled_maintenance }}
               <div class="text-gray-500 text-xs mt-1">Choose the scheduled maintenance task (filtered by vehicle).</div>
               {% if form.scheduled_maintenance.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.scheduled_maintenance.errors }}</div>
+                <div class="field-error-message text-red-600 text-sm mt-2 font-medium">
+                  {% for error in form.scheduled_maintenance.errors %}
+                    <p class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ error }}
+                    </p>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
 
             <!-- Work Done -->
-            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
+            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg form-field {% if form.work_done.errors %}border-2 border-red-300{% endif %}">
               <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Work Done</span>
               {{ form.work_done }}
               <div class="text-gray-500 text-xs mt-1">Describe the work performed during this maintenance.</div>
               {% if form.work_done.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.work_done.errors }}</div>
+                <div class="field-error-message text-red-600 text-sm mt-2 font-medium">
+                  {% for error in form.work_done.errors %}
+                    <p class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ error }}
+                    </p>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
 
             <!-- Mileage -->
-            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
+            <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg form-field {% if form.mileage.errors %}border-2 border-red-300{% endif %}">
               <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Mileage</span>
               {{ form.mileage }}
               <div class="text-gray-500 text-xs mt-1">Enter the vehicle's mileage at the time of service.</div>
               {% if form.mileage.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.mileage.errors }}</div>
+                <div class="field-error-message text-red-600 text-sm mt-2 font-medium">
+                  {% for error in form.mileage.errors %}
+                    <p class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ error }}
+                    </p>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
 
             <!-- Notes -->
-            <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg">
+            <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg form-field {% if form.notes.errors %}border-2 border-red-300{% endif %}">
               <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Notes</span>
               {{ form.notes }}
               <div class="text-gray-500 text-xs mt-1">Additional notes or observations (optional).</div>
               {% if form.notes.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.notes.errors }}</div>
+                <div class="field-error-message text-red-600 text-sm mt-2 font-medium">
+                  {% for error in form.notes.errors %}
+                    <p class="flex items-center">
+                      <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                      </svg>
+                      {{ error }}
+                    </p>
+                  {% endfor %}
+                </div>
               {% endif %}
             </div>
+
+
 
             <div class="text-center">
               <button type="submit" class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded">
@@ -88,8 +205,9 @@
             </div>
           </form>
           
-          <!-- AJAX script to filter scheduled maintenance based on vehicle -->
+          <!-- Form Validation and AJAX Scripts -->
           <script>
+          // Vehicle-based scheduled maintenance filtering
           document.getElementById('id_vehicle').addEventListener('change', function() {
             const vehicleId = this.value;
             const scheduledField = document.getElementById('id_scheduled_maintenance');
@@ -105,7 +223,241 @@
                     option.textContent = `${item.task.name} - Due: ${item.due_date}`;
                     scheduledField.appendChild(option);
                   });
+                })
+                .catch(error => {
+                  console.error('Error fetching scheduled maintenance:', error);
                 });
+            }
+          });
+
+          // Enhanced form validation
+          document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitButton = form.querySelector('button[type="submit"]');
+            
+            // Real-time field validation
+            const requiredFields = ['id_vehicle', 'id_work_done', 'id_mileage'];
+            
+            requiredFields.forEach(fieldId => {
+              const field = document.getElementById(fieldId);
+              if (field) {
+                field.addEventListener('blur', function() {
+                  validateField(this);
+                });
+                
+                field.addEventListener('input', function() {
+                  clearFieldError(this);
+                });
+              }
+            });
+            
+            // Form submission validation
+            form.addEventListener('submit', function(e) {
+              let isValid = true;
+              const errors = [];
+              
+              // Validate required fields
+              requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !validateField(field)) {
+                  isValid = false;
+                }
+              });
+              
+              // Validate mileage is a positive number
+              const mileageField = document.getElementById('id_mileage');
+              if (mileageField && mileageField.value) {
+                const mileage = parseInt(mileageField.value);
+                if (isNaN(mileage) || mileage < 0) {
+                  showFieldError(mileageField, 'Mileage must be a positive number');
+                  isValid = false;
+                }
+              }
+              
+
+              
+              // Show general form errors if any
+              if (errors.length > 0) {
+                showFormErrors(errors);
+              }
+              
+              if (!isValid) {
+                e.preventDefault();
+                
+                // Scroll to first error
+                const firstError = form.querySelector('.field-error');
+                if (firstError) {
+                  firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+                
+                return false;
+              }
+              
+              // Show loading state
+              showSubmitLoading();
+            });
+            
+            function validateField(field) {
+              const value = field.value.trim();
+              const fieldName = getFieldDisplayName(field);
+              
+              if (field.hasAttribute('required') || requiredFields.includes(field.id)) {
+                if (!value) {
+                  showFieldError(field, `${fieldName} is required`);
+                  return false;
+                }
+              }
+              
+              clearFieldError(field);
+              return true;
+            }
+            
+            function showFieldError(field, message) {
+              clearFieldError(field);
+              
+              field.classList.add('field-error');
+              field.classList.remove('field-success');
+              
+              // Create error message element
+              const errorDiv = document.createElement('div');
+              errorDiv.className = 'field-error-message text-red-500 text-sm mt-1';
+              errorDiv.textContent = message;
+              
+              // Insert after the field
+              field.parentNode.appendChild(errorDiv);
+            }
+            
+            function clearFieldError(field) {
+              field.classList.remove('field-error');
+              field.classList.add('field-success');
+              
+              // Remove existing error message
+              const existingError = field.parentNode.querySelector('.field-error-message');
+              if (existingError) {
+                existingError.remove();
+              }
+            }
+            
+            function getFieldDisplayName(field) {
+              const labels = {
+                'id_vehicle': 'Vehicle',
+                'id_scheduled_maintenance': 'Scheduled Maintenance',
+                'id_work_done': 'Work Done',
+                'id_mileage': 'Mileage',
+                'id_notes': 'Notes'
+              };
+              return labels[field.id] || 'Field';
+            }
+            
+            function showFormErrors(errors) {
+              // Create or update general error container
+              let errorContainer = document.getElementById('form-errors');
+              if (!errorContainer) {
+                errorContainer = document.createElement('div');
+                errorContainer.id = 'form-errors';
+                errorContainer.className = 'mb-6 p-4 bg-red-50 border border-red-200 rounded-lg';
+                
+                // Insert before the submit button
+                const submitContainer = form.querySelector('.text-center');
+                form.insertBefore(errorContainer, submitContainer);
+              }
+              
+              errorContainer.innerHTML = `
+                <div class="flex">
+                  <svg class="w-5 h-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                  </svg>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                      <ul class="list-disc list-inside space-y-1">
+                        ${errors.map(error => `<li>${error}</li>`).join('')}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              `;
+              
+              // Scroll to error container
+              errorContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            
+            function showSubmitLoading() {
+              const buttonContent = submitButton.querySelector('div div');
+              const originalText = buttonContent.innerHTML;
+              
+              // Add loading class to button
+              submitButton.classList.add('loading');
+              form.classList.add('form-submitting');
+              
+              buttonContent.innerHTML = `
+                <div class="flex items-center justify-center">
+                  <div class="loading-spinner"></div>
+                  <span class="text-base font-semibold uppercase">Saving...</span>
+                </div>
+              `;
+              
+              submitButton.disabled = true;
+              
+              // Add loading overlay to form
+              const loadingOverlay = document.createElement('div');
+              loadingOverlay.className = 'loading-overlay';
+              loadingOverlay.innerHTML = `
+                <div class="loading-content">
+                  <div class="loading-spinner"></div>
+                  <div class="loading-text">Saving maintenance record...</div>
+                </div>
+              `;
+              form.style.position = 'relative';
+              form.appendChild(loadingOverlay);
+              
+              // Restore original state after 10 seconds (fallback)
+              setTimeout(() => {
+                buttonContent.innerHTML = originalText;
+                submitButton.disabled = false;
+                submitButton.classList.remove('loading');
+                form.classList.remove('form-submitting');
+                if (loadingOverlay.parentNode) {
+                  loadingOverlay.parentNode.removeChild(loadingOverlay);
+                }
+              }, 10000);
+            }
+            
+            // Preserve form state on page reload (for validation errors)
+            window.addEventListener('beforeunload', function() {
+              const formData = new FormData(form);
+              const formState = {};
+              
+              for (let [key, value] of formData.entries()) {
+                formState[key] = value;
+              }
+              
+
+              
+              sessionStorage.setItem('maintenanceFormState', JSON.stringify(formState));
+            });
+            
+            // Restore form state on page load or after validation errors
+            const savedState = sessionStorage.getItem('maintenanceFormState');
+            
+            if (savedState) {
+              // Restore from session storage (normal page reload)
+              try {
+                const formState = JSON.parse(savedState);
+                
+                // Restore form fields
+                Object.keys(formState).forEach(key => {
+                  const field = form.querySelector(`[name="${key}"]`);
+                  if (field && formState[key]) {
+                    field.value = formState[key];
+                  }
+                });
+                
+                // Clear saved state after restoration
+                sessionStorage.removeItem('maintenanceFormState');
+              } catch (error) {
+                console.error('Error restoring form state:', error);
+              }
             }
           });
           </script>
