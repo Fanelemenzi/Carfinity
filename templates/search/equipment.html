@@ -13,10 +13,34 @@
             <h3 class="text-base font-bold text-gray-800">Engine</h3>
             <p class="text-gray-600 mt-1">{{ powertrain.base_engine }}</p>
         </div>
+        {% if powertrain.engine_displacement %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Displacement</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.engine_displacement }}L</p>
+        </div>
+        {% endif %}
+        {% if powertrain.engine_power %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Power</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.engine_power }} HP</p>
+        </div>
+        {% endif %}
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Transmission</h3>
             <p class="text-gray-600 mt-1">{{ powertrain.get_transmission_type_display }}</p>
         </div>
+        {% if powertrain.transmission_specifications %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Trans Specs</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.transmission_specifications }}</p>
+        </div>
+        {% endif %}
+        {% if powertrain.gear_count %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Gears</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.gear_count }}-Speed</p>
+        </div>
+        {% endif %}
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Drive Layout</h3>
             <p class="text-gray-600 mt-1">{{ powertrain.get_drive_layout_display }}</p>
@@ -29,7 +53,53 @@
             <h3 class="text-base font-bold text-gray-800">Emissions</h3>
             <p class="text-gray-600 mt-1">{{ powertrain.get_emissions_standard_display }}</p>
         </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Start-Stop</h3>
+            <p class="mt-1">
+                {% if powertrain.has_start_stop %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Regen Braking</h3>
+            <p class="mt-1">
+                {% if powertrain.has_regenerative_braking %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        {% if powertrain.gearshift_position %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Gearshift Position</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.get_gearshift_position_display }}</p>
+        </div>
+        {% endif %}
+        {% if powertrain.gearshift_material %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Gearshift Material</h3>
+            <p class="text-gray-600 mt-1">{{ powertrain.gearshift_material }}</p>
+        </div>
+        {% endif %}
     </div>
+    {% if powertrain.notes %}
+    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+        <h4 class="text-sm font-semibold text-gray-700 mb-2">Additional Notes:</h4>
+        <p class="text-sm text-gray-600">{{ powertrain.notes }}</p>
+    </div>
+    {% endif %}
     {% endif %}
     <br></br>
 
@@ -57,6 +127,38 @@
             <h3 class="text-base font-bold text-gray-800">Brake System</h3>
             <p class="text-gray-600 mt-1">{{ chassis.get_brake_systems_display }}</p>
         </div>
+        {% if chassis.parking_brake_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Parking Brake</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_parking_brake_type_display }}</p>
+        </div>
+        {% endif %}
+        {% if chassis.steering_system %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Steering System</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_steering_system_display }}</p>
+        </div>
+        {% endif %}
+        {% if chassis.steering_wheel_features %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Steering Features</h3>
+            <p class="text-gray-600 mt-1">{{ chassis.get_steering_wheel_features_display }}</p>
+        </div>
+        {% endif %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Park Distance Control</h3>
+            <p class="mt-1">
+                {% if chassis.has_park_distance_control %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
     </div>
     {% endif %}
     <br></br>
@@ -74,6 +176,38 @@
             <p class="text-gray-600 mt-1">{{ electrical.primary_battery_capacity }} Ah</p>
         </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Second Battery</h3>
+            <p class="mt-1">
+                {% if electrical.has_second_battery %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Installed
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Installed
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        {% if electrical.has_second_battery and electrical.second_battery_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Second Battery Type</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_second_battery_type_display }}</p>
+        </div>
+        {% endif %}
+        {% if electrical.has_second_battery and electrical.second_battery_capacity %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Second Battery Capacity</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.second_battery_capacity }} Ah</p>
+        </div>
+        {% endif %}
+        {% if electrical.alternator_output %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Alternator Output</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.alternator_output }} A</p>
+        </div>
+        {% endif %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Operating Voltage</h3>
             <p class="text-gray-600 mt-1">{{ electrical.get_operating_voltage_display }}</p>
         </div>
@@ -82,9 +216,49 @@
             <p class="text-gray-600 mt-1">{{ electrical.get_headlight_type_display }}</p>
         </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Auto Headlights</h3>
+            <p class="mt-1">
+                {% if electrical.headlight_control %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Headlight Range Control</h3>
+            <p class="mt-1">
+                {% if electrical.headlight_range_control %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Instrument Cluster</h3>
             <p class="text-gray-600 mt-1">{{ electrical.get_instrument_cluster_type_display }}</p>
         </div>
+        {% if electrical.socket_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Socket Type</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_socket_type_display }}</p>
+        </div>
+        {% endif %}
+        {% if electrical.horn_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Horn Type</h3>
+            <p class="text-gray-600 mt-1">{{ electrical.get_horn_type_display }}</p>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
     <br></br>
@@ -97,14 +271,200 @@
             <h3 class="text-base font-bold text-gray-800">Body Style</h3>
             <p class="text-gray-600 mt-1">{{ exterior.get_body_style_display }}</p>
         </div>
+        {% if exterior.windshield_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Windshield Type</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_windshield_type_display }}</p>
+        </div>
+        {% endif %}
+        {% if exterior.side_windows_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Side Windows</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_side_windows_type_display }}</p>
+        </div>
+        {% endif %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Chrome Package</h3>
+            <p class="mt-1">
+                {% if exterior.has_chrome_package %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Roof Rails</h3>
+            <p class="mt-1">
+                {% if exterior.has_roof_rails %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Roof Type</h3>
             <p class="text-gray-600 mt-1">{{ exterior.get_roof_type_display }}</p>
         </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Front Fog Lamps</h3>
+            <p class="mt-1">
+                {% if exterior.has_front_fog_lamp %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Rear Fog Lamp</h3>
+            <p class="mt-1">
+                {% if exterior.has_rear_fog_lamp %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Headlight Range Control</h3>
+            <p class="mt-1">
+                {% if exterior.has_headlight_range_control %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Scuff Plates</h3>
+            <p class="mt-1">
+                {% if exterior.has_scuff_plates %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Loading Edge Protection</h3>
+            <p class="mt-1">
+                {% if exterior.has_loading_edge_protection %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Underbody Guard</h3>
+            <p class="mt-1">
+                {% if exterior.has_front_underbody_guard %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Wheel Type</h3>
             <p class="text-gray-600 mt-1">{{ exterior.get_wheel_type_display }}</p>
         </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Wheel Covers</h3>
+            <p class="mt-1">
+                {% if exterior.has_wheel_covers %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Lockable Wheel Bolts</h3>
+            <p class="mt-1">
+                {% if exterior.has_lockable_wheel_bolts %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Spare Wheel</h3>
+            <p class="mt-1">
+                {% if exterior.has_spare_wheel %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Trailer Hitch</h3>
+            <p class="mt-1">
+                {% if exterior.has_trailer_hitch %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        {% if exterior.tailgate_lock_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Tailgate Lock</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_tailgate_lock_type_display }}</p>
+        </div>
+        {% endif %}
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Left Mirror</h3>
             <p class="text-gray-600 mt-1">{{ exterior.get_left_mirror_type_display }}</p>
@@ -113,6 +473,12 @@
             <h3 class="text-base font-bold text-gray-800">Right Mirror</h3>
             <p class="text-gray-600 mt-1">{{ exterior.get_right_mirror_type_display }}</p>
         </div>
+        {% if exterior.antenna_type %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Antenna Type</h3>
+            <p class="text-gray-600 mt-1">{{ exterior.get_antenna_type_display }}</p>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
     <br></br>
@@ -126,6 +492,36 @@
             <p class="text-gray-600 mt-1">{{ safety.get_cruise_control_system_display }}</p>
         </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Speed Limiter</h3>
+            <p class="mt-1">
+                {% if safety.has_speed_limiter %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Park Assist</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_park_distance_control_display }}</p>
+        </div>
+        {% if safety.driver_alert_system %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Driver Alert</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_driver_alert_system_display }}</p>
+        </div>
+        {% endif %}
+        {% if safety.tire_pressure_monitoring %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">TPMS</h3>
+            <p class="text-gray-600 mt-1">{{ safety.get_tire_pressure_monitoring_display }}</p>
+        </div>
+        {% endif %}
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
             <h3 class="text-base font-bold text-gray-800">Lane Assist</h3>
             <p class="text-gray-600 mt-1">{{ safety.get_lane_assist_system_display }}</p>
         </div>
@@ -138,8 +534,32 @@
             <p class="text-gray-600 mt-1">{{ safety.get_collision_warning_system_display }}</p>
         </div>
         <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
-            <h3 class="text-base font-bold text-gray-800">Park Assist</h3>
-            <p class="text-gray-600 mt-1">{{ safety.get_park_distance_control_display }}</p>
+            <h3 class="text-base font-bold text-gray-800">Cross Traffic Alert</h3>
+            <p class="mt-1">
+                {% if safety.has_cross_traffic_alert %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
+        </div>
+        <div class="p-1 border rounded-xl shadow-sm hover:shadow-md transition">
+            <h3 class="text-base font-bold text-gray-800">Traffic Sign Recognition</h3>
+            <p class="mt-1">
+                {% if safety.has_traffic_sign_recognition %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        ✓ Available
+                    </span>
+                {% else %}
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        ✗ Not Available
+                    </span>
+                {% endif %}
+            </p>
         </div>
     </div>
     {% endif %}

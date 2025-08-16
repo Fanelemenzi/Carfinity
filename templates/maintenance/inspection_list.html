@@ -1,0 +1,145 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Inspections{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Vehicle Inspections</h1>
+        <a href="{% url 'admin:maintenance_history_inspection_add' %}"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
+            Add New Inspection
+        </a>
+    </div>
+
+    {% if inspections %}
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Inspection #
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Vehicle (VIN)
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Result
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Rating
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            PDF Report
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for inspection in inspections %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ inspection.inspection_number }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ inspection.vehicle.vin }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ inspection.inspection_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    {% if inspection.inspection_result == 'PAS' %}bg-green-100 text-green-800
+                                    {% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ inspection.get_inspection_result_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ inspection.carfinity_rating }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if inspection.has_pdf %}
+                            <div class="flex items-center space-x-2">
+                                <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-green-600">Available</span>
+                                {% if inspection.pdf_file_size_mb %}
+                                <span class="text-xs text-gray-400">({{ inspection.pdf_file_size_mb }} MB)</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400">No PDF</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <a href="{% url 'maintenance_history:inspection_detail' inspection.pk %}"
+                                    class="text-blue-600 hover:text-blue-900">View</a>
+                                {% if inspection.has_pdf %}
+                                <a href="{% url 'maintenance_history:inspection_pdf_viewer' inspection.pk %}"
+                                    class="text-green-600 hover:text-green-900" target="_blank">PDF</a>
+                                <a href="{% url 'maintenance_history:inspection_pdf_download' inspection.pk %}"
+                                    class="text-purple-600 hover:text-purple-900">Download</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-6 flex justify-center">
+        <nav class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}"
+                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Previous</a>
+            {% endif %}
+
+            <span class="px-3 py-2 text-sm text-gray-700">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}"
+                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}"
+                class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700">Last</a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900">No inspections found</h3>
+        <p class="mt-1 text-sm text-gray-500">Get started by creating a new inspection.</p>
+        <div class="mt-6">
+            <a href="{% url 'admin:maintenance_history_inspection_add' %}"
+                class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                Add New Inspection
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

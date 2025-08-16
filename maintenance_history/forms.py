@@ -1,7 +1,7 @@
 from django import forms
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from .models import MaintenanceRecord, PartUsage
+from .models import MaintenanceRecord, PartUsage, Inspection
 from maintenance.models import Part
 import json
 
@@ -162,3 +162,77 @@ class MaintenanceRecordForm(forms.ModelForm):
             'parts': summary,
             'total_cost': total_cost
         }
+
+class InspectionForm(forms.ModelForm):
+    class Meta:
+        model = Inspection
+        fields = [
+            'vehicle',
+            'inspection_number',
+            'year',
+            'inspection_result',
+            'carfinity_rating',
+            'inspection_date',
+            'link_to_results',
+            'inspection_pdf'
+        ]
+        widgets = {
+            'vehicle': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'inspection_number': forms.TextInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Enter inspection number'
+            }),
+            'year': forms.NumberInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'min': '1900',
+                'max': '2100'
+            }),
+            'inspection_result': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'carfinity_rating': forms.TextInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Enter Carfinity rating'
+            }),
+            'inspection_date': forms.DateInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'type': 'date'
+            }),
+            'link_to_results': forms.URLInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'https://example.com/inspection-results'
+            }),
+            'inspection_pdf': forms.FileInput(attrs={
+                'class': 'w-full mt-1 block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100',
+                'accept': '.pdf'
+            })
+        }
+    
+    def clean_inspection_pdf(self):
+        pdf_file = self.cleaned_data.get('inspection_pdf')
+        
+        if pdf_file:
+            # Check file size (limit to 10MB)
+            if pdf_file.size > 10 * 1024 * 1024:
+                raise ValidationError("PDF file size cannot exceed 10MB.")
+            
+            # Check file extension
+            if not pdf_file.name.lower().endswith('.pdf'):
+                raise ValidationError("Only PDF files are allowed.")
+        
+        return pdf_file
+    
+    def clean_inspection_number(self):
+        inspection_number = self.cleaned_data.get('inspection_number')
+        
+        # Check for uniqueness (excluding current instance if editing)
+        queryset = Inspection.objects.filter(inspection_number=inspection_number)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise ValidationError("An inspection with this number already exists.")
+        
+        return inspection_number
