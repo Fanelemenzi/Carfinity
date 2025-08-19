@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ organization.name }}</h3>
+                    <div class="card-tools">
+                        {% if organization.is_insurance_provider %}
+                            <span class="badge badge-success">Insurance Provider</span>
+                        {% endif %}
+                        <span class="badge badge-info">{{ organization.get_organization_type_display }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Contact Information</h5>
+                            <p><strong>Email:</strong> {{ organization.contact_email|default:"-" }}</p>
+                            <p><strong>Phone:</strong> {{ organization.contact_phone|default:"-" }}</p>
+                            
+                            {% if organization.address %}
+                            <h5>Address</h5>
+                            <p>
+                                {{ organization.address }}<br>
+                                {{ organization.city }}, {{ organization.state }} {{ organization.postal_code }}<br>
+                                {{ organization.country }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Linked Groups</h5>
+                            {% for group in linked_groups %}
+                                <span class="badge badge-info mr-1">{{ group.name }}</span>
+                            {% empty %}
+                                <p class="text-muted">No groups linked</p>
+                            {% endfor %}
+                            
+                            {% if organization.is_insurance_provider and insurance_details %}
+                            <h5 class="mt-3">Insurance Details</h5>
+                            <p><strong>NAIC Number:</strong> {{ insurance_details.naic_number|default:"-" }}</p>
+                            <p><strong>A.M. Best Rating:</strong> {{ insurance_details.am_best_rating|default:"-" }}</p>
+                            <p><strong>Total Policies:</strong> {{ insurance_details.total_policies }}</p>
+                            <p><strong>Premium Volume:</strong> ${{ insurance_details.total_premium_volume|floatformat:2 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Members ({{ members.count }})</h3>
+                </div>
+                <div class="card-body">
+                    {% for member in members %}
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <div>
+                            <strong>{{ member.user.get_full_name|default:member.user.email }}</strong><br>
+                            <small class="text-muted">{{ member.get_role_display }}</small>
+                        </div>
+                        <span class="badge badge-success">Active</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No active members</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h3 class="card-title">Vehicles ({{ vehicles.count }})</h3>
+                </div>
+                <div class="card-body">
+                    {% for vehicle in vehicles %}
+                    <div class="mb-2">
+                        <strong>{{ vehicle.vehicle.vin }}</strong><br>
+                        <small class="text-muted">
+                            Assigned to: {{ vehicle.assigned_to.get_full_name|default:"Unassigned" }}
+                        </small>
+                    </div>
+                    {% empty %}
+                    <p class="text-muted">No vehicles assigned</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

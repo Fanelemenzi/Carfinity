@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Inspection Record - Maintenance History{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-6">
+            <h1 class="text-3xl font-bold text-gray-900">Create Inspection Record</h1>
+            <p class="mt-2 text-gray-600">Create a basic inspection record before filling out the detailed 50-point checklist</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="bg-white shadow rounded-lg p-6">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.vehicle.label_tag }}
+                        {{ form.vehicle }}
+                        {% if form.vehicle.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.vehicle.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.inspection_number.label_tag }}
+                        {{ form.inspection_number }}
+                        {% if form.inspection_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.inspection_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.year.label_tag }}
+                        {{ form.year }}
+                        {% if form.year.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.year.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.inspection_date.label_tag }}
+                        {{ form.inspection_date }}
+                        {% if form.inspection_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.inspection_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.inspection_result.label_tag }}
+                        {{ form.inspection_result }}
+                        {% if form.inspection_result.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.inspection_result.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {{ form.carfinity_rating.label_tag }}
+                        {{ form.carfinity_rating }}
+                        {% if form.carfinity_rating.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.carfinity_rating.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    {{ form.link_to_results.label_tag }}
+                    {{ form.link_to_results }}
+                    {% if form.link_to_results.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.link_to_results.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    {{ form.inspection_pdf.label_tag }}
+                    {{ form.inspection_pdf }}
+                    {% if form.inspection_pdf.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.inspection_pdf.errors.0 }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Upload the inspection report as a PDF file (max 10MB)</p>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-4">
+                <a href="{% url 'maintenance_history:inspection_list' %}" 
+                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Create Inspection Record
+                </button>
+            </div>
+        </form>
+
+        <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Next Step</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>After creating this inspection record, you can create a detailed 50-point inspection form to document the complete vehicle inspection process.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

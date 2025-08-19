@@ -31,7 +31,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 #'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'True'
+DEBUG = 'False'
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 #ALLOWED_HOSTS = ['*']
@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'cloudinary',
+    'rest_framework',
     'cloudinary_storage',
     'django_json_widget',
     'django_countries',
@@ -58,6 +59,7 @@ INSTALLED_APPS = [
     'maintenance_history',
     'vehicle_equip',
     'onboarding',
+    'insurance_app',
 ]
 
 MIDDLEWARE = [
@@ -153,6 +155,47 @@ CLOUDINARY_STORAGE = {
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
     'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 25
+}
+
+# Celery Configuration (if using background tasks)
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat Schedule for periodic tasks
+# from celery.schedules import crontab
+# CELERY_BEAT_SCHEDULE = {
+#     'calculate-daily-risk-scores': {
+#         'task': 'insurance.tasks.calculate_daily_risk_scores',
+#         'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
+#     },
+#     'update-compliance-scores': {
+#         'task': 'insurance.tasks.update_compliance_scores',
+#         'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM
+#     },
+#     'generate-maintenance-alerts': {
+#         'task': 'insurance.tasks.generate_maintenance_alerts',
+#         'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
+#     },
+#     'check-condition-deterioration': {
+#         'task': 'insurance.tasks.check_condition_deterioration',
+#         'schedule': crontab(hour=12, minute=0),  # Daily at noon
+#     },
+# }
 
 #User authethication
 #AUTH_USER_MODEL = 'user.User'

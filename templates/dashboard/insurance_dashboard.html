@@ -1,0 +1,503 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Risk Assessment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-shield-alt text-primary mr-2"></i>
+                            Insurance Risk Dashboard
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+                    </button>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-clock mr-1"></i>
+                        Last updated: <span id="lastUpdated">2 minutes ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Portfolio Compliance Rate -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Portfolio Compliance</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="portfolioCompliance">{{ avg_compliance_rate|floatformat:1 }}%</p>
+                        <p class="text-xs text-success">Updated daily</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Average Vehicle Health Index -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-car text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Avg. Vehicle Health</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="avgHealthIndex">{{ avg_health_index|floatformat:1 }}</p>
+                        <p class="text-xs text-warning">Out of 100</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- High Risk Vehicles -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-danger bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">High Risk Vehicles</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="highRiskCount">{{ high_risk_vehicles }}</p>
+                        <p class="text-xs text-danger">Risk score ≥ 7.0</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Alerts -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-bell text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Active Alerts</p>
+                        <p class="text-2xl font-semibold text-gray-900" id="activeAlerts">{{ active_alerts.count }}</p>
+                        <p class="text-xs text-gray-500">12 critical</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Maintenance Compliance Trend -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Maintenance Compliance Trend</h3>
+                    <div class="flex space-x-2">
+                        <button class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 hover:bg-gray-200">7D</button>
+                        <button class="text-xs bg-primary px-2 py-1 rounded text-white">30D</button>
+                        <button class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 hover:bg-gray-200">90D</button>
+                    </div>
+                </div>
+                <canvas id="complianceChart" height="200"></canvas>
+            </div>
+
+            <!-- Vehicle Condition Distribution -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Vehicle Condition Distribution</h3>
+                <div class="flex justify-center mb-4">
+                    <canvas id="conditionChart" width="300" height="200"></canvas>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-success rounded-full mr-2"></div>
+                        <span>Excellent: <strong>145</strong></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
+                        <span>Good: <strong>289</strong></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-warning rounded-full mr-2"></div>
+                        <span>Fair: <strong>67</strong></span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-3 h-3 bg-danger rounded-full mr-2"></div>
+                        <span>Poor: <strong>23</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- High Risk Vehicles Table -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">High Risk Vehicles</h3>
+                    <p class="text-sm text-gray-500">Vehicles requiring immediate attention</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Score</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Issue</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for vehicle in high_risk_vehicles_list %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</div>
+                                    <div class="text-sm text-gray-500">VIN: {{ vehicle.vin }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if vehicle.risk_score >= 8 %}bg-red-500 text-white
+                                        {% elif vehicle.risk_score >= 7 %}bg-orange-500 text-white
+                                        {% else %}bg-yellow-500 text-white{% endif %}">
+                                        {{ vehicle.risk_score }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {% if vehicle.overdue_maintenance_count > 0 %}
+                                        {{ vehicle.overdue_maintenance_count }} overdue maintenance
+                                    {% elif vehicle.recent_accidents_count > 0 %}
+                                        {{ vehicle.recent_accidents_count }} recent accidents
+                                    {% else %}
+                                        Poor condition score
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <a href="{% url 'insurance:vehicle_detail' vehicle.pk %}" class="text-primary hover:text-blue-700">View Details</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                                    No high-risk vehicles found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Recent Alerts -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Recent Risk Alerts</h3>
+                    <p class="text-sm text-gray-500">Latest system-generated alerts</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-danger rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Critical maintenance overdue</p>
+                                <p class="text-sm text-gray-500">2018 Honda Civic - Brake service overdue by 45 days</p>
+                                <p class="text-xs text-gray-400">2 hours ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-warning rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Vehicle condition deterioration</p>
+                                <p class="text-sm text-gray-500">2019 Toyota Camry - Health index dropped to 65</p>
+                                <p class="text-xs text-gray-400">4 hours ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-warning rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Compliance rate drop</p>
+                                <p class="text-sm text-gray-500">Policy #INS-2024-001 - Compliance dropped below 80%</p>
+                                <p class="text-xs text-gray-400">6 hours ago</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">High mileage alert</p>
+                                <p class="text-sm text-gray-500">2017 Ford F-150 - Mileage exceeds 150,000 miles</p>
+                                <p class="text-xs text-gray-400">8 hours ago</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6">
+                        <button class="w-full text-center text-sm text-primary hover:text-blue-700 font-medium">
+                            View All Alerts
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accident Correlation Analysis -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Accident Correlation with Maintenance History</h3>
+                    <p class="text-sm text-gray-500">Analysis of maintenance-related accidents over time</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm">
+                        <span class="text-gray-500">Correlation Rate:</span>
+                        <span class="font-semibold text-danger ml-1">34.7%</span>
+                    </div>
+                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                        Generate Report
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2">
+                    <canvas id="accidentChart" height="150"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900">Total Accidents (12 months)</div>
+                        <div class="text-2xl font-bold text-gray-900">156</div>
+                        <div class="text-sm text-gray-500">54 maintenance-related</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900">Most Common Factor</div>
+                        <div class="text-lg font-semibold text-gray-900">Brake Issues</div>
+                        <div class="text-sm text-gray-500">23 incidents</div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <div class="text-sm font-medium text-gray-900">Prevention Potential</div>
+                        <div class="text-lg font-semibold text-success">$2.3M</div>
+                        <div class="text-sm text-gray-500">Claims avoided</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize charts when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeCharts();
+            updateMetrics();
+        });
+
+        function initializeCharts() {
+            // Compliance Trend Chart
+            const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+            new Chart(complianceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Overall Compliance',
+                        data: [85.2, 86.1, 87.8, 87.3],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Critical Maintenance',
+                        data: [92.1, 91.8, 93.2, 94.1],
+                        borderColor: '#1e40af',
+                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 80,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Vehicle Condition Pie Chart
+            const conditionCtx = document.getElementById('conditionChart').getContext('2d');
+            new Chart(conditionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Excellent', 'Good', 'Fair', 'Poor'],
+                    datasets: [{
+                        data: [145, 289, 67, 23],
+                        backgroundColor: ['#10b981', '#1e40af', '#f59e0b', '#ef4444'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Accident Correlation Chart
+            const accidentCtx = document.getElementById('accidentChart').getContext('2d');
+            new Chart(accidentCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Total Accidents',
+                        data: [12, 8, 15, 11, 9, 14, 16, 13, 10, 18, 15, 15],
+                        backgroundColor: 'rgba(156, 163, 175, 0.6)',
+                        borderColor: '#9ca3af',
+                        borderWidth: 1
+                    }, {
+                        label: 'Maintenance Related',
+                        data: [4, 3, 5, 4, 3, 5, 6, 4, 3, 6, 5, 6],
+                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
+                        borderColor: '#ef4444',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateMetrics() {
+            // Simulate real-time updates
+            setInterval(() => {
+                const compliance = document.getElementById('portfolioCompliance');
+                const health = document.getElementById('avgHealthIndex');
+                const risk = document.getElementById('highRiskCount');
+                const alerts = document.getElementById('activeAlerts');
+                
+                // Add small random variations to simulate real updates
+                const currentCompliance = parseFloat(compliance.textContent);
+                const newCompliance = (currentCompliance + (Math.random() - 0.5) * 0.2).toFixed(1);
+                compliance.textContent = newCompliance + '%';
+                
+                const currentHealth = parseFloat(health.textContent);
+                const newHealth = (currentHealth + (Math.random() - 0.5) * 0.5).toFixed(1);
+                health.textContent = newHealth;
+                
+                // Update timestamp
+                document.getElementById('lastUpdated').textContent = 'Just now';
+                setTimeout(() => {
+                    document.getElementById('lastUpdated').textContent = '1 minute ago';
+                }, 60000);
+                
+            }, 30000); // Update every 30 seconds
+        }
+
+        // API integration functions
+        async function fetchMetrics() {
+            try {
+                const response = await fetch('{% url "insurance:calculate_metrics" %}');
+                const data = await response.json();
+                updateDashboardMetrics(data);
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
+            }
+        }
+
+        function updateDashboardMetrics(data) {
+            if (data.metrics) {
+                document.getElementById('portfolioCompliance').textContent = 
+                    data.metrics.maintenance_compliance.overall_rate + '%';
+                document.getElementById('avgHealthIndex').textContent = 
+                    data.metrics.vehicle_condition.avg_health_index;
+                document.getElementById('highRiskCount').textContent = 
+                    data.metrics.risk_identification.high_risk_vehicles;
+                document.getElementById('activeAlerts').textContent = 
+                    data.metrics.risk_identification.active_alerts;
+            }
+        }
+
+        // Refresh button functionality
+        document.querySelector('button[class*="bg-primary"]').addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+            fetchMetrics().finally(() => {
+                this.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Refresh Data';
+            });
+        });
+    </script>
+</body>
+</html>
+
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
+{% endblock %}

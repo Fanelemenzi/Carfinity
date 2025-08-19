@@ -1,0 +1,171 @@
+/* Custom CSS for Insurance Admin Interface */
+
+/* Risk score styling */
+.field-risk_score .readonly {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    color: white;
+}
+
+.field-risk_score .readonly[data-score="high"] {
+    background-color: #dc3545;
+}
+
+.field-risk_score .readonly[data-score="medium"] {
+    background-color: #ffc107;
+    color: black;
+}
+
+.field-risk_score .readonly[data-score="low"] {
+    background-color: #28a745;
+}
+
+/* Health index styling */
+.field-vehicle_health_index .readonly {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Compliance rate styling */
+.field-overall_compliance_rate .readonly,
+.field-critical_maintenance_compliance .readonly {
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Alert severity styling */
+.field-severity select option[value="critical"] {
+    background-color: #dc3545;
+    color: white;
+}
+
+.field-severity select option[value="high"] {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.field-severity select option[value="medium"] {
+    background-color: #ffc107;
+}
+
+.field-severity select option[value="low"] {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Dashboard styling */
+.insurance-dashboard-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+.insurance-dashboard-widget h3 {
+    margin-top: 0;
+    color: white;
+}
+
+.insurance-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+}
+
+.insurance-stat {
+    text-align: center;
+}
+
+.insurance-stat .number {
+    font-size: 24px;
+    font-weight: bold;
+    display: block;
+}
+
+.insurance-stat .label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Table enhancements */
+.admin-insurance .result_list th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.admin-insurance .result_list tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Form enhancements */
+.insurance-form-section {
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border-left: 4px solid #007bff;
+}
+
+.insurance-form-section h3 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-active {
+    background-color: #28a745;
+}
+
+.status-suspended {
+    background-color: #ffc107;
+}
+
+.status-cancelled {
+    background-color: #dc3545;
+}
+
+.status-overdue {
+    background-color: #dc3545;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .insurance-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .insurance-stat {
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .insurance-dashboard-widget {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #ccc;
+    }
+}

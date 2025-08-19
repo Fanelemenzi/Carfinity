@@ -1,7 +1,7 @@
 from django import forms
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from .models import MaintenanceRecord, PartUsage, Inspection
+from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
 from maintenance.models import Part
 import json
 
@@ -164,6 +164,197 @@ class MaintenanceRecordForm(forms.ModelForm):
         }
 
 class InspectionForm(forms.ModelForm):
+    """
+    Django form for the 50-Point Quarterly Vehicle Health Inspection Checklist
+    Based on the Inspections model
+    """
+    
+    class Meta:
+        model = Inspections
+        fields = [
+            'inspection',
+            'technician',
+            'inspection_date',
+            'mileage_at_inspection',
+            # Engine & Powertrain
+            'engine_oil_level',
+            'oil_filter_condition',
+            'coolant_level',
+            'drive_belts',
+            'hoses_condition',
+            'air_filter',
+            'cabin_air_filter',
+            'transmission_fluid',
+            'engine_mounts',
+            'fluid_leaks',
+            'engine_notes',
+            # Electrical & Battery
+            'battery_voltage',
+            'battery_terminals',
+            'alternator_output',
+            'starter_motor',
+            'fuses_relays',
+            'electrical_notes',
+            # Brakes & Suspension
+            'brake_pads',
+            'brake_discs',
+            'brake_fluid',
+            'parking_brake',
+            'shocks_struts',
+            'suspension_bushings',
+            'wheel_bearings',
+            'brakes_notes',
+            # Steering & Tires
+            'steering_response',
+            'steering_fluid',
+            'tire_tread_depth',
+            'tire_pressure',
+            'tire_wear_patterns',
+            'wheels_rims',
+            'steering_notes',
+            # Exhaust & Emissions
+            'exhaust_system',
+            'catalytic_converter',
+            'exhaust_warning_lights',
+            'exhaust_notes',
+            # Safety Equipment
+            'seat_belts',
+            'airbags',
+            'horn_function',
+            'first_aid_kit',
+            'warning_triangle',
+            'safety_notes',
+            # Lighting & Visibility
+            'headlights',
+            'brake_lights',
+            'turn_signals',
+            'interior_lights',
+            'windshield',
+            'wiper_blades',
+            'rear_defogger',
+            'mirrors',
+            'lighting_notes',
+            # HVAC & Interior
+            'air_conditioning',
+            'ventilation',
+            'seat_adjustments',
+            'power_windows',
+            'hvac_notes',
+            # Technology & Driver Assist
+            'infotainment_system',
+            'rear_view_camera',
+            'technology_notes',
+            # Overall
+            'overall_notes',
+            'recommendations',
+            'is_completed'
+        ]
+        
+        widgets = {
+            'inspection': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'technician': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'inspection_date': forms.DateTimeInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'type': 'datetime-local'
+            }),
+            'mileage_at_inspection': forms.NumberInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Enter current mileage'
+            }),
+            'is_completed': forms.CheckboxInput(attrs={
+                'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add common styling to all status choice fields
+        status_widget_attrs = {
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+        }
+        
+        # Apply styling to all status fields
+        status_fields = [
+            'engine_oil_level', 'oil_filter_condition', 'coolant_level', 'drive_belts', 'hoses_condition',
+            'air_filter', 'cabin_air_filter', 'transmission_fluid', 'engine_mounts', 'fluid_leaks',
+            'battery_voltage', 'battery_terminals', 'alternator_output', 'starter_motor', 'fuses_relays',
+            'brake_pads', 'brake_discs', 'brake_fluid', 'parking_brake', 'shocks_struts',
+            'suspension_bushings', 'wheel_bearings', 'steering_response', 'steering_fluid', 'tire_tread_depth',
+            'tire_pressure', 'tire_wear_patterns', 'wheels_rims', 'exhaust_system', 'catalytic_converter',
+            'exhaust_warning_lights', 'seat_belts', 'airbags', 'horn_function', 'first_aid_kit',
+            'warning_triangle', 'headlights', 'brake_lights', 'turn_signals', 'interior_lights',
+            'windshield', 'wiper_blades', 'rear_defogger', 'mirrors', 'air_conditioning',
+            'ventilation', 'seat_adjustments', 'power_windows', 'infotainment_system', 'rear_view_camera'
+        ]
+        
+        for field_name in status_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update(status_widget_attrs)
+        
+        # Add styling to notes fields
+        notes_widget_attrs = {
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+            'rows': 3,
+            'placeholder': 'Enter any observations or notes...'
+        }
+        
+        notes_fields = [
+            'engine_notes', 'electrical_notes', 'brakes_notes', 'steering_notes', 'exhaust_notes',
+            'safety_notes', 'lighting_notes', 'hvac_notes', 'technology_notes', 'overall_notes', 'recommendations'
+        ]
+        
+        for field_name in notes_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget = forms.Textarea(attrs=notes_widget_attrs)
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check if form is marked as completed
+        is_completed = cleaned_data.get('is_completed', False)
+        
+        if is_completed:
+            # Validate that critical inspection points are filled
+            critical_fields = [
+                'engine_oil_level', 'brake_pads', 'brake_fluid', 'tire_tread_depth', 
+                'tire_pressure', 'headlights', 'brake_lights', 'seat_belts'
+            ]
+            
+            missing_fields = []
+            for field in critical_fields:
+                if not cleaned_data.get(field):
+                    missing_fields.append(self.fields[field].label)
+            
+            if missing_fields:
+                raise ValidationError(
+                    f"The following critical inspection points must be completed before marking as finished: {', '.join(missing_fields)}"
+                )
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Set completion timestamp if form is being marked as completed
+        if instance.is_completed and not instance.completed_at:
+            from django.utils import timezone
+            instance.completed_at = timezone.now()
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
+
+class InspectionRecordForm(forms.ModelForm):
+    """
+    Form for the basic Inspection record (not the detailed checklist)
+    """
     class Meta:
         model = Inspection
         fields = [

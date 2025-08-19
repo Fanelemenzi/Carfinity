@@ -1,0 +1,214 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">
+                Vehicle Details: {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}
+            </h1>
+            <div class="text-sm text-gray-600">
+                VIN: {{ vehicle.vin }}
+            </div>
+        </div>
+
+        <!-- Vehicle Risk Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-blue-900">Risk Score</h3>
+                <p class="text-2xl font-bold text-blue-600">{{ vehicle.risk_score }}/10</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-green-900">Health Index</h3>
+                <p class="text-2xl font-bold text-green-600">{{ vehicle.vehicle_health_index }}/100</p>
+            </div>
+            <div class="bg-yellow-50 p-4 rounded-lg">
+                <h3 class="font-semibold text-yellow-900">Active Alerts</h3>
+                <p class="text-2xl font-bold text-yellow-600">{{ vehicle_alerts.count }}</p>
+            </div>
+        </div>
+
+        <!-- Comprehensive Accident History -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Comprehensive Accident History</h2>
+            {% if comprehensive_accidents %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Severity</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Claim Amount</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for accident in comprehensive_accidents %}
+                            <tr class="{% if accident.type == 'insurance_accident' %}bg-blue-50{% else %}bg-gray-50{% endif %}">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ accident.date|date:"M d, Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if accident.type == 'insurance_accident' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Insurance Record
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            History Only
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if 'Minor' in accident.severity %}bg-green-100 text-green-800
+                                        {% elif 'Major' in accident.severity %}bg-red-100 text-red-800
+                                        {% elif 'Total' in accident.severity %}bg-red-200 text-red-900
+                                        {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                        {{ accident.severity }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {{ accident.location|default:"Unknown" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    {% if accident.claim_amount %}
+                                        ${{ accident.claim_amount|floatformat:2 }}
+                                    {% else %}
+                                        <span class="text-gray-400">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <button class="text-blue-600 hover:text-blue-900" 
+                                            onclick="showAccidentDetails('{{ accident.id }}', '{{ accident.type }}')">
+                                        View Details
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <p>No accident history found for this vehicle.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Maintenance Schedule -->
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Maintenance Schedule</h2>
+            
+            {% if overdue_maintenance %}
+            <div class="mb-4">
+                <h3 class="text-lg font-medium text-red-600 mb-2">Overdue Maintenance</h3>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    {% for maintenance in overdue_maintenance %}
+                    <div class="flex justify-between items-center py-2">
+                        <div>
+                            <span class="font-medium">{{ maintenance.get_maintenance_type_display }}</span>
+                            <span class="text-sm text-gray-600 ml-2">Due: {{ maintenance.scheduled_date }}</span>
+                        </div>
+                        <span class="text-red-600 text-sm font-medium">
+                            {{ maintenance.days_overdue }} days overdue
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if upcoming_maintenance %}
+            <div>
+                <h3 class="text-lg font-medium text-green-600 mb-2">Upcoming Maintenance</h3>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    {% for maintenance in upcoming_maintenance %}
+                    <div class="flex justify-between items-center py-2">
+                        <div>
+                            <span class="font-medium">{{ maintenance.get_maintenance_type_display }}</span>
+                            <span class="text-sm text-gray-600 ml-2">Due: {{ maintenance.scheduled_date }}</span>
+                        </div>
+                        <span class="text-green-600 text-sm font-medium">
+                            {{ maintenance.priority_level|title }} Priority
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Risk Alerts -->
+        {% if vehicle_alerts %}
+        <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Active Risk Alerts</h2>
+            <div class="space-y-4">
+                {% for alert in vehicle_alerts %}
+                <div class="border border-gray-200 rounded-lg p-4 
+                    {% if alert.severity == 'critical' %}bg-red-50 border-red-200
+                    {% elif alert.severity == 'high' %}bg-orange-50 border-orange-200
+                    {% else %}bg-yellow-50 border-yellow-200{% endif %}">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-medium text-gray-900">{{ alert.title }}</h3>
+                            <p class="text-sm text-gray-600 mt-1">{{ alert.description }}</p>
+                            <p class="text-xs text-gray-500 mt-2">{{ alert.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if alert.severity == 'critical' %}bg-red-100 text-red-800
+                            {% elif alert.severity == 'high' %}bg-orange-100 text-orange-800
+                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                            {{ alert.get_severity_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function showAccidentDetails(accidentId, accidentType) {
+    // Fetch comprehensive accident data via API
+    fetch(`{% url 'insurance:comprehensive_accidents' vehicle.id %}`)
+        .then(response => response.json())
+        .then(data => {
+            const accident = data.accidents.find(a => a.id == accidentId && a.type == accidentType);
+            if (accident && accident.detailed_info) {
+                let detailsHtml = '<div class="space-y-2">';
+                
+                if (accident.detailed_info.police_report_number) {
+                    detailsHtml += `<p><strong>Police Report:</strong> ${accident.detailed_info.police_report_number}</p>`;
+                }
+                if (accident.detailed_info.insurance_claim_number) {
+                    detailsHtml += `<p><strong>Insurance Claim:</strong> ${accident.detailed_info.insurance_claim_number}</p>`;
+                }
+                if (accident.detailed_info.reported_by) {
+                    detailsHtml += `<p><strong>Reported By:</strong> ${accident.detailed_info.reported_by}</p>`;
+                }
+                if (accident.detailed_info.verified) {
+                    detailsHtml += `<p><strong>Verified:</strong> Yes</p>`;
+                }
+                if (accident.detailed_info.notes) {
+                    detailsHtml += `<p><strong>Notes:</strong> ${accident.detailed_info.notes}</p>`;
+                }
+                
+                detailsHtml += '</div>';
+                
+                // Show modal or alert with details
+                alert('Accident Details:\n\n' + accident.description + '\n\nAdditional Information Available in API Response');
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching accident details:', error);
+            alert('Error loading accident details');
+        });
+}
+</script>
+{% endblock %}

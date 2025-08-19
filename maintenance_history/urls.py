@@ -12,7 +12,7 @@ urlpatterns = [
          views.CreateMaintenanceRecordView.as_view(), 
          name='create_record'),
     
-    # Inspection URLs
+    # Inspection Record URLs
     path('inspections/', 
          views.InspectionListView.as_view(), 
          name='inspection_list'),
@@ -25,6 +25,23 @@ urlpatterns = [
     path('inspections/<int:pk>/download/', 
          views.InspectionPDFDownloadView.as_view(), 
          name='inspection_pdf_download'),
+    path('inspections/create/', 
+         views.CreateInspectionRecordView.as_view(), 
+         name='create_inspection_record'),
+    
+    # Inspection Form URLs (50-point checklist)
+    path('inspection-forms/', 
+         views.InspectionFormListView.as_view(), 
+         name='inspection_form_list'),
+    path('inspection-forms/<int:pk>/', 
+         views.InspectionFormDetailView.as_view(), 
+         name='inspection_form_detail'),
+    path('inspection-forms/create/', 
+         views.CreateInspectionFormView.as_view(), 
+         name='create_inspection_form'),
+    path('inspection-forms/<int:pk>/update/', 
+         views.UpdateInspectionFormView.as_view(), 
+         name='update_inspection_form'),
     
     # API endpoints for part management
     path('api/parts/search/', 

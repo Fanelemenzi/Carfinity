@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Insurance Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Insurance Organizations Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info"><i class="fas fa-building"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Insurance Organizations</span>
+                                    <span class="info-box-number">{{ total_insurance_orgs }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success"><i class="fas fa-file-contract"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Policies</span>
+                                    <span class="info-box-number">{{ total_policies }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-warning"><i class="fas fa-dollar-sign"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Premium Volume</span>
+                                    <span class="info-box-number">${{ total_premium|floatformat:0 }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Organization</th>
+                                    <th>License Number</th>
+                                    <th>Rating</th>
+                                    <th>Linked Groups</th>
+                                    <th>Policies</th>
+                                    <th>Premium Volume</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for org in insurance_organizations %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'organizations:organization_detail' org.pk %}">
+                                            {{ org.name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ org.insurance_license_number|default:"-" }}</td>
+                                    <td>
+                                        {% if org.insurance_rating %}
+                                            <span class="badge badge-success">{{ org.insurance_rating }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for group in org.linked_groups.all %}
+                                            <span class="badge badge-info">{{ group.name }}</span>
+                                        {% empty %}
+                                            <span class="text-muted">None</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>{{ org.insurance_policies.count }}</td>
+                                    <td>
+                                        {% with total=org.insurance_policies.all|length %}
+                                            {% if total > 0 %}
+                                                ${% for policy in org.insurance_policies.all %}{{ policy.premium_amount }}{% if not forloop.last %} + {% endif %}{% endfor %}
+                                            {% else %}
+                                                $0.00
+                                            {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'organizations:organization_detail' org.pk %}" class="btn btn-sm btn-outline-primary">
+                                            View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">No insurance organizations found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

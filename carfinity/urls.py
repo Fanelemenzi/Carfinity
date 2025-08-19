@@ -8,4 +8,5 @@ urlpatterns = [
     path('', include('users.urls')),
     path('', include('maintenance_history.urls')),
     path('', include('onboarding.urls')),
+    path('insurance/', include('insurance_app.urls')),
 ] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

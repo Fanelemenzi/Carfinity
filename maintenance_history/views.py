@@ -10,8 +10,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import logging
 import json
-from .models import MaintenanceRecord, PartUsage, Inspection
-from .forms import MaintenanceRecordForm
+from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
+from .forms import MaintenanceRecordForm, InspectionForm, InspectionRecordForm
 from maintenance.models import Part
 
 # Set up logging
@@ -236,3 +236,234 @@ class InspectionPDFDownloadView(View):
         except Exception as e:
             logger.error(f"Error downloading PDF for inspection {pk}: {str(e)}")
             raise Http404("Error downloading PDF file")
+
+
+# Inspection Form Views
+class InspectionFormListView(LoginRequiredMixin, ListView):
+    model = Inspections
+    template_name = 'maintenance/inspection_form_list.html'
+    context_object_name = 'inspection_forms'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        return Inspections.objects.select_related('inspection__vehicle', 'technician').order_by('-inspection_date')
+
+class InspectionFormDetailView(LoginRequiredMixin, DetailView):
+    model = Inspections
+    template_name = 'maintenance/inspection_form_detail.html'
+    context_object_name = 'inspection_form'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add inspection points organized by category
+        inspection_form = self.object
+        
+        context['inspection_categories'] = {
+            'Engine & Powertrain': [
+                ('engine_oil_level', 'Engine oil level & quality'),
+                ('oil_filter_condition', 'Oil filter condition'),
+                ('coolant_level', 'Coolant level & leaks'),
+                ('drive_belts', 'Drive belts for cracks/wear'),
+                ('hoses_condition', 'Hoses for leaks or soft spots'),
+                ('air_filter', 'Air filter condition'),
+                ('cabin_air_filter', 'Cabin air filter condition'),
+                ('transmission_fluid', 'Transmission fluid level & leaks'),
+                ('engine_mounts', 'Engine/transmission mounts'),
+                ('fluid_leaks', 'Fluid leaks under engine & gearbox'),
+            ],
+            'Electrical & Battery': [
+                ('battery_voltage', 'Battery voltage & charging system'),
+                ('battery_terminals', 'Battery terminals for corrosion'),
+                ('alternator_output', 'Alternator output'),
+                ('starter_motor', 'Starter motor performance'),
+                ('fuses_relays', 'All fuses and relays'),
+            ],
+            'Brakes & Suspension': [
+                ('brake_pads', 'Brake pads/shoes thickness'),
+                ('brake_discs', 'Brake discs/drums damage/warping'),
+                ('brake_fluid', 'Brake fluid level & condition'),
+                ('parking_brake', 'Parking brake function'),
+                ('shocks_struts', 'Shocks/struts for leaks'),
+                ('suspension_bushings', 'Suspension bushings & joints'),
+                ('wheel_bearings', 'Wheel bearings for noise/play'),
+            ],
+            'Steering & Tires': [
+                ('steering_response', 'Steering response & play'),
+                ('steering_fluid', 'Steering fluid level & leaks'),
+                ('tire_tread_depth', 'Tire tread depth (>5/32")'),
+                ('tire_pressure', 'Tire pressure (all tires + spare)'),
+                ('tire_wear_patterns', 'Tire wear patterns'),
+                ('wheels_rims', 'Wheels & rims for damage'),
+            ],
+            'Exhaust & Emissions': [
+                ('exhaust_system', 'Exhaust for leaks/damage'),
+                ('catalytic_converter', 'Catalytic converter/muffler condition'),
+                ('exhaust_warning_lights', 'No exhaust warning lights'),
+            ],
+            'Safety Equipment': [
+                ('seat_belts', 'Seat belts operation & condition'),
+                ('airbags', 'Airbags (warning light off)'),
+                ('horn_function', 'Horn function'),
+                ('first_aid_kit', 'First-aid kit contents'),
+                ('warning_triangle', 'Warning triangle/reflective vest present'),
+            ],
+            'Lighting & Visibility': [
+                ('headlights', 'Headlights (low/high beam)'),
+                ('brake_lights', 'Brake/reverse/fog lights'),
+                ('turn_signals', 'Turn signals & hazard lights'),
+                ('interior_lights', 'Interior dome/courtesy lights'),
+                ('windshield', 'Windshield for cracks/chips'),
+                ('wiper_blades', 'Wiper blades & washer spray'),
+                ('rear_defogger', 'Rear defogger/heater operation'),
+                ('mirrors', 'Mirrors adjustment & condition'),
+            ],
+            'HVAC & Interior': [
+                ('air_conditioning', 'Air conditioning & heating performance'),
+                ('ventilation', 'Ventilation airflow'),
+                ('seat_adjustments', 'Seat adjustments & seat heaters'),
+                ('power_windows', 'Power windows & locks'),
+            ],
+            'Technology & Driver Assist': [
+                ('infotainment_system', 'Infotainment system & Bluetooth/USB'),
+                ('rear_view_camera', 'Rear-view camera/parking sensors'),
+            ],
+        }
+        
+        return context
+
+class CreateInspectionFormView(LoginRequiredMixin, CreateView):
+    model = Inspections
+    form_class = InspectionForm
+    template_name = 'maintenance/create_inspection_form.html'
+    success_url = '/maintenance/inspection-forms/'
+    
+    def form_valid(self, form):
+        """Handle successful form submission"""
+        try:
+            with transaction.atomic():
+                # Set the technician if not already set
+                if not form.instance.technician:
+                    form.instance.technician = self.request.user
+                
+                # Save the inspection form
+                inspection_form = form.save()
+                
+                # Log successful creation
+                logger.info(
+                    f"Inspection form created successfully. "
+                    f"Form ID: {inspection_form.id}, "
+                    f"Technician: {self.request.user.username}, "
+                    f"Inspection: {inspection_form.inspection.inspection_number}, "
+                    f"Completion: {inspection_form.completion_percentage}%"
+                )
+                
+                # Create success message
+                messages.success(
+                    self.request,
+                    f"Inspection form created successfully for {inspection_form.inspection.inspection_number}. "
+                    f"Progress: {inspection_form.completion_percentage}% complete."
+                )
+                
+                return super().form_valid(form)
+                
+        except ValidationError as e:
+            logger.warning(
+                f"Validation error during inspection form creation. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}"
+            )
+            
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+            
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during inspection form creation. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}", 
+                exc_info=True
+            )
+            
+            messages.error(
+                self.request,
+                "An unexpected error occurred while creating the inspection form. "
+                "Please try again or contact support if the problem persists."
+            )
+            
+            return self.form_invalid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add available inspections that don't have forms yet
+        context['available_inspections'] = Inspection.objects.filter(
+            inspections_form__isnull=True
+        ).select_related('vehicle').order_by('-inspection_date')
+        
+        return context
+
+class UpdateInspectionFormView(LoginRequiredMixin, DetailView):
+    model = Inspections
+    form_class = InspectionForm
+    template_name = 'maintenance/update_inspection_form.html'
+    context_object_name = 'inspection_form'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = InspectionForm(instance=self.object)
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = InspectionForm(request.POST, instance=self.object)
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    inspection_form = form.save()
+                    
+                    logger.info(
+                        f"Inspection form updated successfully. "
+                        f"Form ID: {inspection_form.id}, "
+                        f"Technician: {request.user.username}, "
+                        f"Completion: {inspection_form.completion_percentage}%"
+                    )
+                    
+                    messages.success(
+                        request,
+                        f"Inspection form updated successfully. "
+                        f"Progress: {inspection_form.completion_percentage}% complete."
+                    )
+                    
+                    return JsonResponse({
+                        'success': True,
+                        'completion_percentage': inspection_form.completion_percentage,
+                        'is_completed': inspection_form.is_completed,
+                        'message': 'Form updated successfully'
+                    })
+                    
+            except ValidationError as e:
+                return JsonResponse({
+                    'success': False,
+                    'errors': str(e)
+                })
+                
+        else:
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors
+            })
+
+class CreateInspectionRecordView(LoginRequiredMixin, CreateView):
+    model = Inspection
+    form_class = InspectionRecordForm
+    template_name = 'maintenance/create_inspection_record.html'
+    success_url = '/maintenance/inspections/'
+    
+    def form_valid(self, form):
+        messages.success(
+            self.request,
+            f"Inspection record created successfully for {form.instance.inspection_number}."
+        )
+        return super().form_valid(form)
