@@ -53,7 +53,8 @@ class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):
                     f"Technician: {self.request.user.username}, "
                     f"Vehicle: {maintenance_record.vehicle.vin}, "
                     f"Parts used: {len(parts_summary.get('parts', []))}, "
-                    f"Total parts cost: ${parts_summary.get('total_cost', 0):.2f}"
+                    f"Total parts cost: ${parts_summary.get('total_cost', 0):.2f}, "
+                    f"Image uploaded: {bool(maintenance_record.service_image)}"
                 )
                 
                 # Create success message with part usage summary
@@ -117,6 +118,11 @@ class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):
         """Create detailed success message with part usage summary"""
         base_message = f"Maintenance record created successfully for {maintenance_record.vehicle.vin}."
         
+        # Add image information if uploaded
+        image_message = ""
+        if maintenance_record.service_image:
+            image_message = f" Service image uploaded ({maintenance_record.image_type_display})."
+        
         parts_used = parts_summary.get('parts', [])
         if parts_used:
             parts_details = []
@@ -130,9 +136,9 @@ class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):
                 f"Total parts cost: ${parts_summary.get('total_cost', 0):.2f}."
             )
             
-            messages.success(self.request, base_message + parts_message)
+            messages.success(self.request, base_message + image_message + parts_message)
         else:
-            messages.success(self.request, base_message)
+            messages.success(self.request, base_message + image_message)
     
     def get_context_data(self, **kwargs):
         """Add additional context for the template"""

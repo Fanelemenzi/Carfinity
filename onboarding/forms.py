@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django_countries.fields import CountryField
+# from django_countries.fields import CountryField
 from vehicles.models import Vehicle, VehicleImage
 from onboarding.models import PendingVehicleOnboarding
 from django.core.serializers import serialize

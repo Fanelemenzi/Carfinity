@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import User, Profile, Role, UserRole, DataConsent, OrganizationUser
 from django.db import models
-from django_json_widget.widgets import JSONEditorWidget
+# from django_json_widget.widgets import JSONEditorWidget
 
 # Register your models here.
 
@@ -15,9 +15,9 @@ class ProfileAdmin(admin.ModelAdmin):
 class RoleAdmin(admin.ModelAdmin):
     list_display = ('name', 'description')
     search_fields = ('name',)
-    formfield_overrides = {
-        models.JSONField:{'widget': JSONEditorWidget}
-    }
+    # formfield_overrides = {
+    #     models.JSONField:{'widget': JSONEditorWidget}
+    # }
 
 @admin.register(UserRole)
 class UserRoleAdmin(admin.ModelAdmin):

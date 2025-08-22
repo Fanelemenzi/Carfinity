@@ -125,6 +125,86 @@ class VehicleDetailView(LoginRequiredMixin, DetailView):
         return context
 
 # API ViewSets
+class MaintenanceScheduleViewSet(viewsets.ModelViewSet):
+    serializer_class = MaintenanceScheduleSerializer
+    
+    def get_queryset(self):
+        return MaintenanceSchedule.objects.filter(
+            vehicle__policy__policy_holder=self.request.user
+        ).select_related('vehicle', 'scheduled_maintenance')
+    
+    @action(detail=False, methods=['get'])
+    def overdue(self, request):
+        """Get overdue maintenance schedules"""
+        overdue_schedules = self.get_queryset().filter(
+            is_completed=False,
+            scheduled_date__lt=timezone.now().date()
+        ).order_by('scheduled_date')
+        
+        serializer = self.get_serializer(overdue_schedules, many=True)
+        return Response({
+            'overdue_schedules': serializer.data,
+            'count': overdue_schedules.count()
+        })
+    
+    @action(detail=False, methods=['get'])
+    def upcoming(self, request):
+        """Get upcoming maintenance schedules"""
+        days_ahead = int(request.query_params.get('days', 30))
+        end_date = timezone.now().date() + timedelta(days=days_ahead)
+        
+        upcoming_schedules = self.get_queryset().filter(
+            is_completed=False,
+            scheduled_date__gte=timezone.now().date(),
+            scheduled_date__lte=end_date
+        ).order_by('scheduled_date')
+        
+        serializer = self.get_serializer(upcoming_schedules, many=True)
+        return Response({
+            'upcoming_schedules': serializer.data,
+            'count': upcoming_schedules.count(),
+            'days_ahead': days_ahead
+        })
+    
+    @action(detail=True, methods=['post'])
+    def mark_completed(self, request, pk=None):
+        """Mark maintenance schedule as completed"""
+        schedule = self.get_object()
+        completed_date = request.data.get('completed_date', timezone.now().date())
+        cost = request.data.get('cost')
+        service_provider = request.data.get('service_provider', '')
+        
+        schedule.is_completed = True
+        schedule.completed_date = completed_date
+        if cost:
+            schedule.cost = cost
+        if service_provider:
+            schedule.service_provider = service_provider
+        schedule.save()
+        
+        # Update compliance for the vehicle
+        if hasattr(schedule.vehicle, 'compliance'):
+            schedule.vehicle.compliance.calculate_compliance()
+        
+        return Response({'status': 'Maintenance marked as completed'})
+    
+    @action(detail=False, methods=['post'])
+    def sync_with_maintenance_app(self, request):
+        """Sync all schedules with maintenance app"""
+        schedules = self.get_queryset()
+        synced_count = 0
+        
+        for schedule in schedules:
+            if schedule.scheduled_maintenance:
+                schedule.sync_with_maintenance_app()
+                synced_count += 1
+        
+        return Response({
+            'status': 'Sync completed',
+            'synced_count': synced_count,
+            'total_schedules': schedules.count()
+        })
+
 class VehicleViewSet(viewsets.ModelViewSet):
     serializer_class = VehicleSerializer
     

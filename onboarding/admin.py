@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import PendingVehicleOnboarding
 from django.utils import timezone
 from vehicles.models import Vehicle, VehicleOwnership, VehicleStatus, VehicleImage
-from django_countries.fields import Country
+# from django_countries.fields import Country
 from django.contrib.auth import get_user_model
 from vehicle_equip.models import (
     PowertrainAndDrivetrain, ChassisSuspensionAndBraking, ElectricalSystem, ExteriorFeaturesAndBody, ActiveSafetyAndADAS
@@ -205,7 +205,7 @@ class PendingVehicleOnboardingAdmin(admin.ModelAdmin):
                         'transmission_type': vdata.get('transmission_type'),
                         'powertrain_displacement': vdata.get('powertrain_displacement'),
                         'powertrain_power': vdata.get('powertrain_power'),
-                        'plant_location': Country(vdata.get('plant_location')) if vdata.get('plant_location') else None,
+                        'plant_location': vdata.get('plant_location') if vdata.get('plant_location') else None,
                     }
                 )
                 # 2. VehicleOwnership

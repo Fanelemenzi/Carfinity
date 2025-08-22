@@ -21,6 +21,41 @@
       <div
         class="relative w-full md:max-w-xl lg:max-w-4xl mx-auto px-6 md:px-20 py-10 md:py-20 bg-white rounded-4xl h-auto">
         <h1 class="text-3xl font-semibold text-gray-800 text-center">Carfinity Report</h1>
+        
+        <!-- Help Information Banner -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <div class="flex items-start">
+            <div class="flex-shrink-0">
+              <i class="fas fa-info-circle text-blue-600 text-xl mt-1"></i>
+            </div>
+            <div class="ml-3">
+              <h3 class="text-lg font-medium text-blue-800 mb-2">Understanding Your Vehicle Report</h3>
+              <p class="text-blue-700 text-sm mb-2">
+                This comprehensive report provides detailed information about the vehicle's history, condition, and specifications. 
+                Use this data to make informed decisions about your vehicle purchase or ownership.
+              </p>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-600">
+                <div class="flex items-center">
+                  <i class="fas fa-shield-alt mr-2"></i>
+                  <span>Status indicators show vehicle safety and legal standing</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-history mr-2"></i>
+                  <span>Historical records provide maintenance and inspection details</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-cog mr-2"></i>
+                  <span>Technical specifications help verify vehicle authenticity</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-camera mr-2"></i>
+                  <span>Images provide visual confirmation of vehicle condition</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="flex items-center p-6 border-b">
             {% if vehicle_images %}
@@ -62,7 +97,13 @@
 
           <!-- Vehicle Status Section -->
           <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">Vehicle Status Overview</h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold text-gray-800">Vehicle Status Overview</h2>
+              <div class="text-sm text-gray-500 flex items-center">
+                <i class="fas fa-question-circle mr-1"></i>
+                <span>Color coding: Green = Good, Yellow = Caution, Red = Alert</span>
+              </div>
+            </div>
 
             <!-- Status Grid -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -165,7 +206,13 @@
 
           <!-- Vehicle Images Section -->
           <div class="p-6 border-b border-gray-200">
-            <h2 class="text-xl font-semibold mb-4">Vehicle Images</h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold">Vehicle Images</h2>
+              <div class="text-sm text-gray-500 flex items-center">
+                <i class="fas fa-mouse-pointer mr-1"></i>
+                <span>Click images to view in full size</span>
+              </div>
+            </div>
             {% if vehicle_images %}
             <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {% for image in vehicle_images %}
@@ -209,7 +256,13 @@
           </div>
 
           <div class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Identification and Technical Specifications</h2>
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-xl font-semibold">Identification and Technical Specifications</h2>
+              <div class="text-sm text-gray-500 flex items-center">
+                <i class="fas fa-id-card mr-1"></i>
+                <span>Verify these details match your vehicle documentation</span>
+              </div>
+            </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
                 <p class="text-sm text-gray-500">Make</p>
@@ -269,10 +322,61 @@
 
           <!-- Inspections -->
           <div class="bg-white p-5 rounded-lg shadow">
-            <div class="flex justify-between mb-4">
-              <h2 class="text-2xl font-semibold mb-2 text-gray-800">Inspections</h2>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-semibold text-gray-800">Inspections</h2>
+              <button 
+                id="toggleInspectionsBtn" 
+                onclick="toggleInspections()"
+                class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+                <span id="toggleInspectionsText">Show Inspections</span>
+                <i id="toggleInspectionsIcon" class="fas fa-chevron-down ml-2 transition-transform duration-200"></i>
+              </button>
             </div>
-            <div class="overflow-x-auto">
+            
+            <!-- Help text for inspections -->
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <i class="fas fa-lightbulb text-green-600 mt-1 mr-2"></i>
+                <div class="text-sm text-green-700">
+                  <strong>About Inspections:</strong> These are official vehicle safety and emissions inspections conducted by certified facilities. 
+                  Higher ratings indicate better vehicle condition. Regular inspections help ensure vehicle safety and compliance.
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary when collapsed -->
+            <div id="inspectionsSummary" class="mb-4">
+              <div class="bg-gray-50 rounded-lg p-4 border">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="text-2xl text-green-600 mr-3">
+                      <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-700">Total Inspections</p>
+                      <p class="text-sm text-gray-500">Click "Show Inspections" to view detailed records</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl font-bold text-green-600">
+                      {{ inspections|length }}
+                    </div>
+                    <div class="text-xs text-green-600">
+                      {% if inspections|length == 0 %}
+                      No Inspections
+                      {% elif inspections|length == 1 %}
+                      Inspection Found
+                      {% else %}
+                      Inspections Found
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed inspections table (initially hidden) -->
+            <div id="inspectionsDetails" class="overflow-x-auto hidden">
               <table class="min-w-full text-left text-sm">
                 <thead>
                   <tr class="border-b font-semibold text-gray-700">
@@ -294,6 +398,15 @@
                     <td class="p-2">{{ inspection.carfinity_rating }}</td>
                     <td class="p-2">{{ inspection.inspection_date }}</td>
                   </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="p-4 text-center text-gray-500">
+                      <div class="flex flex-col items-center">
+                        <i class="fas fa-search text-3xl mb-2"></i>
+                        <p>No inspection records found for this vehicle</p>
+                      </div>
+                    </td>
+                  </tr>
                   {% endfor %}
                 </tbody>
               </table>
@@ -305,10 +418,61 @@
 
           <!-- Maintenance History -->
           <div class="bg-white p-5 rounded-lg shadow">
-            <div class="flex justify-between mb-4">
-              <h2 class="text-2xl font-semibold mb-2 text-gray-800">Maintenance History</h2>
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-semibold text-gray-800">Maintenance History</h2>
+              <button 
+                id="toggleMaintenanceBtn" 
+                onclick="toggleMaintenanceHistory()"
+                class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <span id="toggleMaintenanceText">Show History</span>
+                <i id="toggleMaintenanceIcon" class="fas fa-chevron-down ml-2 transition-transform duration-200"></i>
+              </button>
             </div>
-            <div class="overflow-x-auto">
+            
+            <!-- Help text for maintenance -->
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+              <div class="flex items-start">
+                <i class="fas fa-lightbulb text-blue-600 mt-1 mr-2"></i>
+                <div class="text-sm text-blue-700">
+                  <strong>About Maintenance History:</strong> These records show all documented maintenance work performed on the vehicle. 
+                  Regular maintenance indicates good vehicle care and can help predict future reliability. Look for consistent service intervals and major repairs.
+                </div>
+              </div>
+            </div>
+
+            <!-- Summary when collapsed -->
+            <div id="maintenanceSummary" class="mb-4">
+              <div class="bg-gray-50 rounded-lg p-4 border">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="text-2xl text-blue-600 mr-3">
+                      <i class="fas fa-wrench"></i>
+                    </div>
+                    <div>
+                      <p class="font-semibold text-gray-700">Total Maintenance Records</p>
+                      <p class="text-sm text-gray-500">Click "Show History" to view detailed records</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl font-bold text-blue-600">
+                      {{ maintenance_records|length }}
+                    </div>
+                    <div class="text-xs text-blue-600">
+                      {% if maintenance_records|length == 0 %}
+                      No Records
+                      {% elif maintenance_records|length == 1 %}
+                      Record Found
+                      {% else %}
+                      Records Found
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Detailed maintenance history table (initially hidden) -->
+            <div id="maintenanceDetails" class="overflow-x-auto hidden">
               <table class="min-w-full text-left text-sm">
                 <thead>
                   <tr class="border-b font-semibold text-gray-700">
@@ -330,12 +494,136 @@
                     <td class="p-2">{{ record.mileage }}</td>
                     <td class="p-2">{{ record.notes|default:"-" }}</td>
                   </tr>
+                  {% empty %}
+                  <tr>
+                    <td colspan="6" class="p-4 text-center text-gray-500">
+                      <div class="flex flex-col items-center">
+                        <i class="fas fa-clipboard-list text-3xl mb-2"></i>
+                        <p>No maintenance records found for this vehicle</p>
+                      </div>
+                    </td>
+                  </tr>
                   {% endfor %}
                 </tbody>
               </table>
             </div>
           </div>
 
+        </div>
+
+        <!-- Comprehensive Help Section -->
+        <div class="mt-8 bg-gray-50 rounded-lg p-6 border">
+          <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+            How to Interpret This Report
+          </h3>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Status Indicators -->
+            <div class="bg-white rounded-lg p-4 border">
+              <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-traffic-light text-green-600 mr-2"></i>
+                Status Color Guide
+              </h4>
+              <div class="space-y-2 text-sm">
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                  <span><strong>Green:</strong> Good condition, no issues detected</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                  <span><strong>Yellow:</strong> Caution, minor issues or unknown status</span>
+                </div>
+                <div class="flex items-center">
+                  <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                  <span><strong>Red:</strong> Alert, significant issues detected</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Metrics -->
+            <div class="bg-white rounded-lg p-4 border">
+              <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                Key Factors to Consider
+              </h4>
+              <div class="space-y-2 text-sm text-gray-600">
+                <div class="flex items-start">
+                  <i class="fas fa-dot-circle text-gray-400 mr-2 mt-1"></i>
+                  <span><strong>Accident History:</strong> Check for any collision damage that may affect safety</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-dot-circle text-gray-400 mr-2 mt-1"></i>
+                  <span><strong>Owner Count:</strong> Fewer owners typically indicate better care</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-dot-circle text-gray-400 mr-2 mt-1"></i>
+                  <span><strong>Maintenance:</strong> Regular service indicates responsible ownership</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-dot-circle text-gray-400 mr-2 mt-1"></i>
+                  <span><strong>Inspections:</strong> Recent passes show current roadworthiness</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- What to Do Next -->
+            <div class="bg-white rounded-lg p-4 border">
+              <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-clipboard-list text-purple-600 mr-2"></i>
+                Recommended Actions
+              </h4>
+              <div class="space-y-2 text-sm text-gray-600">
+                <div class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  <span>Verify VIN matches vehicle documentation</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  <span>Review maintenance history for regular service</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  <span>Check for any red status indicators</span>
+                </div>
+                <div class="flex items-start">
+                  <i class="fas fa-check text-green-500 mr-2 mt-1"></i>
+                  <span>Consider professional inspection if purchasing</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Information -->
+            <div class="bg-white rounded-lg p-4 border">
+              <h4 class="font-semibold text-gray-700 mb-3 flex items-center">
+                <i class="fas fa-phone text-orange-600 mr-2"></i>
+                Need Help?
+              </h4>
+              <div class="space-y-2 text-sm text-gray-600">
+                <p>If you have questions about this report or need clarification on any information:</p>
+                <div class="flex items-center">
+                  <i class="fas fa-envelope text-blue-500 mr-2"></i>
+                  <span>Contact our support team for assistance</span>
+                </div>
+                <div class="flex items-center">
+                  <i class="fas fa-clock text-green-500 mr-2"></i>
+                  <span>Reports are updated as new information becomes available</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Disclaimer -->
+          <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div class="flex items-start">
+              <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
+              <div class="text-sm text-yellow-800">
+                <strong>Important:</strong> This report is based on available data and should be used as a reference tool. 
+                Always conduct a thorough physical inspection and consider professional evaluation before making purchase decisions. 
+                Information accuracy depends on data sources and reporting completeness.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -410,6 +698,50 @@
         closeImageModal();
       }
     });
+
+    // Toggle maintenance history visibility
+    function toggleMaintenanceHistory() {
+      const details = document.getElementById('maintenanceDetails');
+      const summary = document.getElementById('maintenanceSummary');
+      const toggleText = document.getElementById('toggleMaintenanceText');
+      const toggleIcon = document.getElementById('toggleMaintenanceIcon');
+      
+      if (details.classList.contains('hidden')) {
+        // Show details, hide summary
+        details.classList.remove('hidden');
+        summary.classList.add('hidden');
+        toggleText.textContent = 'Hide History';
+        toggleIcon.classList.add('rotate-180');
+      } else {
+        // Hide details, show summary
+        details.classList.add('hidden');
+        summary.classList.remove('hidden');
+        toggleText.textContent = 'Show History';
+        toggleIcon.classList.remove('rotate-180');
+      }
+    }
+
+    // Toggle inspections visibility
+    function toggleInspections() {
+      const details = document.getElementById('inspectionsDetails');
+      const summary = document.getElementById('inspectionsSummary');
+      const toggleText = document.getElementById('toggleInspectionsText');
+      const toggleIcon = document.getElementById('toggleInspectionsIcon');
+      
+      if (details.classList.contains('hidden')) {
+        // Show details, hide summary
+        details.classList.remove('hidden');
+        summary.classList.add('hidden');
+        toggleText.textContent = 'Hide Inspections';
+        toggleIcon.classList.add('rotate-180');
+      } else {
+        // Hide details, show summary
+        details.classList.add('hidden');
+        summary.classList.remove('hidden');
+        toggleText.textContent = 'Show Inspections';
+        toggleIcon.classList.remove('rotate-180');
+      }
+    }
   </script>
 </body>
 

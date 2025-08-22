@@ -65,85 +65,101 @@ class Vehicle(models.Model):
     def __str__(self):
         return f"{self.year} {self.make} {self.model} - {self.vin}"
 
+
+
 class MaintenanceSchedule(models.Model):
     MAINTENANCE_TYPES = [
         ('oil_change', 'Oil Change'),
         ('brake_service', 'Brake Service'),
         ('tire_rotation', 'Tire Rotation'),
-        ('transmission', 'Transmission Service'),
-        ('engine_tune', 'Engine Tune-up'),
+        ('transmission_service', 'Transmission Service'),
+        ('engine_tune_up', 'Engine Tune-up'),
+        ('air_filter', 'Air Filter Replacement'),
+        ('coolant_flush', 'Coolant Flush'),
+        ('battery_service', 'Battery Service'),
         ('inspection', 'Safety Inspection'),
         ('other', 'Other')
     ]
     
     PRIORITY_LEVELS = [
-        ('critical', 'Critical'),
-        ('high', 'High'),
+        ('low', 'Low'),
         ('medium', 'Medium'),
-        ('low', 'Low')
+        ('high', 'High'),
+        ('critical', 'Critical')
     ]
     
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='maintenance_schedules')
-    maintenance_type = models.CharField(max_length=20, choices=MAINTENANCE_TYPES)
+    maintenance_type = models.CharField(max_length=30, choices=MAINTENANCE_TYPES)
     priority_level = models.CharField(max_length=10, choices=PRIORITY_LEVELS, default='medium')
     scheduled_date = models.DateField()
-    due_mileage = models.IntegerField()
+    due_mileage = models.PositiveIntegerField(null=True, blank=True, help_text="Mileage when maintenance is due")
     description = models.TextField(blank=True)
     is_completed = models.BooleanField(default=False)
     completed_date = models.DateField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     service_provider = models.CharField(max_length=100, blank=True)
     
-    # Connection to maintenance app
-    scheduled_maintenance = models.OneToOneField(
+    # Foreign key relationship with maintenance app
+    scheduled_maintenance = models.ForeignKey(
         'maintenance.ScheduledMaintenance',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='insurance_schedule',
-        help_text="Link to the detailed maintenance schedule"
+        related_name='insurance_schedules',
+        help_text="Link to scheduled maintenance in maintenance app"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)
-
+    updated_at = models.DateTimeField(auto_now=True)
+    
     class Meta:
-        ordering = ['scheduled_date']
-
+        ordering = ['scheduled_date', 'priority_level']
+        indexes = [
+            models.Index(fields=['scheduled_date', 'is_completed']),
+            models.Index(fields=['vehicle', 'maintenance_type']),
+        ]
+    
+    def __str__(self):
+        vehicle_info = f"{self.vehicle.vehicle.make} {self.vehicle.vehicle.model}" if self.vehicle.vehicle else "Unknown Vehicle"
+        return f"{vehicle_info} - {self.get_maintenance_type_display()} ({self.scheduled_date})"
+    
     def is_overdue(self):
-        return not self.is_completed and self.scheduled_date < timezone.now().date()
-
+        """Check if maintenance is overdue"""
+        if self.is_completed:
+            return False
+        return self.scheduled_date < timezone.now().date()
+    
     def days_overdue(self):
-        if self.is_overdue():
-            return (timezone.now().date() - self.scheduled_date).days
-        return 0
+        """Calculate days overdue"""
+        if not self.is_overdue():
+            return 0
+        return (timezone.now().date() - self.scheduled_date).days
+    
+    def get_maintenance_details(self):
+        """Get details from linked maintenance app record"""
+        if self.scheduled_maintenance:
+            return {
+                'task_name': self.scheduled_maintenance.task.name if self.scheduled_maintenance.task else None,
+                'maintenance_status': self.scheduled_maintenance.status,
+                'technician': self.scheduled_maintenance.technician.username if self.scheduled_maintenance.technician else None,
+                'due_mileage': self.scheduled_maintenance.due_mileage,
+                'completed_mileage': self.scheduled_maintenance.completed_mileage,
+                'notes': self.scheduled_maintenance.notes,
+            }
+        return None
     
     def sync_with_maintenance_app(self):
-        """Synchronize data with the maintenance app's ScheduledMaintenance"""
+        """Sync completion status with maintenance app"""
         if self.scheduled_maintenance:
-            # Update status based on maintenance app
-            if self.scheduled_maintenance.status == 'COMPLETED':
+            maintenance = self.scheduled_maintenance
+            if maintenance.status == 'COMPLETED' and not self.is_completed:
                 self.is_completed = True
-                self.completed_date = self.scheduled_maintenance.completed_date
-            elif self.scheduled_maintenance.status == 'OVERDUE':
+                self.completed_date = maintenance.completed_date
+                self.save()
+            elif maintenance.status != 'COMPLETED' and self.is_completed:
                 self.is_completed = False
-            
-            # Update dates and mileage
-            self.scheduled_date = self.scheduled_maintenance.due_date
-            self.due_mileage = self.scheduled_maintenance.due_mileage
-            
-            # Update description from task details
-            if self.scheduled_maintenance.task:
-                self.description = self.scheduled_maintenance.task.description or self.scheduled_maintenance.task.name
-            
-            self.save()
-    
-    @classmethod
-    def create_from_scheduled_maintenance(cls, scheduled_maintenance, vehicle=None):
-        """Create insurance schedule from maintenance app's scheduled maintenance"""
-        from .utils import MaintenanceSyncManager
-        return MaintenanceSyncManager.create_insurance_schedule_from_maintenance(
-            scheduled_maintenance, vehicle
-        )
+                self.completed_date = None
+                self.save()
 
 class MaintenanceCompliance(models.Model):
     vehicle = models.OneToOneField(Vehicle, on_delete=models.CASCADE, related_name='compliance')

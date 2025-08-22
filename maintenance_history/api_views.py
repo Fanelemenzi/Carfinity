@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.views import View
 from django.core.paginator import Paginator
 from django.db.models import Q
-from maintenance.models import Part
+from maintenance.models import Part, ScheduledMaintenance
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -101,4 +101,45 @@ class PartDetailsAPIView(View):
         except Exception as e:
             return JsonResponse({
                 'error': 'An error occurred while retrieving part details'
+            }, status=500)
+
+
+class ScheduledMaintenanceAPIView(View):
+    """
+    API endpoint for retrieving scheduled maintenance filtered by vehicle
+    """
+    
+    def get(self, request):
+        vehicle_id = request.GET.get('vehicle')
+        
+        if not vehicle_id:
+            return JsonResponse({
+                'error': 'Vehicle ID is required'
+            }, status=400)
+        
+        try:
+            # Get scheduled maintenance for the specified vehicle
+            scheduled_maintenance = ScheduledMaintenance.objects.filter(
+                assigned_plan__vehicle_id=vehicle_id,
+                status='PENDING'  # Only show pending maintenance
+            ).select_related('task', 'assigned_plan__vehicle').order_by('due_date')
+            
+            # Serialize data
+            maintenance_data = []
+            for sm in scheduled_maintenance:
+                maintenance_data.append({
+                    'id': sm.id,
+                    'task_name': sm.task.name,
+                    'description': sm.task.description,
+                    'due_date': sm.due_date.strftime('%Y-%m-%d'),
+                    'due_mileage': sm.due_mileage,
+                    'priority': sm.task.priority,
+                    'estimated_time': str(sm.task.estimated_time) if sm.task.estimated_time else None,
+                })
+            
+            return JsonResponse(maintenance_data, safe=False)
+            
+        except Exception as e:
+            return JsonResponse({
+                'error': 'An error occurred while retrieving scheduled maintenance'
             }, status=500)

@@ -50,4 +50,9 @@ urlpatterns = [
     path('api/parts/<int:part_id>/', 
          api_views.PartDetailsAPIView.as_view(), 
          name='part_details_api'),
+    
+    # API endpoint for scheduled maintenance
+    path('api/scheduled-maintenance/', 
+         api_views.ScheduledMaintenanceAPIView.as_view(), 
+         name='scheduled_maintenance_api'),
 ]

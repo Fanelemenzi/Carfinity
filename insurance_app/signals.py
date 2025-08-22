@@ -5,51 +5,7 @@ from maintenance.models import ScheduledMaintenance
 from vehicles.models import VehicleHistory
 from .models import MaintenanceSchedule, Accident
 
-@receiver(post_save, sender=ScheduledMaintenance)
-def sync_scheduled_maintenance_on_save(sender, instance, created, **kwargs):
-    """
-    Automatically sync insurance maintenance schedule when maintenance app schedule is updated
-    """
-    try:
-        # Check if insurance schedule exists
-        insurance_schedule = MaintenanceSchedule.objects.filter(
-            scheduled_maintenance=instance
-        ).first()
-
-        if insurance_schedule:
-            # Update existing insurance schedule
-            insurance_schedule.sync_with_maintenance_app()
-        else:
-            # Create new insurance schedule if it doesn't exist
-            vehicle = instance.assigned_plan.vehicle
-            MaintenanceSchedule.create_from_scheduled_maintenance(instance, vehicle)
-            
-    except Exception as e:
-        # Log error but don't break the maintenance app functionality
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error syncing maintenance schedule {instance.id}: {str(e)}")
-
-@receiver(post_delete, sender=ScheduledMaintenance)
-def handle_scheduled_maintenance_deletion(sender, instance, **kwargs):
-    """
-    Handle deletion of scheduled maintenance from maintenance app
-    """
-    try:
-        # Find related insurance schedule and unlink it
-        insurance_schedule = MaintenanceSchedule.objects.filter(
-            scheduled_maintenance=instance
-        ).first()
-        
-        if insurance_schedule:
-            # Don't delete the insurance schedule, just unlink it
-            insurance_schedule.scheduled_maintenance = None
-            insurance_schedule.save()
-            
-    except Exception as e:
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.error(f"Error handling deletion of maintenance schedule {instance.id}: {str(e)}")
+# Removed automatic sync signals - now using manual selection
 
 @receiver(post_save, sender=MaintenanceSchedule)
 def update_compliance_on_schedule_change(sender, instance, **kwargs):

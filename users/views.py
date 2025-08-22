@@ -122,16 +122,50 @@ def search(request):
 
 def search_results(request):
     vin = request.GET.get('vin')
+    
+    # Initialize context with error handling
+    context = {
+        'searched_vin': vin,
+        'error_type': None,
+        'error_message': None,
+        'vehicle': None,
+        'status': None,
+        'maintenance_records': [],
+        'inspections': [],
+        'vehicle_images': [],
+        'powertrain': None,
+        'chassis': None,
+        'electrical': None,
+        'exterior': None,
+        'safety': None,
+    }
+    
+    # Check if VIN was provided
     if not vin:
-        messages.error(request, "Please enter a VIN number")
-        return redirect('search')
+        context.update({
+            'error_type': 'missing_vin',
+            'error_message': 'Please enter a VIN number to search for vehicle information.'
+        })
+        return render(request, 'search/search-results.html', context)
+    
+    # Clean and validate VIN format
+    vin = vin.strip().upper()
+    if len(vin) != 17:
+        context.update({
+            'error_type': 'invalid_vin_format',
+            'error_message': f'Invalid VIN format. VIN must be exactly 17 characters long. You entered: {len(vin)} characters.'
+        })
+        return render(request, 'search/search-results.html', context)
     
     try:
         # Get the vehicle
-        vehicle = get_object_or_404(Vehicle, vin=vin)
+        vehicle = Vehicle.objects.get(vin=vin)
         
         # Get vehicle status
-        vehicle_status = get_object_or_404(VehicleStatus, vehicle=vehicle)
+        try:
+            vehicle_status = VehicleStatus.objects.get(vehicle=vehicle)
+        except VehicleStatus.DoesNotExist:
+            vehicle_status = None
         
         # Get maintenance records
         maintenance_records = MaintenanceRecord.objects.filter(vehicle=vehicle).order_by('-date_performed')
@@ -139,7 +173,7 @@ def search_results(request):
         # Get inspections
         inspections = Inspection.objects.filter(vehicle=vehicle).order_by('-inspection_date')
         
-        # Get vehicle images - Add this section
+        # Get vehicle images
         vehicle_images = VehicleImage.objects.filter(vehicle=vehicle).order_by('-is_primary', '-uploaded_at')
         
         # Get vehicle equipment information
@@ -149,27 +183,38 @@ def search_results(request):
         exterior = ExteriorFeaturesAndBody.objects.filter(vehicle=vehicle).first()
         safety = ActiveSafetyAndADAS.objects.filter(vehicle=vehicle).first()
         
-        context = {
+        context.update({
             'vehicle': vehicle,
             'status': vehicle_status,
             'maintenance_records': maintenance_records,
             'inspections': inspections,
-            'vehicle_images': vehicle_images,  # Add this to context
+            'vehicle_images': vehicle_images,
             'powertrain': powertrain,
             'chassis': chassis,
             'electrical': electrical,
             'exterior': exterior,
             'safety': safety,
-        }
+        })
         
         return render(request, 'search/search-results.html', context)
         
     except Vehicle.DoesNotExist:
-        messages.error(request, f"No vehicle found with VIN: {vin}")
-        return redirect('search')
+        context.update({
+            'error_type': 'vehicle_not_found',
+            'error_message': f'No vehicle found with VIN: {vin}. Please check the VIN number and try again.'
+        })
+        return render(request, 'search/search-results.html', context)
+        
     except Exception as e:
-        messages.error(request, f"An error occurred: {str(e)}")
-        return redirect('search')
+        context.update({
+            'error_type': 'system_error',
+            'error_message': f'An unexpected error occurred while searching for the vehicle. Please try again later.'
+        })
+        # Log the actual error for debugging
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Search error for VIN {vin}: {str(e)}")
+        return render(request, 'search/search-results.html', context)
 
 
 

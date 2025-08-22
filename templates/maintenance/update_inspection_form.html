@@ -1,0 +1,1072 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Inspection Form - {{ inspection_form.inspection.inspection_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .inspection-section {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+        background-color: #f9fafb;
+        padding: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+
+    .section-content {
+        padding: 1.5rem;
+    }
+
+    .inspection-point {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .inspection-point:last-child {
+        border-bottom: none;
+    }
+
+    .point-label {
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .status-select {
+        width: 100%;
+    }
+
+    .notes-section {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .update-indicator {
+        background-color: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 0.375rem;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .completion-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .status-completed {
+        background-color: #d1fae5;
+        color: #065f46;
+    }
+
+    .status-pending {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+
+        {
+        % endblo ck %
+    }
+
+        {
+        % block content %
+    }
+
+    <div class="container mx-auto px-4 py-8"><div class="max-w-4xl mx-auto"><div class="mb-6"><h1 class="text-3xl font-bold text-gray-900">Update Inspection Form</h1><p class="mt-2 text-gray-600">Inspection #{{ inspection_form.inspection.inspection_number }
+    }
+
+    - {
+            {
+            inspection_form.inspection.vehicle.make
+        }
+    }
+
+        {
+            {
+            inspection_form.inspection.vehicle.model
+        }
+    }
+
+    ({
+            {
+            inspection_form.inspection.vehicle.license_plate
+        }
+
+    }) </p><div class="mt-2"><span class="completion-status {% if inspection_form.is_completed %}status-completed{% else %}status-pending{% endif %}"> {
+        % if inspection_form.is_completed %
+    }
+
+    ✓ Completed {
+        % else %
+    }
+
+    ⏳ In Progress {
+        % endif %
+    }
+
+    </span></div></div><div class="update-indicator"><div class="flex"><div class="flex-shrink-0"><svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></div><div class="ml-3"><p class="text-sm text-yellow-800"><strong>Updating existing inspection form.</strong>Last modified: {
+            {
+            inspection_form.updated_at|date: "M d, Y g:i A"
+        }
+    }
+
+        {
+        % if inspection_form.technician %
+    }
+
+    by {
+            {
+            inspection_form.technician.get_full_name
+        }
+    }
+
+        {
+        % endif %
+    }
+
+    </p></div></div></div><form method="post" class="space-y-6"> {
+        % csrf_token %
+    }
+
+    < !-- Basic Information --><div class="bg-white shadow rounded-lg p-6"><h2 class="text-lg font-medium text-gray-900 mb-4">Inspection Information</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div><label class="block text-sm font-medium text-gray-700 mb-2">Inspection Record</label><p class="text-sm text-gray-900 bg-gray-50 p-2 rounded">#{{ inspection_form.inspection.inspection_number }
+    }
+
+    - {
+            {
+            inspection_form.inspection.inspection_date|date: "M d, Y"
+        }
+    }
+
+    </p></div><div> {
+            {
+            form.technician.label_tag
+        }
+    }
+
+        {
+            {
+            form.technician
+        }
+    }
+
+        {
+        % if form.technician.errors %
+    }
+
+    <p class="mt-1 text-sm text-red-600"> {
+            {
+            form.technician.errors.0
+        }
+    }
+
+    </p> {
+        % endif %
+    }
+
+    </div><div> {
+            {
+            form.inspection_date.label_tag
+        }
+    }
+
+        {
+            {
+            form.inspection_date
+        }
+    }
+
+        {
+        % if form.inspection_date.errors %
+    }
+
+    <p class="mt-1 text-sm text-red-600"> {
+            {
+            form.inspection_date.errors.0
+        }
+    }
+
+    </p> {
+        % endif %
+    }
+
+    </div><div> {
+            {
+            form.mileage_at_inspection.label_tag
+        }
+    }
+
+        {
+            {
+            form.mileage_at_inspection
+        }
+    }
+
+        {
+        % if form.mileage_at_inspection.errors %
+    }
+
+    <p class="mt-1 text-sm text-red-600"> {
+            {
+            form.mileage_at_inspection.errors.0
+        }
+    }
+
+    </p> {
+        % endif %
+    }
+
+    </div></div></div>< !-- Engine & Powertrain --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Engine & Powertrain (Points 1-10)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.engine_oil_level.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.engine_oil_level
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.oil_filter_condition.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.oil_filter_condition
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.coolant_level.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.coolant_level
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.drive_belts.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.drive_belts
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.hoses_condition.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.hoses_condition
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.air_filter.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.air_filter
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.cabin_air_filter.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.cabin_air_filter
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.transmission_fluid.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.transmission_fluid
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.engine_mounts.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.engine_mounts
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.fluid_leaks.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.fluid_leaks
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.engine_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.engine_notes
+        }
+    }
+
+    </div></div></div>< !-- Electrical System --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Electrical System (Points 11-15)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.battery_condition.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.battery_condition
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.alternator_function.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.alternator_function
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.starter_motor.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.starter_motor
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.electrical_connections.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.electrical_connections
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.warning_lights.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.warning_lights
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.electrical_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.electrical_notes
+        }
+    }
+
+    </div></div></div>< !-- Brakes & Suspension --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Brakes & Suspension (Points 16-22)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.brake_pads.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.brake_pads
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.brake_discs.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.brake_discs
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.brake_fluid.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.brake_fluid
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.parking_brake.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.parking_brake
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.shocks_struts.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.shocks_struts
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.suspension_bushings.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.suspension_bushings
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.wheel_bearings.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.wheel_bearings
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.brakes_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.brakes_notes
+        }
+    }
+
+    </div></div></div>< !-- Steering & Tires --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Steering & Tires (Points 23-28)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.steering_response.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.steering_response
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.steering_fluid.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.steering_fluid
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.tire_tread_depth.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.tire_tread_depth
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.tire_pressure.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.tire_pressure
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.tire_wear_patterns.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.tire_wear_patterns
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.wheels_rims.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.wheels_rims
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.steering_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.steering_notes
+        }
+    }
+
+    </div></div></div>< !-- Exhaust & Emissions --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Exhaust & Emissions (Points 29-31)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.exhaust_system.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.exhaust_system
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.catalytic_converter.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.catalytic_converter
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.exhaust_warning_lights.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.exhaust_warning_lights
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.exhaust_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.exhaust_notes
+        }
+    }
+
+    </div></div></div>< !-- Safety Equipment --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Safety Equipment (Points 32-36)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.seat_belts.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.seat_belts
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.airbags.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.airbags
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.horn_function.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.horn_function
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.first_aid_kit.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.first_aid_kit
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.warning_triangle.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.warning_triangle
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.safety_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.safety_notes
+        }
+    }
+
+    </div></div></div>< !-- Lighting & Visibility --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Lighting & Visibility (Points 37-44)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.headlights.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.headlights
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.brake_lights.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.brake_lights
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.turn_signals.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.turn_signals
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.interior_lights.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.interior_lights
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.windshield.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.windshield
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.wiper_blades.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.wiper_blades
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.rear_defogger.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.rear_defogger
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.mirrors.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.mirrors
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.lighting_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.lighting_notes
+        }
+    }
+
+    </div></div></div>< !-- HVAC & Interior --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">HVAC & Interior (Points 45-48)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.air_conditioning.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.air_conditioning
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.ventilation.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.ventilation
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.seat_adjustments.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.seat_adjustments
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.power_windows.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.power_windows
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.hvac_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.hvac_notes
+        }
+    }
+
+    </div></div></div>< !-- Technology & Driver Assist --><div class="inspection-section bg-white shadow rounded-lg"><div class="section-header"><h3 class="text-lg font-medium text-gray-900">Technology & Driver Assist (Points 49-50)</h3></div><div class="section-content"><div class="inspection-point"><div class="point-label"> {
+            {
+            form.infotainment_system.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.infotainment_system
+        }
+    }
+
+    </div></div><div class="inspection-point"><div class="point-label"> {
+            {
+            form.rear_view_camera.label
+        }
+    }
+
+    </div><div> {
+            {
+            form.rear_view_camera
+        }
+    }
+
+    </div></div><div class="notes-section"> {
+            {
+            form.technology_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.technology_notes
+        }
+    }
+
+    </div></div></div>< !-- Summary Section --><div class="bg-white shadow rounded-lg p-6"><h3 class="text-lg font-medium text-gray-900 mb-4">Summary & Recommendations</h3><div class="space-y-4"><div> {
+            {
+            form.overall_notes.label_tag
+        }
+    }
+
+        {
+            {
+            form.overall_notes
+        }
+    }
+
+    </div><div> {
+            {
+            form.recommendations.label_tag
+        }
+    }
+
+        {
+            {
+            form.recommendations
+        }
+    }
+
+    </div><div class="flex items-center"> {
+            {
+            form.is_completed
+        }
+    }
+
+    <label for="{{ form.is_completed.id_for_label }}" class="ml-2 text-sm text-gray-700">Mark inspection as completed </label></div></div></div>< !-- Form Actions --><div class="flex justify-between"><div class="flex space-x-4"><a href="{% url 'maintenance_history:inspection_form_detail' inspection_form.pk %}"
+    class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancel </a><a href="{% url 'maintenance_history:inspection_form_list' %}"
+    class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Back to List </a></div><div class="flex space-x-4"><button type="submit" name="save_draft"
+    class="bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">Save Draft </button><button type="submit" name="save_complete"
+
+    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Update & Complete </button></div></div></form></div></div><script>document.addEventListener('DOMContentLoaded', function() {
+            const form=document.querySelector('form');
+            const selects=form.querySelectorAll('select');
+            const textareas=form.querySelectorAll('textarea');
+            const inputs=form.querySelectorAll('input[type="text"], input[type="number"], input[type="date"]');
+
+            // Track changes for unsaved work warning
+            let hasUnsavedChanges=false;
+
+            function markAsChanged() {
+                hasUnsavedChanges=true;
+            }
+
+            // Add change listeners
+            [...selects, ...textareas, ...inputs].forEach(element=> {
+                    element.addEventListener('change', markAsChanged);
+                    element.addEventListener('input', markAsChanged);
+                });
+
+            // Warn about unsaved changes
+            window.addEventListener('beforeunload', function(e) {
+                    if (hasUnsavedChanges) {
+                        e.preventDefault();
+                        e.returnValue='You have unsaved changes. Are you sure you want to leave?';
+                    }
+                });
+
+            // Clear warning when form is submitted
+            form.addEventListener('submit', function() {
+                    hasUnsavedChanges=false;
+                });
+
+            // Progress tracking
+            function updateProgress() {
+                const allFields=[...selects, ...textareas, ...inputs].filter(el=> !el.name.includes('notes') && el.type !=='checkbox'
+                );
+
+                const completedFields=allFields.filter(field=> {
+                        if (field.type==='select-one') {
+                            return field.value !=='';
+                        }
+
+                        return field.value.trim() !=='';
+                    }).length;
+
+                const percentage=Math.round((completedFields / allFields.length) * 100);
+
+                // Update progress indicator if it exists
+                const progressBar=document.querySelector('.progress-bar');
+
+                if (progressBar) {
+                    progressBar.style.width=percentage + '%';
+                    progressBar.textContent=percentage + '%';
+                }
+
+                // Update page title with progress
+                document.title=`Update Inspection Form ($ {
+                        percentage
+                    }
+
+                    % complete) - {
+                        {
+                        inspection_form.inspection.inspection_number
+                    }
+                }
+
+                `;
+            }
+
+            // Initial progress calculation
+            updateProgress();
+
+            // Update progress on changes
+            [...selects, ...inputs].forEach(element=> {
+                    element.addEventListener('change', updateProgress);
+                });
+
+            // Auto-save functionality (optional - could be implemented with AJAX)
+            let autoSaveTimeout;
+
+            function scheduleAutoSave() {
+                clearTimeout(autoSaveTimeout);
+
+                autoSaveTimeout=setTimeout(()=> {
+                        // Could implement AJAX auto-save here
+                        console.log('Auto-save would trigger here');
+                    }
+
+                    , 30000); // Auto-save after 30 seconds of inactivity
+            }
+
+            [...selects, ...textareas, ...inputs].forEach(element=> {
+                    element.addEventListener('change', scheduleAutoSave);
+                });
+        });
+
+    </script> {
+        % endblock %
+    }

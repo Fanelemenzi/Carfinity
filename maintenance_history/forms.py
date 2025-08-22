@@ -2,7 +2,7 @@ from django import forms
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
-from maintenance.models import Part
+from maintenance.models import Part, ScheduledMaintenance
 import json
 
 class MaintenanceRecordForm(forms.ModelForm):
@@ -16,7 +16,10 @@ class MaintenanceRecordForm(forms.ModelForm):
             'scheduled_maintenance',
             'work_done',
             'mileage',
-            'notes'
+            'notes',
+            'service_image',
+            'image_type',
+            'image_description'
         ]
         widgets = {
             'vehicle': forms.Select(attrs={'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'}),
@@ -32,11 +35,24 @@ class MaintenanceRecordForm(forms.ModelForm):
                 'rows': 2,
                 'placeholder': 'Additional notes...'
             }),
+            'service_image': forms.FileInput(attrs={
+                'class': 'w-full mt-1 block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100',
+                'accept': 'image/*'
+            }),
+            'image_type': forms.Select(attrs={'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'}),
+            'image_description': forms.TextInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Brief description of the image...'
+            }),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.selected_parts = []
+        
+        # Set initial empty choice for scheduled maintenance
+        self.fields['scheduled_maintenance'].empty_label = "Select a vehicle first"
+        self.fields['scheduled_maintenance'].queryset = ScheduledMaintenance.objects.none()
         
     def clean_parts_data(self):
         """Validate and parse parts data from JavaScript"""
@@ -95,6 +111,22 @@ class MaintenanceRecordForm(forms.ModelForm):
             })
             
         return validated_parts
+    
+    def clean_service_image(self):
+        """Validate service image upload"""
+        image = self.cleaned_data.get('service_image')
+        
+        if image:
+            # Check file size (limit to 10MB)
+            if image.size > 10 * 1024 * 1024:
+                raise ValidationError("Image file size cannot exceed 10MB.")
+            
+            # Check file type
+            allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+            if hasattr(image, 'content_type') and image.content_type not in allowed_types:
+                raise ValidationError("Only JPEG, PNG, GIF, and WebP images are allowed.")
+        
+        return image
         
     def clean(self):
         """Additional form validation"""
@@ -102,6 +134,13 @@ class MaintenanceRecordForm(forms.ModelForm):
         
         # Store validated parts for use in save method
         self.selected_parts = self.clean_parts_data()
+        
+        # Validate image type is provided if image is uploaded
+        service_image = cleaned_data.get('service_image')
+        image_type = cleaned_data.get('image_type')
+        
+        if service_image and not image_type:
+            raise ValidationError("Please select an image type when uploading an image.")
         
         return cleaned_data
         
@@ -138,7 +177,10 @@ class MaintenanceRecordForm(forms.ModelForm):
     def get_selected_parts_summary(self):
         """Get summary of selected parts for display"""
         if not self.selected_parts:
-            return []
+            return {
+                'parts': [],
+                'total_cost': 0
+            }
             
         summary = []
         total_cost = 0

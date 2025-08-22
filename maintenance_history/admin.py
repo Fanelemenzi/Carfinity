@@ -33,7 +33,7 @@ class PartUsageInline(admin.TabularInline):
 @admin.register(MaintenanceRecord)
 class MaintenanceRecordAdmin(admin.ModelAdmin):
     form = MaintenanceRecordAdminForm
-    list_display = ('vehicle', 'date_performed', 'technician', 'mileage', 'work_summary', 'has_image_display')
+    list_display = ('vehicle', 'date_performed', 'technician', 'mileage', 'work_summary', 'has_image_display', 'image_details')
     list_filter = ('date_performed', 'technician', 'image_type')
     search_fields = ('vehicle__VIN', 'work_done')
     autocomplete_fields = ['vehicle', 'technician', 'scheduled_maintenance']
@@ -65,11 +65,15 @@ class MaintenanceRecordAdmin(admin.ModelAdmin):
     work_summary.short_description = "Work Summary"
     
     def has_image_display(self, obj):
-        if obj.has_service_image:
-            return f"✓ {obj.image_type_display}" if obj.image_type else "✓ Yes"
-        return "✗ No"
-    has_image_display.short_description = "Service Image"
+        return obj.has_service_image
+    has_image_display.short_description = "Has Service Image"
     has_image_display.boolean = True
+    
+    def image_details(self, obj):
+        if obj.has_service_image:
+            return f"✓ {obj.image_type_display}" if obj.image_type else "✓ Image Available"
+        return "No Image"
+    image_details.short_description = "Image Details"
     
     def image_preview(self, obj):
         if obj.service_image:
@@ -118,10 +122,8 @@ class InspectionAdmin(admin.ModelAdmin):
     vehicle_vin.admin_order_field = 'vehicle__vin'
     
     def has_pdf_display(self, obj):
-        if obj.has_pdf:
-            return "✓ Yes"
-        return "✗ No"
-    has_pdf_display.short_description = "PDF Report"
+        return obj.has_pdf
+    has_pdf_display.short_description = "Has PDF Report"
     has_pdf_display.boolean = True
     
     def pdf_size_display(self, obj):
@@ -270,29 +272,28 @@ class InspectionsAdmin(admin.ModelAdmin):
     
     def completion_status(self, obj):
         if obj.is_completed:
-            return f"✓ Completed ({obj.completed_at.strftime('%Y-%m-%d %H:%M') if obj.completed_at else 'Unknown'})"
-        return "⏳ In Progress"
+            return f"Completed ({obj.completed_at.strftime('%Y-%m-%d %H:%M') if obj.completed_at else 'Unknown'})"
+        return "In Progress"
     completion_status.short_description = "Status"
     
     def completion_percentage_display(self, obj):
         percentage = obj.completion_percentage
         if percentage == 100:
-            return f"✓ {percentage}%"
+            return f"{percentage}% (Complete)"
         elif percentage >= 75:
-            return f"🟡 {percentage}%"
+            return f"{percentage}% (Nearly Done)"
         elif percentage >= 50:
-            return f"🟠 {percentage}%"
+            return f"{percentage}% (In Progress)"
         else:
-            return f"🔴 {percentage}%"
+            return f"{percentage}% (Started)"
     completion_percentage_display.short_description = "Progress"
     
     def has_major_issues_display(self, obj):
         if obj.has_major_issues:
             failed_count = len(obj.failed_points)
-            return f"⚠️ {failed_count} issue(s)"
-        return "✓ No major issues"
+            return f"{failed_count} issue(s) found"
+        return "No major issues"
     has_major_issues_display.short_description = "Issues"
-    has_major_issues_display.boolean = False
     
     actions = ['mark_as_completed', 'generate_inspection_report']
     

@@ -6,6 +6,7 @@ from . import views
 # API Router
 router = DefaultRouter()
 router.register(r'vehicles', views.VehicleViewSet, basename='insurance-vehicle')
+router.register(r'maintenance-schedules', views.MaintenanceScheduleViewSet, basename='insurance-maintenance-schedule')
 router.register(r'maintenance-compliance', views.MaintenanceComplianceViewSet, basename='insurance-maintenance-compliance')
 router.register(r'risk-alerts', views.RiskAlertViewSet, basename='insurance-risk-alert')
 

@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django_countries.fields import CountryField
+# from django_countries.fields import CountryField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.core.exceptions import ValidationError
 
@@ -20,7 +20,7 @@ class Vehicle(models.Model):
     transmission_type = models.CharField(max_length=50, blank=True, null=True)
     powertrain_displacement = models.CharField(max_length=50, blank=True, null=True)
     powertrain_power =  models.CharField(max_length=5, null=True)
-    plant_location = CountryField(max_length=50, blank=True, null=True)
+    plant_location = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
   

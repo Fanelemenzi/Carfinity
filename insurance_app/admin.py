@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from maintenance.models import ScheduledMaintenance
 from .models import (
     InsurancePolicy, Vehicle, MaintenanceSchedule, MaintenanceCompliance,
     Accident, VehicleConditionScore, RiskAlert, RiskAssessmentMetrics
@@ -14,17 +15,25 @@ class VehicleInline(admin.TabularInline):
     readonly_fields = ['risk_score', 'vehicle_health_index', 'created_at']
     fields = ['vehicle', 'current_condition', 'risk_score', 'vehicle_health_index', 'last_inspection_date']
 
-class MaintenanceScheduleInline(admin.TabularInline):
-    model = MaintenanceSchedule
-    extra = 0
-    readonly_fields = ['created_at']
-    fields = ['maintenance_type', 'priority_level', 'scheduled_date', 'is_completed', 'cost']
+
 
 class AccidentInline(admin.TabularInline):
     model = Accident
     extra = 0
     readonly_fields = ['created_at']
     fields = ['accident_date', 'severity', 'claim_amount', 'maintenance_related']
+
+class MaintenanceScheduleInline(admin.TabularInline):
+    model = MaintenanceSchedule
+    extra = 0
+    readonly_fields = ['created_at', 'is_overdue_display']
+    fields = ['maintenance_type', 'priority_level', 'scheduled_date', 'is_completed', 'completed_date', 'is_overdue_display']
+    
+    def is_overdue_display(self, obj):
+        if obj.is_overdue():
+            return format_html('<span style="color: red; font-weight: bold;">OVERDUE</span>')
+        return format_html('<span style="color: green;">On Time</span>')
+    is_overdue_display.short_description = 'Status'
 
 class RiskAlertInline(admin.TabularInline):
     model = RiskAlert
@@ -122,10 +131,10 @@ class VehicleAdmin(admin.ModelAdmin):
 
 @admin.register(MaintenanceSchedule)
 class MaintenanceScheduleAdmin(admin.ModelAdmin):
-    list_display = ['vehicle_info', 'maintenance_type', 'priority_level', 'scheduled_date', 'is_completed', 'is_overdue_display', 'cost']
-    list_filter = ['maintenance_type', 'priority_level', 'is_completed', 'scheduled_date', 'created_at']
-    search_fields = ['vehicle__vehicle__vin', 'vehicle__vehicle__make', 'vehicle__vehicle__model', 'description']
-    readonly_fields = ['created_at', 'is_overdue_display', 'days_overdue_display']
+    list_display = ['vehicle_info', 'maintenance_type', 'priority_level', 'scheduled_date', 'is_completed', 'is_overdue_display', 'linked_maintenance', 'cost']
+    list_filter = ['maintenance_type', 'priority_level', 'is_completed', 'scheduled_date', 'created_at', 'scheduled_maintenance__status']
+    search_fields = ['vehicle__vehicle__vin', 'vehicle__vehicle__make', 'vehicle__vehicle__model', 'description', 'scheduled_maintenance__task__name']
+    readonly_fields = ['created_at', 'is_overdue_display', 'days_overdue_display', 'maintenance_details_display']
     date_hierarchy = 'scheduled_date'
     
     fieldsets = (
@@ -135,12 +144,12 @@ class MaintenanceScheduleAdmin(admin.ModelAdmin):
         ('Schedule Details', {
             'fields': ('scheduled_date', 'due_mileage', 'description')
         }),
+        ('Maintenance App Link', {
+            'fields': ('scheduled_maintenance', 'maintenance_details_display'),
+            'description': 'Link to a scheduled maintenance from the maintenance app'
+        }),
         ('Completion', {
             'fields': ('is_completed', 'completed_date', 'cost', 'service_provider')
-        }),
-        ('Maintenance App Link', {
-            'fields': ('scheduled_maintenance',),
-            'classes': ('collapse',)
         }),
         ('Status', {
             'fields': ('is_overdue_display', 'days_overdue_display'),
@@ -151,6 +160,14 @@ class MaintenanceScheduleAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         })
     )
+    
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "scheduled_maintenance":
+            # Filter scheduled maintenance to show only pending/overdue ones
+            kwargs["queryset"] = ScheduledMaintenance.objects.filter(
+                status__in=['PENDING', 'OVERDUE']
+            ).select_related('task', 'assigned_plan__vehicle')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
     def vehicle_info(self, obj):
         if obj.vehicle and obj.vehicle.vehicle:
@@ -170,6 +187,29 @@ class MaintenanceScheduleAdmin(admin.ModelAdmin):
             return format_html('<span style="color: red;">{} days</span>', days)
         return '0 days'
     days_overdue_display.short_description = 'Days Overdue'
+    
+    def linked_maintenance(self, obj):
+        if obj.scheduled_maintenance:
+            return format_html(
+                '<span style="color: green;">✓ {}</span>', 
+                obj.scheduled_maintenance.task.name if obj.scheduled_maintenance.task else 'Linked'
+            )
+        return format_html('<span style="color: red;">✗ Not Linked</span>')
+    linked_maintenance.short_description = 'Maintenance Link'
+    
+    def maintenance_details_display(self, obj):
+        details = obj.get_maintenance_details()
+        if details:
+            info = []
+            if details['task_name']:
+                info.append(f"Task: {details['task_name']}")
+            if details['maintenance_status']:
+                info.append(f"Status: {details['maintenance_status']}")
+            if details['technician']:
+                info.append(f"Technician: {details['technician']}")
+            return mark_safe('<br>'.join(info)) if info else 'No details available'
+        return 'No maintenance linked'
+    maintenance_details_display.short_description = 'Maintenance Details'
 
 @admin.register(MaintenanceCompliance)
 class MaintenanceComplianceAdmin(admin.ModelAdmin):

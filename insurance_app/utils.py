@@ -278,13 +278,21 @@ class MaintenanceSyncManager:
         # Determine priority
         priority = MaintenanceSyncManager.determine_insurance_priority(scheduled_maintenance)
         
+        # Handle due_mileage - provide default if None or missing
+        due_mileage = scheduled_maintenance.due_mileage
+        if due_mileage is None:
+            # Use current vehicle mileage + task interval as fallback
+            current_mileage = getattr(scheduled_maintenance.assigned_plan, 'current_mileage', 0)
+            task_interval = getattr(scheduled_maintenance.task, 'interval_miles', 5000)
+            due_mileage = current_mileage + task_interval
+        
         # Create insurance schedule
         insurance_schedule = MaintenanceSchedule.objects.create(
             vehicle=vehicle,
             maintenance_type=maintenance_type,
             priority_level=priority,
             scheduled_date=scheduled_maintenance.due_date,
-            due_mileage=scheduled_maintenance.due_mileage,
+            due_mileage=due_mileage,
             description=scheduled_maintenance.task.description or task_name,
             is_completed=(scheduled_maintenance.status == 'COMPLETED'),
             completed_date=scheduled_maintenance.completed_date,
