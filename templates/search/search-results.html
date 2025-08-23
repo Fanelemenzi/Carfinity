@@ -400,7 +400,7 @@
                   </tr>
                   {% empty %}
                   <tr>
-                    <td colspan="6" class="p-4 text-center text-gray-500">
+                    <td colspan="8" class="p-4 text-center text-gray-500">
                       <div class="flex flex-col items-center">
                         <i class="fas fa-search text-3xl mb-2"></i>
                         <p>No inspection records found for this vehicle</p>
@@ -473,39 +473,176 @@
 
             <!-- Detailed maintenance history table (initially hidden) -->
             <div id="maintenanceDetails" class="overflow-x-auto hidden">
-              <table class="min-w-full text-left text-sm">
-                <thead>
-                  <tr class="border-b font-semibold text-gray-700">
-                    <th class="p-2">No.</th>
-                    <th class="p-2">Work Done</th>
-                    <th class="p-2">Technician</th>
-                    <th class="p-2">Date</th>
-                    <th class="p-2">Mileage</th>
-                    <th class="p-2">Notes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for record in maintenance_records %}
-                  <tr class="border-b">
-                    <td class="p-2">{{ forloop.counter }}</td>
-                    <td class="p-2">{{ record.work_done }}</td>
-                    <td class="p-2">{{ record.technician.email|default:"N/A" }}</td>
-                    <td class="p-2">{{ record.date_performed|date:"Y-m-d" }}</td>
-                    <td class="p-2">{{ record.mileage }}</td>
-                    <td class="p-2">{{ record.notes|default:"-" }}</td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="6" class="p-4 text-center text-gray-500">
-                      <div class="flex flex-col items-center">
-                        <i class="fas fa-clipboard-list text-3xl mb-2"></i>
-                        <p>No maintenance records found for this vehicle</p>
+              {% if maintenance_records %}
+                {% for record in maintenance_records %}
+                <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
+                  <!-- Record Header -->
+                  <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                    <div class="flex items-center">
+                      <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
+                        {{ forloop.counter }}
                       </div>
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                      <div>
+                        <h4 class="font-semibold text-gray-800">{{ record.work_done }}</h4>
+                        <p class="text-sm text-gray-500">
+                          <i class="fas fa-calendar mr-1"></i>
+                          {{ record.date_performed|date:"F j, Y \a\t g:i A" }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-lg font-semibold text-gray-700">{{ record.mileage|floatformat:0 }} mi</div>
+                      <div class="text-xs text-gray-500">Mileage</div>
+                    </div>
+                  </div>
+
+                  <!-- Record Details Grid -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                    <!-- Technician -->
+                    <div class="flex items-center">
+                      <div class="text-blue-600 mr-2">
+                        <i class="fas fa-user-cog"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500">Technician</p>
+                        <p class="font-medium text-gray-700">
+                          {% if record.technician %}
+                            {{ record.technician.first_name }} {{ record.technician.last_name }}
+                            {% if record.technician.email %}
+                              <br><span class="text-xs text-gray-500">{{ record.technician.email }}</span>
+                            {% endif %}
+                          {% else %}
+                            N/A
+                          {% endif %}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Scheduled Maintenance -->
+                    <div class="flex items-center">
+                      <div class="text-green-600 mr-2">
+                        <i class="fas fa-clipboard-check"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500">Scheduled Maintenance</p>
+                        <p class="font-medium text-gray-700">
+                          {% if record.scheduled_maintenance %}
+                            {{ record.scheduled_maintenance.maintenance_type }}
+                          {% else %}
+                            Unscheduled
+                          {% endif %}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- Service Image -->
+                    <div class="flex items-center">
+                      <div class="text-purple-600 mr-2">
+                        <i class="fas fa-camera"></i>
+                      </div>
+                      <div>
+                        <p class="text-xs text-gray-500">Service Image</p>
+                        <p class="font-medium text-gray-700">
+                          {% if record.service_image %}
+                            <button 
+                              onclick="openMaintenanceImageModal('{{ record.service_image.url }}', '{{ record.image_type_display }}', '{{ record.image_description|default:'' }}', '{{ record.work_done }}')"
+                              class="text-blue-600 hover:text-blue-800 underline text-sm">
+                              <i class="fas fa-eye mr-1"></i>View Image
+                            </button>
+                            {% if record.image_type %}
+                              <br><span class="text-xs text-gray-500">{{ record.image_type_display }}</span>
+                            {% endif %}
+                          {% else %}
+                            <span class="text-gray-400">No image</span>
+                          {% endif %}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Parts Used Section -->
+                  {% if record.parts_used.all %}
+                  <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                      <i class="fas fa-cogs text-orange-600 mr-2"></i>
+                      Parts Used
+                    </h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {% for part_usage in record.parts_used.all %}
+                      <div class="flex items-center justify-between bg-white rounded p-2 border">
+                        <div>
+                          <p class="font-medium text-gray-700">{{ part_usage.part.name }}</p>
+                          <p class="text-xs text-gray-500">Qty: {{ part_usage.quantity }}</p>
+                        </div>
+                        {% if part_usage.unit_cost %}
+                        <div class="text-right">
+                          <p class="font-semibold text-gray-700">${{ part_usage.total_cost|floatformat:2 }}</p>
+                          <p class="text-xs text-gray-500">${{ part_usage.unit_cost|floatformat:2 }} each</p>
+                        </div>
+                        {% endif %}
+                      </div>
+                      {% endfor %}
+                    </div>
+                    <div class="mt-2 pt-2 border-t border-gray-200">
+                      <div class="text-center">
+                        <span class="text-sm text-gray-600">
+                          <i class="fas fa-info-circle mr-1"></i>
+                          Individual part costs shown above
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                  <!-- Notes Section -->
+                  {% if record.notes %}
+                  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                      <i class="fas fa-sticky-note text-yellow-600 mr-2"></i>
+                      Additional Notes
+                    </h5>
+                    <p class="text-gray-700 text-sm">{{ record.notes }}</p>
+                  </div>
+                  {% endif %}
+
+                  <!-- Image Description -->
+                  {% if record.image_description %}
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                      <i class="fas fa-image text-blue-600 mr-2"></i>
+                      Image Description
+                    </h5>
+                    <p class="text-gray-700 text-sm">{{ record.image_description }}</p>
+                  </div>
+                  {% endif %}
+
+                  <!-- Record Timestamps -->
+                  <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+                    <span>
+                      <i class="fas fa-plus-circle mr-1"></i>
+                      Created: {{ record.created_at|date:"M j, Y g:i A" }}
+                    </span>
+                    {% if record.updated_at != record.created_at %}
+                    <span>
+                      <i class="fas fa-edit mr-1"></i>
+                      Updated: {{ record.updated_at|date:"M j, Y g:i A" }}
+                    </span>
+                    {% endif %}
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="p-8 text-center text-gray-500">
+                  <div class="flex flex-col items-center">
+                    <i class="fas fa-clipboard-list text-4xl mb-3 text-gray-300"></i>
+                    <h3 class="text-lg font-medium text-gray-600 mb-2">No Maintenance Records Found</h3>
+                    <p class="text-gray-500 max-w-md">
+                      No maintenance records have been documented for this vehicle yet. 
+                      Regular maintenance records help track vehicle care and can indicate reliability.
+                    </p>
+                  </div>
+                </div>
+              {% endif %}
             </div>
           </div>
 
@@ -683,6 +820,25 @@
       const modal = document.getElementById('imageModal');
       modal.classList.add('hidden');
       document.body.style.overflow = 'auto';
+    }
+
+    // Maintenance image modal function
+    function openMaintenanceImageModal(imageUrl, imageType, description, workDone) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      const modalCaption = document.getElementById('modalCaption');
+      
+      modalImage.src = imageUrl;
+      modalImage.alt = `${imageType} - ${workDone}`;
+      
+      let caption = `${imageType} - ${workDone}`;
+      if (description) {
+        caption += '\n' + description;
+      }
+      modalCaption.textContent = caption;
+      
+      modal.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
     }
 
     // Close modal when clicking outside the image

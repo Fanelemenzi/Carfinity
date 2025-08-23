@@ -167,8 +167,12 @@ def search_results(request):
         except VehicleStatus.DoesNotExist:
             vehicle_status = None
         
-        # Get maintenance records
-        maintenance_records = MaintenanceRecord.objects.filter(vehicle=vehicle).order_by('-date_performed')
+        # Get maintenance records with related data
+        maintenance_records = MaintenanceRecord.objects.filter(vehicle=vehicle).select_related(
+            'technician', 'scheduled_maintenance'
+        ).prefetch_related(
+            'parts_used__part'
+        ).order_by('-date_performed')
         
         # Get inspections
         inspections = Inspection.objects.filter(vehicle=vehicle).order_by('-inspection_date')
