@@ -1,146 +1,273 @@
-{% extends 'base.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
+{% load form_tags %}
 
 {% block title %}Create Inspection Form - Maintenance History{% endblock %}
 
-{% block extra_css %}
-<style>
-    .inspection-section {
-        border: 1px solid #e5e7eb;
-        border-radius: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-    .section-header {
-        background-color: #f9fafb;
-        padding: 1rem;
-        border-bottom: 1px solid #e5e7eb;
-        border-radius: 0.5rem 0.5rem 0 0;
-    }
-    .section-content {
-        padding: 1.5rem;
-    }
-    .inspection-point {
-        display: grid;
-        grid-template-columns: 1fr 200px;
-        gap: 1rem;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-    .inspection-point:last-child {
-        border-bottom: none;
-    }
-    .point-label {
-        font-weight: 500;
-        color: #374151;
-    }
-    .status-select {
-        width: 100%;
-    }
-    .notes-section {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-4xl mx-auto">
-        <div class="mb-6">
-            <h1 class="text-3xl font-bold text-gray-900">Create 50-Point Inspection Form</h1>
-            <p class="mt-2 text-gray-600">Complete the detailed vehicle inspection checklist</p>
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>50-Point Vehicle Inspection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-list text-primary mr-2"></i>
+                            50-Point Vehicle Inspection
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-8 pb-4 border-b-2 border-primary">
+            <div class="text-sm font-medium text-gray-400">01. Vehicle Selection</div>
+            <div class="text-sm font-medium text-primary">02. Inspection Points</div>
+            <div class="text-sm font-medium text-gray-400">03. Results & Health Index</div>
         </div>
 
-        {% if available_inspections %}
-            <form method="post" class="space-y-6">
+        <!-- Form Title -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8 text-center">
+            <div class="flex items-center justify-center mb-4">
+                <div class="w-12 h-12 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-clipboard-check text-primary text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">50-Point Vehicle Inspection</h2>
+            </div>
+            <p class="text-gray-600">Complete comprehensive vehicle inspection checklist</p>
+        </div>
+
+        {% if is_workflow and workflow_inspection %}
+        <!-- Workflow Inspection Info -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Inspection Details</h3>
+                <p class="text-sm text-gray-500">Vehicle and inspection information</p>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Inspection Number</label>
+                        <div class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">{{
+                            workflow_inspection.inspection_number }}</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle</label>
+                        <div class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">{{
+                            workflow_inspection.vehicle.vin }}</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Inspection Date</label>
+                        <div class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-600">{{
+                            workflow_inspection.inspection_date|date:"M d, Y" }}</div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2"
+                            for="{{ form.mileage_at_inspection.id_for_label }}">Vehicle Mileage *</label>
+                        {{ form.mileage_at_inspection|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                        focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        {% if form.mileage_at_inspection.errors %}
+                        <p class="text-danger text-sm mt-1">{{ form.mileage_at_inspection.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-1">Enter the current vehicle mileage (required field)</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                        for="{{ form.technician.id_for_label }}">Inspecting Technician</label>
+                    {{ form.technician|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2
+                    focus:ring-primary focus:border-primary" }}
+                    {% if form.technician.errors %}
+                    <p class="text-danger text-sm mt-1">{{ form.technician.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <!-- Hidden field for inspection -->
+            <input type="hidden" name="inspection" value="{{ workflow_inspection.id }}">
+
+            {% elif available_inspections %}
+            <form method="post">
                 {% csrf_token %}
-                
+
                 <!-- Basic Information -->
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h2 class="text-lg font-medium text-gray-900 mb-4">Inspection Information</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            {{ form.inspection.label_tag }}
-                            {{ form.inspection }}
-                            {% if form.inspection.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.inspection.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        <div>
-                            {{ form.technician.label_tag }}
-                            {{ form.technician }}
-                            {% if form.technician.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.technician.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        <div>
-                            {{ form.inspection_date.label_tag }}
-                            {{ form.inspection_date }}
-                            {% if form.inspection_date.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.inspection_date.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                        <div>
-                            {{ form.mileage_at_inspection.label_tag }}
-                            {{ form.mileage_at_inspection }}
-                            {% if form.mileage_at_inspection.errors %}
-                                <p class="mt-1 text-sm text-red-600">{{ form.mileage_at_inspection.errors.0 }}</p>
-                            {% endif %}
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Inspection Information</h3>
+                        <p class="text-sm text-gray-500">Select inspection and configure details</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.inspection.id_for_label }}">{{ form.inspection.label }}</label>
+                                {{ form.inspection|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                                {% if form.inspection.errors %}
+                                <p class="text-danger text-sm mt-1">{{ form.inspection.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.technician.id_for_label }}">{{ form.technician.label }}</label>
+                                {{ form.technician|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                                {% if form.technician.errors %}
+                                <p class="text-danger text-sm mt-1">{{ form.technician.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.inspection_date.id_for_label }}">{{ form.inspection_date.label
+                                    }}</label>
+                                {{ form.inspection_date|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                                {% if form.inspection_date.errors %}
+                                <p class="text-danger text-sm mt-1">{{ form.inspection_date.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.mileage_at_inspection.id_for_label }}">{{
+                                    form.mileage_at_inspection.label }} *</label>
+                                {{ form.mileage_at_inspection|add_class:"w-full px-4 py-3 border border-gray-300
+                                rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" }}
+                                {% if form.mileage_at_inspection.errors %}
+                                <p class="text-danger text-sm mt-1">{{ form.mileage_at_inspection.errors.0 }}</p>
+                                {% endif %}
+                                <p class="text-xs text-gray-500 mt-1">Enter the current vehicle mileage (required field)
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
+                {% endif %}
+
+                {% if is_workflow and workflow_inspection or available_inspections %}
+
 
                 <!-- Engine & Powertrain -->
-                <div class="inspection-section bg-white shadow rounded-lg">
-                    <div class="section-header">
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">Engine & Powertrain (Points 1-10)</h3>
+                        <p class="text-sm text-gray-500">Engine components and fluid systems</p>
                     </div>
-                    <div class="section-content">
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.engine_oil_level.label }}</div>
-                            <div>{{ form.engine_oil_level }}</div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.engine_oil_level.label
+                                    }}</label>
+                                {{ form.engine_oil_level|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.oil_filter_condition.label
+                                    }}</label>
+                                {{ form.oil_filter_condition|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.coolant_level.label }}</label>
+                                {{ form.coolant_level|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.drive_belts.label }}</label>
+                                {{ form.drive_belts|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.hoses_condition.label
+                                    }}</label>
+                                {{ form.hoses_condition|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.air_filter.label }}</label>
+                                {{ form.air_filter|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.cabin_air_filter.label
+                                    }}</label>
+                                {{ form.cabin_air_filter|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.transmission_fluid.label
+                                    }}</label>
+                                {{ form.transmission_fluid|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.engine_mounts.label }}</label>
+                                {{ form.engine_mounts|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.fluid_leaks.label }}</label>
+                                {{ form.fluid_leaks|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.oil_filter_condition.label }}</div>
-                            <div>{{ form.oil_filter_condition }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.coolant_level.label }}</div>
-                            <div>{{ form.coolant_level }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.drive_belts.label }}</div>
-                            <div>{{ form.drive_belts }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.hoses_condition.label }}</div>
-                            <div>{{ form.hoses_condition }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.air_filter.label }}</div>
-                            <div>{{ form.air_filter }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.cabin_air_filter.label }}</div>
-                            <div>{{ form.cabin_air_filter }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.transmission_fluid.label }}</div>
-                            <div>{{ form.transmission_fluid }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.engine_mounts.label }}</div>
-                            <div>{{ form.engine_mounts }}</div>
-                        </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.fluid_leaks.label }}</div>
-                            <div>{{ form.fluid_leaks }}</div>
-                        </div>
-                        <div class="notes-section">
-                            {{ form.engine_notes.label_tag }}
-                            {{ form.engine_notes }}
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.engine_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.engine_notes.label }}
+                            </label>
+                            {{ form.engine_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
                         </div>
                     </div>
                 </div>
@@ -148,128 +275,588 @@
                 <!-- Add similar sections for other categories... -->
                 <!-- For brevity, I'll add a few more key sections -->
 
-                <!-- Brakes & Suspension -->
-                <div class="inspection-section bg-white shadow rounded-lg">
-                    <div class="section-header">
-                        <h3 class="text-lg font-medium text-gray-900">Brakes & Suspension (Points 16-22)</h3>
+                <!-- Electrical & Battery -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Electrical & Battery (Points 11-15)</h3>
+                        <p class="text-sm text-gray-500">Electrical systems and battery components</p>
                     </div>
-                    <div class="section-content">
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.brake_pads.label }}</div>
-                            <div>{{ form.brake_pads }}</div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.battery_voltage.label
+                                    }}</label>
+                                {{ form.battery_voltage|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.battery_terminals.label
+                                    }}</label>
+                                {{ form.battery_terminals|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.alternator_output.label
+                                    }}</label>
+                                {{ form.alternator_output|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.starter_motor.label }}</label>
+                                {{ form.starter_motor|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.fuses_relays.label }}</label>
+                                {{ form.fuses_relays|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.brake_discs.label }}</div>
-                            <div>{{ form.brake_discs }}</div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.electrical_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.electrical_notes.label }}
+                            </label>
+                            {{ form.electrical_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.brake_fluid.label }}</div>
-                            <div>{{ form.brake_fluid }}</div>
+                    </div>
+                </div>
+
+                <!-- Brakes & Suspension -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Brakes & Suspension (Points 16-22)</h3>
+                        <p class="text-sm text-gray-500">Braking system and suspension components</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.brake_pads.label }}</label>
+                                {{ form.brake_pads|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.brake_discs.label }}</label>
+                                {{ form.brake_discs|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.brake_fluid.label }}</label>
+                                {{ form.brake_fluid|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.parking_brake.label }}</label>
+                                {{ form.parking_brake|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.shocks_struts.label }}</label>
+                                {{ form.shocks_struts|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.suspension_bushings.label
+                                    }}</label>
+                                {{ form.suspension_bushings|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.wheel_bearings.label }}</label>
+                                {{ form.wheel_bearings|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.parking_brake.label }}</div>
-                            <div>{{ form.parking_brake }}</div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.brakes_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.brakes_notes.label }}
+                            </label>
+                            {{ form.brakes_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.shocks_struts.label }}</div>
-                            <div>{{ form.shocks_struts }}</div>
+                    </div>
+                </div>
+
+                <!-- Steering & Tires -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Steering & Tires (Points 23-28)</h3>
+                        <p class="text-sm text-gray-500">Steering system and tire condition</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.steering_response.label
+                                    }}</label>
+                                {{ form.steering_response|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.steering_fluid.label }}</label>
+                                {{ form.steering_fluid|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.tire_tread_depth.label
+                                    }}</label>
+                                {{ form.tire_tread_depth|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.tire_pressure.label }}</label>
+                                {{ form.tire_pressure|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.tire_wear_patterns.label
+                                    }}</label>
+                                {{ form.tire_wear_patterns|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.wheels_rims.label }}</label>
+                                {{ form.wheels_rims|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.suspension_bushings.label }}</div>
-                            <div>{{ form.suspension_bushings }}</div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.steering_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.steering_notes.label }}
+                            </label>
+                            {{ form.steering_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
                         </div>
-                        <div class="inspection-point">
-                            <div class="point-label">{{ form.wheel_bearings.label }}</div>
-                            <div>{{ form.wheel_bearings }}</div>
+                    </div>
+                </div>
+
+                <!-- Exhaust & Emissions -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Exhaust & Emissions (Points 29-31)</h3>
+                        <p class="text-sm text-gray-500">Exhaust system and emissions control</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.exhaust_system.label }}</label>
+                                {{ form.exhaust_system|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.catalytic_converter.label
+                                    }}</label>
+                                {{ form.catalytic_converter|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.exhaust_warning_lights.label
+                                    }}</label>
+                                {{ form.exhaust_warning_lights|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
                         </div>
-                        <div class="notes-section">
-                            {{ form.brakes_notes.label_tag }}
-                            {{ form.brakes_notes }}
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.exhaust_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.exhaust_notes.label }}
+                            </label>
+                            {{ form.exhaust_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Safety Equipment -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Safety Equipment (Points 32-36)</h3>
+                        <p class="text-sm text-gray-500">Safety systems and emergency equipment</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.seat_belts.label }}</label>
+                                {{ form.seat_belts|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.airbags.label }}</label>
+                                {{ form.airbags|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.horn_function.label }}</label>
+                                {{ form.horn_function|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.first_aid_kit.label }}</label>
+                                {{ form.first_aid_kit|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.warning_triangle.label
+                                    }}</label>
+                                {{ form.warning_triangle|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.safety_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.safety_notes.label }}
+                            </label>
+                            {{ form.safety_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lighting & Visibility -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Lighting & Visibility (Points 37-44)</h3>
+                        <p class="text-sm text-gray-500">Lighting systems and visibility components</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.headlights.label }}</label>
+                                {{ form.headlights|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.brake_lights.label }}</label>
+                                {{ form.brake_lights|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.turn_signals.label }}</label>
+                                {{ form.turn_signals|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.interior_lights.label
+                                    }}</label>
+                                {{ form.interior_lights|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.windshield.label }}</label>
+                                {{ form.windshield|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.wiper_blades.label }}</label>
+                                {{ form.wiper_blades|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.rear_defogger.label }}</label>
+                                {{ form.rear_defogger|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.mirrors.label }}</label>
+                                {{ form.mirrors|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.lighting_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.lighting_notes.label }}
+                            </label>
+                            {{ form.lighting_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HVAC & Interior -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">HVAC & Interior (Points 45-48)</h3>
+                        <p class="text-sm text-gray-500">Climate control and interior systems</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.air_conditioning.label
+                                    }}</label>
+                                {{ form.air_conditioning|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.ventilation.label }}</label>
+                                {{ form.ventilation|add_class:"px-3 py-2 border border-gray-300 rounded-md focus:ring-2
+                                focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.seat_adjustments.label
+                                    }}</label>
+                                {{ form.seat_adjustments|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.power_windows.label }}</label>
+                                {{ form.power_windows|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.hvac_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.hvac_notes.label }}
+                            </label>
+                            {{ form.hvac_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technology & Driver Assist -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Technology & Driver Assist (Points 49-50)</h3>
+                        <p class="text-sm text-gray-500">Technology systems and driver assistance features</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-4">
+                            <div
+                                class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3 border-b border-gray-100">
+                                <label class="text-sm font-medium text-gray-700">{{ form.infotainment_system.label
+                                    }}</label>
+                                {{ form.infotainment_system|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center py-3">
+                                <label class="text-sm font-medium text-gray-700">{{ form.rear_view_camera.label
+                                    }}</label>
+                                {{ form.rear_view_camera|add_class:"px-3 py-2 border border-gray-300 rounded-md
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                        </div>
+                        <div class="mt-6 pt-6 border-t border-gray-200">
+                            <label class="block text-sm font-medium text-gray-700 mb-2"
+                                for="{{ form.technology_notes.id_for_label }}">
+                                <i class="fas fa-sticky-note mr-1"></i>{{ form.technology_notes.label }}
+                            </label>
+                            {{ form.technology_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                            focus:ring-2 focus:ring-primary focus:border-primary" }}
                         </div>
                     </div>
                 </div>
 
                 <!-- Summary Section -->
-                <div class="bg-white shadow rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Summary & Recommendations</h3>
-                    <div class="space-y-4">
-                        <div>
-                            {{ form.overall_notes.label_tag }}
-                            {{ form.overall_notes }}
-                        </div>
-                        <div>
-                            {{ form.recommendations.label_tag }}
-                            {{ form.recommendations }}
-                        </div>
-                        <div class="flex items-center">
-                            {{ form.is_completed }}
-                            <label for="{{ form.is_completed.id_for_label }}" class="ml-2 text-sm text-gray-700">
-                                Mark inspection as completed
-                            </label>
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Summary & Recommendations</h3>
+                        <p class="text-sm text-gray-500">Overall assessment and technician recommendations</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.overall_notes.id_for_label }}">
+                                    <i class="fas fa-clipboard-list mr-1"></i>{{ form.overall_notes.label }}
+                                </label>
+                                {{ form.overall_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2"
+                                    for="{{ form.recommendations.id_for_label }}">
+                                    <i class="fas fa-lightbulb mr-1"></i>{{ form.recommendations.label }}
+                                </label>
+                                {{ form.recommendations|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg
+                                focus:ring-2 focus:ring-primary focus:border-primary" }}
+                            </div>
+                            <div class="flex items-center">
+                                {{ form.is_completed|add_class:"h-4 w-4 text-primary focus:ring-primary border-gray-300
+                                rounded" }}
+                                <label for="{{ form.is_completed.id_for_label }}"
+                                    class="ml-2 text-sm font-medium text-gray-700">
+                                    Mark inspection as completed
+                                </label>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Form Actions -->
-                <div class="flex justify-end space-x-4">
-                    <a href="{% url 'maintenance_history:inspection_form_list' %}" 
-                       class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200">
+                    {% if is_workflow %}
+                    <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                        class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 border border-gray-300">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Back to Vehicle Selection
+                    </a>
+                    {% else %}
+                    <a href="{% url 'maintenance_history:inspection_form_list' %}"
+                        class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 border border-gray-300">
+                        <i class="fas fa-times mr-2"></i>
                         Cancel
                     </a>
-                    <button type="submit" 
-                            class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                        Save Inspection Form
+                    {% endif %}
+                    <button type="submit"
+                        class="inline-flex items-center px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <i class="fas fa-check mr-2"></i>
+                        Complete Inspection & Calculate Health Index
                     </button>
                 </div>
             </form>
-        {% else %}
-            <div class="bg-white shadow rounded-lg p-6 text-center">
-                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <h3 class="mt-2 text-lg font-medium text-gray-900">No Available Inspections</h3>
-                <p class="mt-1 text-sm text-gray-500">
-                    All inspection records already have associated forms, or no inspection records exist.
-                </p>
-                <div class="mt-6">
-                    <a href="{% url 'maintenance_history:create_inspection_record' %}" 
-                       class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                        Create Inspection Record First
-                    </a>
+            {% else %}
+            <div class="bg-white rounded-lg shadow border border-gray-200 p-12 text-center">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
                 </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No Available Inspections</h3>
+                <p class="text-gray-500 mb-6">All inspection records already have associated forms, or no inspection
+                    records exist.</p>
+                <a href="{% url 'maintenance_history:create_inspection_record' %}"
+                    class="inline-flex items-center px-6 py-3 bg-primary text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Create Inspection Record First
+                </a>
             </div>
-        {% endif %}
+            {% endif %}
     </div>
-</div>
 
-<script>
-// Auto-save functionality (optional)
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    const selects = form.querySelectorAll('select');
-    
-    // Add change listeners to track progress
-    selects.forEach(select => {
-        select.addEventListener('change', function() {
-            // Could implement auto-save or progress tracking here
-            updateProgress();
+    <script>
+        // Auto-save functionality and progress tracking
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            if (form) {
+                const selects = form.querySelectorAll('select');
+                const mileageField = document.querySelector('input[name="mileage_at_inspection"]');
+
+                // Add change listeners to track progress
+                selects.forEach(select => {
+                    select.addEventListener('change', function () {
+                        updateProgress();
+                    });
+                });
+
+                // Add validation for mileage field
+                if (mileageField) {
+                    mileageField.addEventListener('blur', function () {
+                        validateMileage();
+                    });
+
+                    mileageField.addEventListener('input', function () {
+                        // Remove any non-numeric characters except for the first character if it's a minus
+                        this.value = this.value.replace(/[^0-9]/g, '');
+                    });
+                }
+
+                // Form submission validation
+                form.addEventListener('submit', function (e) {
+                    if (!validateMileage()) {
+                        e.preventDefault();
+                        alert('Please enter a valid mileage value before submitting the form.');
+                        return false;
+                    }
+                });
+
+                function validateMileage() {
+                    if (!mileageField) return true;
+
+                    const value = mileageField.value.trim();
+                    const errorContainer = mileageField.parentNode.querySelector('.mileage-error');
+
+                    // Remove existing error message
+                    if (errorContainer) {
+                        errorContainer.remove();
+                    }
+
+                    if (value === '' || value === null) {
+                        showMileageError('Mileage is required');
+                        return false;
+                    }
+
+                    const numValue = parseInt(value);
+                    if (isNaN(numValue) || numValue < 0) {
+                        showMileageError('Please enter a valid positive number');
+                        return false;
+                    }
+
+                    if (numValue > 9999999) {
+                        showMileageError('Mileage seems unreasonably high');
+                        return false;
+                    }
+
+                    return true;
+                }
+
+                function showMileageError(message) {
+                    if (!mileageField) return;
+
+                    const errorElement = document.createElement('p');
+                    errorElement.className = 'text-danger text-sm mt-1 mileage-error';
+                    errorElement.textContent = message;
+                    mileageField.parentNode.appendChild(errorElement);
+                }
+
+                function updateProgress() {
+                    const totalFields = selects.length;
+                    const completedFields = Array.from(selects).filter(select => select.value !== '').length;
+                    const percentage = Math.round((completedFields / totalFields) * 100);
+
+                    // Update progress indicator if it exists
+                    const progressBar = document.querySelector('.progress-bar');
+                    if (progressBar) {
+                        progressBar.style.width = percentage + '%';
+                    }
+
+                    // Show completion status
+                    console.log(`Inspection Progress: ${percentage}% (${completedFields}/${totalFields} fields completed)`);
+                }
+
+                // Initial progress calculation
+                updateProgress();
+            }
         });
-    });
-    
-    function updateProgress() {
-        const totalFields = selects.length;
-        const completedFields = Array.from(selects).filter(select => select.value !== '').length;
-        const percentage = Math.round((completedFields / totalFields) * 100);
-        
-        // Update progress indicator if it exists
-        const progressBar = document.querySelector('.progress-bar');
-        if (progressBar) {
-            progressBar.style.width = percentage + '%';
-        }
-    }
-    
-    // Initial progress calculation
-    updateProgress();
-});
-</script>
+    </script>
+</body>
+
+</html>
+
+{% else %}
+{% include "dashboard/login_dashboard.html" %}
+{% endif %}
 {% endblock %}

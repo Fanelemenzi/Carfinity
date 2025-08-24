@@ -84,9 +84,9 @@ class MaintenanceRecordAdmin(admin.ModelAdmin):
 
 @admin.register(Inspection)
 class InspectionAdmin(admin.ModelAdmin):
-    list_display = ('inspection_number', 'vehicle_vin', 'inspection_date', 'inspection_result', 'carfinity_rating', 'has_pdf_display', 'pdf_size_display')
+    list_display = ('inspection_number', 'vehicle_vin', 'inspection_date', 'inspection_result', 'vehicle_health_index', 'has_pdf_display', 'pdf_size_display')
     list_filter = ('inspection_date', 'inspection_result', 'year')
-    search_fields = ('vehicle__vin', 'inspection_number', 'carfinity_rating')
+    search_fields = ('vehicle__vin', 'inspection_number', 'vehicle_health_index')
     autocomplete_fields = ['vehicle']
     date_hierarchy = 'inspection_date'
     ordering = ['-inspection_date']
@@ -96,7 +96,7 @@ class InspectionAdmin(admin.ModelAdmin):
             'fields': (
                 ('vehicle', 'inspection_number'),
                 ('inspection_date', 'year'),
-                ('inspection_result', 'carfinity_rating'),
+                ('inspection_result', 'vehicle_health_index'),
             )
         }),
         ('External Links & Files', {

@@ -129,7 +129,7 @@ class Inspection(models.Model):
     )
     inspection_result = models.CharField(max_length=30, 
         choices=RESULT_CHOICES, verbose_name="Inspection Result")
-    carfinity_rating = models.CharField(max_length=30)
+    vehicle_health_index = models.CharField(max_length=50, blank=True, verbose_name="Vehicle Health Index")
     inspection_date = models.DateField()
     link_to_results = models.URLField(max_length=400, blank=True, null=True, 
         verbose_name="External Link to Results")
@@ -307,8 +307,8 @@ class Inspections(models.Model):
     
     class Meta:
         ordering = ['-inspection_date']
-        verbose_name = "Inspections"
-        verbose_name_plural = "Inspections"
+        verbose_name = "Inspections Form"
+        verbose_name_plural = "Inspections Forms"
     
     def __str__(self):
         return f"Inspections - {self.inspection.inspection_number} ({self.inspection.vehicle.vin})"
@@ -317,7 +317,12 @@ class Inspections(models.Model):
         # Set completion timestamp when form is marked as completed
         if self.is_completed and not self.completed_at:
             self.completed_at = timezone.now()
+            
         super().save(*args, **kwargs)
+        
+        # Auto-update the related Inspection record with calculated health index
+        if self.is_completed:
+            self._update_inspection_record()
     
     @property
     def total_points_checked(self):
@@ -414,3 +419,26 @@ class Inspections(models.Model):
     def has_major_issues(self):
         """Check if inspection has any major issues"""
         return len(self.failed_points) > 0
+    
+    def _update_inspection_record(self):
+        """Update the related Inspection record with calculated health index and result"""
+        from .utils import calculate_vehicle_health_index
+        
+        try:
+            health_index, inspection_result = calculate_vehicle_health_index(self)
+            
+            # Update the related Inspection record
+            self.inspection.vehicle_health_index = health_index
+            self.inspection.inspection_result = inspection_result
+            self.inspection.save(update_fields=['vehicle_health_index', 'inspection_result'])
+            
+        except Exception as e:
+            # Log the error but don't prevent the save
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error updating inspection record {self.inspection.id}: {str(e)}")
+    
+    def get_health_index_calculation(self):
+        """Get the calculated health index and result for this inspection form"""
+        from .utils import calculate_vehicle_health_index
+        return calculate_vehicle_health_index(self)

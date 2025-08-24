@@ -1,0 +1,458 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Technician Dashboard - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Technician Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-tools text-primary mr-2"></i>
+                            Technician Dashboard
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh Data
+                    </button>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        Welcome, {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Key Metrics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Inspections -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clipboard-check text-primary"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Total Inspections</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ total_inspections|default:0 }}</p>
+                        <p class="text-xs text-primary">All time</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Forms -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Pending Forms</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ pending_inspections|default:0 }}</p>
+                        <p class="text-xs text-warning">Awaiting completion</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Completed Today -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Completed Today</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ completed_today|default:0 }}</p>
+                        <p class="text-xs text-success">Today's progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Records -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-secondary bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-wrench text-secondary"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Maintenance Records</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ maintenance_records|default:0 }}</p>
+                        <p class="text-xs text-secondary">Service history</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+                    <p class="text-sm text-gray-500">Common inspection and maintenance tasks</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>New Action
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-success group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-plus text-success group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">New Inspection</p>
+                            <p class="text-xs text-gray-500">Start 50-point check</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'maintenance_history:inspection_form_list' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-warning group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-clock text-warning group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Pending Forms</p>
+                            <p class="text-xs text-gray-500">{{ pending_inspections|default:0 }} incomplete</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'maintenance_history:inspection_list' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-chart-bar text-primary group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">All Records</p>
+                            <p class="text-xs text-gray-500">View inspection history</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'maintenance_history:create_record' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-secondary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-wrench text-secondary group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Maintenance</p>
+                            <p class="text-xs text-gray-500">Create service record</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Inspection Workflow Section -->
+        <div class="mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-900">Inspection Workflow</h2>
+                <span class="text-sm text-gray-500">Complete Process</span>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Start New Inspection Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-3">✅</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Start New Inspection</h3>
+                            <p class="text-sm text-gray-600">Begin comprehensive 50-point vehicle inspection</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Vehicle Selection</div>
+                                <div class="text-xs text-gray-600">Choose vehicle, set date & mileage</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">50-Point Checklist</div>
+                                <div class="text-xs text-gray-600">Complete detailed inspection form</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Health Index</div>
+                                <div class="text-xs text-gray-600">Auto-calculated vehicle health score</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                            <span class="mr-2">🚀</span>
+                            Start New Inspection
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Management Tools Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-3">📋</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Management Tools</h3>
+                            <p class="text-sm text-gray-600">View and update existing records</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <a href="{% url 'maintenance_history:inspection_form_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📝</span>
+                            <span class="font-medium text-gray-900 text-sm">Inspection Forms ({{ pending_inspections|default:0 }} pending)</span>
+                        </a>
+                        
+                        <a href="{% url 'maintenance_history:inspection_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📊</span>
+                            <span class="font-medium text-gray-900 text-sm">All Inspection Records</span>
+                        </a>
+                        
+                        <a href="{% url 'maintenance_history:create_record' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🔧</span>
+                            <span class="font-medium text-gray-900 text-sm">Create Maintenance Record</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Section -->
+        {% if records %}
+        <div class="bg-white rounded-lg shadow border border-gray-200 mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                        <p class="text-sm text-gray-500">Latest maintenance and inspection records</p>
+                    </div>
+                    <a href="{% url 'maintenance_history:create_record' %}" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                        <i class="fas fa-plus mr-2"></i>New Record
+                    </a>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for record in records %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ record.vehicle.vin }}</div>
+                                <div class="text-sm text-gray-500">{{ record.vehicle.year }} {{ record.vehicle.make }} {{ record.vehicle.model }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ record.service_type }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ record.date_performed|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                    <i class="fas fa-check mr-1"></i>Completed
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="#" class="text-primary hover:text-blue-700">View Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Quick Reference Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Inspection Best Practices -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Inspection Best Practices</h3>
+                    <p class="text-sm text-gray-500">Guidelines for effective inspections</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Start with vehicle information</p>
+                                <p class="text-sm text-gray-500">Verify VIN, mileage, and basic details first</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Complete all 50 points systematically</p>
+                                <p class="text-sm text-gray-500">Follow the checklist order for consistency</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Add detailed notes for failed items</p>
+                                <p class="text-sm text-gray-500">Document specific issues and recommendations</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0">
+                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-900">Review before marking as complete</p>
+                                <p class="text-sm text-gray-500">Double-check all entries and calculations</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health Index Scoring -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Health Index Scoring</h3>
+                    <p class="text-sm text-gray-500">Vehicle condition rating system</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900">Excellent (90-100)</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                    Excellent
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">Vehicle in outstanding condition</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900">Good (80-89)</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-white">
+                                    Good
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">Minor issues, routine maintenance needed</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900">Fair (70-79)</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-white">
+                                    Fair
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">Some repairs required, monitor closely</p>
+                        </div>
+                        
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-900">Poor (Below 70)</span>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger text-white">
+                                    Poor
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">Immediate attention required</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Refresh button functionality
+        document.querySelector('button[class*="bg-primary"]').addEventListener('click', function() {
+            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
+            setTimeout(() => {
+                this.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Refresh Data';
+                location.reload();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
+
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
+{% endblock %}

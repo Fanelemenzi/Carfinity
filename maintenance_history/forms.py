@@ -305,7 +305,9 @@ class InspectionForm(forms.ModelForm):
             }),
             'mileage_at_inspection': forms.NumberInput(attrs={
                 'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
-                'placeholder': 'Enter current mileage'
+                'placeholder': 'Enter current mileage',
+                'min': '0',
+                'step': '1'
             }),
             'is_completed': forms.CheckboxInput(attrs={
                 'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500'
@@ -313,7 +315,19 @@ class InspectionForm(forms.ModelForm):
         }
     
     def __init__(self, *args, **kwargs):
+        # Handle pre-selected inspection from URL parameter
+        inspection_id = kwargs.pop('inspection_id', None)
         super().__init__(*args, **kwargs)
+        
+        # If inspection_id is provided, pre-select it and hide the field
+        if inspection_id:
+            try:
+                inspection = Inspection.objects.get(id=inspection_id)
+                self.fields['inspection'].initial = inspection
+                self.fields['inspection'].widget = forms.HiddenInput()
+                self.fields['technician'].initial = None  # Will be set in view
+            except Inspection.DoesNotExist:
+                pass
         
         # Add common styling to all status choice fields
         status_widget_attrs = {
@@ -353,6 +367,26 @@ class InspectionForm(forms.ModelForm):
         for field_name in notes_fields:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.Textarea(attrs=notes_widget_attrs)
+    
+    def clean_mileage_at_inspection(self):
+        """Custom validation for mileage field"""
+        mileage = self.cleaned_data.get('mileage_at_inspection')
+        
+        if mileage is None or mileage == '':
+            raise ValidationError("Vehicle mileage is required.")
+        
+        try:
+            mileage = int(mileage)
+        except (ValueError, TypeError):
+            raise ValidationError("Please enter a valid mileage number.")
+        
+        if mileage < 0:
+            raise ValidationError("Mileage cannot be negative.")
+        
+        if mileage > 9999999:  # Reasonable upper limit
+            raise ValidationError("Mileage seems unreasonably high. Please check the value.")
+        
+        return mileage
     
     def clean(self):
         cleaned_data = super().clean()
@@ -404,7 +438,7 @@ class InspectionRecordForm(forms.ModelForm):
             'inspection_number',
             'year',
             'inspection_result',
-            'carfinity_rating',
+            'vehicle_health_index',
             'inspection_date',
             'link_to_results',
             'inspection_pdf'

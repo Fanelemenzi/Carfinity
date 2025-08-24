@@ -174,8 +174,10 @@ def search_results(request):
             'parts_used__part'
         ).order_by('-date_performed')
         
-        # Get inspections
-        inspections = Inspection.objects.filter(vehicle=vehicle).order_by('-inspection_date')
+        # Get inspections with related inspection forms
+        inspections = Inspection.objects.filter(vehicle=vehicle).select_related(
+            'inspections_form__technician'
+        ).order_by('-inspection_date')
         
         # Get vehicle images
         vehicle_images = VehicleImage.objects.filter(vehicle=vehicle).order_by('-is_primary', '-uploaded_at')

@@ -29,6 +29,11 @@ urlpatterns = [
          views.CreateInspectionRecordView.as_view(), 
          name='create_inspection_record'),
     
+    # New Inspection Workflow (starts with form)
+    path('inspections/start/', 
+         views.StartInspectionWorkflowView.as_view(), 
+         name='start_inspection_workflow'),
+    
     # Inspection Form URLs (50-point checklist)
     path('inspection-forms/', 
          views.InspectionFormListView.as_view(), 
@@ -39,9 +44,15 @@ urlpatterns = [
     path('inspection-forms/create/', 
          views.CreateInspectionFormView.as_view(), 
          name='create_inspection_form'),
+    path('inspection-forms/create/<int:inspection_id>/', 
+         views.CreateInspectionFormView.as_view(), 
+         name='create_inspection_form'),
     path('inspection-forms/<int:pk>/update/', 
          views.UpdateInspectionFormView.as_view(), 
          name='update_inspection_form'),
+    path('inspection-form/ajax/<int:pk>/', 
+         views.InspectionFormAjaxView.as_view(), 
+         name='inspection_form_ajax'),
     
     # API endpoints for part management
     path('api/parts/search/', 

@@ -4,12 +4,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse, HttpResponse, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.views import View
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import logging
 import json
+from django.utils import timezone
 from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
 from .forms import MaintenanceRecordForm, InspectionForm, InspectionRecordForm
 from maintenance.models import Part
@@ -26,6 +27,23 @@ class TechnicianDashboardView(LoginRequiredMixin, ListView):
         return MaintenanceRecord.objects.filter(
             technician=self.request.user
         ).order_by('-date_performed')[:10]
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Get inspection statistics
+        user_inspections = Inspections.objects.filter(technician=self.request.user)
+        context['total_inspections'] = user_inspections.count()
+        context['pending_inspections'] = user_inspections.filter(is_completed=False).count()
+        context['completed_today'] = user_inspections.filter(
+            inspection_date__date=timezone.now().date(),
+            is_completed=True
+        ).count()
+        context['maintenance_records'] = MaintenanceRecord.objects.filter(
+            technician=self.request.user
+        ).count()
+        
+        return context
 
 class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):
     model = MaintenanceRecord
@@ -342,7 +360,18 @@ class CreateInspectionFormView(LoginRequiredMixin, CreateView):
     model = Inspections
     form_class = InspectionForm
     template_name = 'maintenance/create_inspection_form.html'
-    success_url = '/maintenance/inspection-forms/'
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        # Pass inspection_id from URL parameter to form
+        inspection_id = self.kwargs.get('inspection_id') or self.request.GET.get('inspection_id')
+        if inspection_id:
+            kwargs['inspection_id'] = inspection_id
+        return kwargs
+    
+    def get_success_url(self):
+        """Redirect to the inspection form detail page after creation"""
+        return f'/inspection-forms/{self.object.pk}/'
     
     def form_valid(self, form):
         """Handle successful form submission"""
@@ -361,15 +390,21 @@ class CreateInspectionFormView(LoginRequiredMixin, CreateView):
                     f"Form ID: {inspection_form.id}, "
                     f"Technician: {self.request.user.username}, "
                     f"Inspection: {inspection_form.inspection.inspection_number}, "
+                    f"Mileage: {inspection_form.mileage_at_inspection}, "
                     f"Completion: {inspection_form.completion_percentage}%"
                 )
                 
-                # Create success message
-                messages.success(
-                    self.request,
-                    f"Inspection form created successfully for {inspection_form.inspection.inspection_number}. "
-                    f"Progress: {inspection_form.completion_percentage}% complete."
-                )
+                # Create success message with health index info if completed
+                success_message = f"Inspection form created successfully for {inspection_form.inspection.inspection_number}. Progress: {inspection_form.completion_percentage}% complete."
+                
+                if inspection_form.is_completed:
+                    # Trigger health index calculation and update inspection record
+                    inspection_form._update_inspection_record()
+                    # Refresh to get updated values
+                    inspection_form.inspection.refresh_from_db()
+                    success_message += f" Vehicle Health Index: {inspection_form.inspection.vehicle_health_index}."
+                
+                messages.success(self.request, success_message)
                 
                 return super().form_valid(form)
                 
@@ -377,6 +412,7 @@ class CreateInspectionFormView(LoginRequiredMixin, CreateView):
             logger.warning(
                 f"Validation error during inspection form creation. "
                 f"User: {self.request.user.username}, "
+                f"POST data: {dict(self.request.POST)}, "
                 f"Error: {str(e)}"
             )
             
@@ -387,6 +423,7 @@ class CreateInspectionFormView(LoginRequiredMixin, CreateView):
             logger.error(
                 f"Unexpected error during inspection form creation. "
                 f"User: {self.request.user.username}, "
+                f"POST data: {dict(self.request.POST)}, "
                 f"Error: {str(e)}", 
                 exc_info=True
             )
@@ -399,8 +436,35 @@ class CreateInspectionFormView(LoginRequiredMixin, CreateView):
             
             return self.form_invalid(form)
     
+    def form_invalid(self, form):
+        """Handle form validation errors with detailed logging"""
+        logger.warning(
+            f"Inspection form validation failed. "
+            f"User: {self.request.user.username}, "
+            f"POST data: {dict(self.request.POST)}, "
+            f"Form errors: {form.errors}, "
+            f"Non-field errors: {form.non_field_errors()}"
+        )
+        
+        # Add a general error message for the user
+        messages.error(
+            self.request,
+            "Please correct the errors below and try again. Make sure all required fields are filled."
+        )
+        
+        return super().form_invalid(form)
+    
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Check if this is part of the new workflow
+        inspection_id = self.kwargs.get('inspection_id') or self.request.GET.get('inspection_id')
+        if inspection_id:
+            try:
+                context['workflow_inspection'] = Inspection.objects.get(id=inspection_id)
+                context['is_workflow'] = True
+            except Inspection.DoesNotExist:
+                pass
         
         # Add available inspections that don't have forms yet
         context['available_inspections'] = Inspection.objects.filter(
@@ -436,18 +500,24 @@ class UpdateInspectionFormView(LoginRequiredMixin, DetailView):
                         f"Completion: {inspection_form.completion_percentage}%"
                     )
                     
-                    messages.success(
-                        request,
-                        f"Inspection form updated successfully. "
-                        f"Progress: {inspection_form.completion_percentage}% complete."
-                    )
-                    
-                    return JsonResponse({
+                    # Prepare response data
+                    response_data = {
                         'success': True,
                         'completion_percentage': inspection_form.completion_percentage,
                         'is_completed': inspection_form.is_completed,
-                        'message': 'Form updated successfully'
-                    })
+                        'message': f'Form updated successfully. Progress: {inspection_form.completion_percentage}% complete.'
+                    }
+                    
+                    # Add health index info if completed
+                    if inspection_form.is_completed:
+                        health_index, inspection_result = inspection_form.get_health_index_calculation()
+                        response_data['health_index'] = health_index
+                        response_data['inspection_result'] = dict(Inspection.RESULT_CHOICES)[inspection_result]
+                        response_data['message'] += f' Vehicle Health Index: {health_index}.'
+                    
+                    messages.success(request, response_data['message'])
+                    
+                    return JsonResponse(response_data)
                     
             except ValidationError as e:
                 return JsonResponse({
@@ -461,11 +531,56 @@ class UpdateInspectionFormView(LoginRequiredMixin, DetailView):
                 'errors': form.errors
             })
 
+class StartInspectionWorkflowView(LoginRequiredMixin, CreateView):
+    """Landing page and first step of inspection workflow"""
+    model = Inspection
+    form_class = InspectionRecordForm
+    template_name = 'maintenance/start_inspection_workflow.html'
+    
+    def form_valid(self, form):
+        """Create inspection record and redirect to 50-point form"""
+        try:
+            with transaction.atomic():
+                # Save the inspection record
+                inspection = form.save()
+                
+                logger.info(
+                    f"Inspection workflow started. "
+                    f"Inspection ID: {inspection.id}, "
+                    f"Number: {inspection.inspection_number}, "
+                    f"Vehicle: {inspection.vehicle.vin}, "
+                    f"User: {self.request.user.username}"
+                )
+                
+                messages.success(
+                    self.request,
+                    f"Inspection record created successfully for {inspection.inspection_number}. "
+                    f"Now complete the detailed 50-point inspection checklist."
+                )
+                
+                # Redirect to create inspection form with the inspection ID
+                return redirect('maintenance_history:create_inspection_form', inspection_id=inspection.id)
+                
+        except Exception as e:
+            logger.error(
+                f"Error starting inspection workflow. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}", 
+                exc_info=True
+            )
+            
+            messages.error(
+                self.request,
+                "An error occurred while starting the inspection. Please try again."
+            )
+            
+            return self.form_invalid(form)
+
 class CreateInspectionRecordView(LoginRequiredMixin, CreateView):
     model = Inspection
     form_class = InspectionRecordForm
     template_name = 'maintenance/create_inspection_record.html'
-    success_url = '/maintenance/inspections/'
+    success_url = '/inspections/'
     
     def form_valid(self, form):
         messages.success(
@@ -473,3 +588,334 @@ class CreateInspectionRecordView(LoginRequiredMixin, CreateView):
             f"Inspection record created successfully for {form.instance.inspection_number}."
         )
         return super().form_valid(form)
+
+
+@method_decorator(login_required, name='dispatch')
+class InspectionFormAjaxView(View):
+    """AJAX view for loading inspection form details in modal"""
+    
+    def get(self, request, pk):
+        try:
+            inspection = get_object_or_404(Inspection, pk=pk)
+            
+            # Check if inspection has a form
+            if not hasattr(inspection, 'inspections_form'):
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No detailed inspection form available for this inspection.'
+                })
+            
+            inspection_form = inspection.inspections_form
+            
+            # Prepare inspection categories data
+            inspection_categories = {
+                'Engine & Powertrain': [
+                    ('engine_oil_level', 'Engine oil level & quality'),
+                    ('oil_filter_condition', 'Oil filter condition'),
+                    ('coolant_level', 'Coolant level & leaks'),
+                    ('drive_belts', 'Drive belts for cracks/wear'),
+                    ('hoses_condition', 'Hoses for leaks or soft spots'),
+                    ('air_filter', 'Air filter condition'),
+                    ('cabin_air_filter', 'Cabin air filter condition'),
+                    ('transmission_fluid', 'Transmission fluid level & leaks'),
+                    ('engine_mounts', 'Engine/transmission mounts'),
+                    ('fluid_leaks', 'Fluid leaks under engine & gearbox'),
+                ],
+                'Electrical & Battery': [
+                    ('battery_voltage', 'Battery voltage & charging system'),
+                    ('battery_terminals', 'Battery terminals for corrosion'),
+                    ('alternator_output', 'Alternator output'),
+                    ('starter_motor', 'Starter motor performance'),
+                    ('fuses_relays', 'All fuses and relays'),
+                ],
+                'Brakes & Suspension': [
+                    ('brake_pads', 'Brake pads/shoes thickness'),
+                    ('brake_discs', 'Brake discs/drums damage/warping'),
+                    ('brake_fluid', 'Brake fluid level & condition'),
+                    ('parking_brake', 'Parking brake function'),
+                    ('shocks_struts', 'Shocks/struts for leaks'),
+                    ('suspension_bushings', 'Suspension bushings & joints'),
+                    ('wheel_bearings', 'Wheel bearings for noise/play'),
+                ],
+                'Steering & Tires': [
+                    ('steering_response', 'Steering response & play'),
+                    ('steering_fluid', 'Steering fluid level & leaks'),
+                    ('tire_tread_depth', 'Tire tread depth (>5/32")'),
+                    ('tire_pressure', 'Tire pressure (all tires + spare)'),
+                    ('tire_wear_patterns', 'Tire wear patterns'),
+                    ('wheels_rims', 'Wheels & rims for damage'),
+                ],
+                'Exhaust & Emissions': [
+                    ('exhaust_system', 'Exhaust for leaks/damage'),
+                    ('catalytic_converter', 'Catalytic converter/muffler condition'),
+                    ('exhaust_warning_lights', 'No exhaust warning lights'),
+                ],
+                'Safety Equipment': [
+                    ('seat_belts', 'Seat belts operation & condition'),
+                    ('airbags', 'Airbags (warning light off)'),
+                    ('horn_function', 'Horn function'),
+                    ('first_aid_kit', 'First-aid kit contents'),
+                    ('warning_triangle', 'Warning triangle/reflective vest present'),
+                ],
+                'Lighting & Visibility': [
+                    ('headlights', 'Headlights (low/high beam)'),
+                    ('brake_lights', 'Brake/reverse/fog lights'),
+                    ('turn_signals', 'Turn signals & hazard lights'),
+                    ('interior_lights', 'Interior dome/courtesy lights'),
+                    ('windshield', 'Windshield for cracks/chips'),
+                    ('wiper_blades', 'Wiper blades & washer spray'),
+                    ('rear_defogger', 'Rear defogger/heater operation'),
+                    ('mirrors', 'Mirrors adjustment & condition'),
+                ],
+                'HVAC & Interior': [
+                    ('air_conditioning', 'Air conditioning & heating performance'),
+                    ('ventilation', 'Ventilation airflow'),
+                    ('seat_adjustments', 'Seat adjustments & seat heaters'),
+                    ('power_windows', 'Power windows & locks'),
+                ],
+                'Technology & Driver Assist': [
+                    ('infotainment_system', 'Infotainment system & Bluetooth/USB'),
+                    ('rear_view_camera', 'Rear-view camera/parking sensors'),
+                ],
+            }
+            
+            # Generate HTML content
+            html_content = self._generate_inspection_form_html(inspection_form, inspection_categories)
+            
+            return JsonResponse({
+                'success': True,
+                'html': html_content
+            })
+            
+        except Exception as e:
+            logger.error(f"Error loading inspection form details for inspection {pk}: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'An error occurred while loading the inspection details.'
+            })
+    
+    def _generate_inspection_form_html(self, inspection_form, inspection_categories):
+        """Generate HTML content for the inspection form modal"""
+        
+        # Status choices mapping
+        status_choices = {
+            'pass': ('Pass', 'text-green-600', 'fas fa-check-circle'),
+            'fail': ('Fail', 'text-red-600', 'fas fa-times-circle'),
+            'na': ('Not Applicable', 'text-gray-500', 'fas fa-minus-circle'),
+            'minor': ('Minor Issue', 'text-yellow-600', 'fas fa-exclamation-triangle'),
+            'major': ('Major Issue', 'text-red-600', 'fas fa-exclamation-triangle'),
+        }
+        
+        html = f"""
+        <div class="space-y-6">
+          <!-- Form Overview -->
+          <div class="bg-gray-50 rounded-lg p-4 border">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-green-600">{inspection_form.completion_percentage}%</div>
+                <div class="text-sm text-gray-600">Completion</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-blue-600">{inspection_form.total_points_checked}/50</div>
+                <div class="text-sm text-gray-600">Points Checked</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold {'text-green-600' if inspection_form.is_completed else 'text-yellow-600'}">
+                  {'✓' if inspection_form.is_completed else '⏳'}
+                </div>
+                <div class="text-sm text-gray-600">{'Completed' if inspection_form.is_completed else 'In Progress'}</div>
+              </div>
+            </div>
+            
+            <div class="mt-4 pt-4 border-t border-gray-200">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span class="text-gray-500">Inspection Date:</span>
+                  <span class="font-medium ml-2">{inspection_form.inspection_date.strftime('%B %d, %Y at %I:%M %p')}</span>
+                </div>
+                <div>
+                  <span class="text-gray-500">Vehicle Mileage:</span>
+                  <span class="font-medium ml-2">{inspection_form.mileage_at_inspection:,} miles</span>
+                </div>
+                {'<div><span class="text-gray-500">Technician:</span><span class="font-medium ml-2">' + inspection_form.technician.first_name + ' ' + inspection_form.technician.last_name + '</span></div>' if inspection_form.technician else ''}
+                {'<div><span class="text-gray-500">Completed:</span><span class="font-medium ml-2">' + inspection_form.completed_at.strftime('%B %d, %Y at %I:%M %p') + '</span></div>' if inspection_form.completed_at else ''}
+              </div>
+            </div>
+          </div>
+        """
+        
+        # Add inspection categories
+        for category_name, fields in inspection_categories.items():
+            html += f"""
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-cogs text-blue-600 mr-2"></i>
+                {category_name}
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            """
+            
+            for field_name, field_description in fields:
+                field_value = getattr(inspection_form, field_name, '')
+                if field_value and field_value in status_choices:
+                    status_text, status_color, status_icon = status_choices[field_value]
+                    html += f"""
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                      <span class="text-sm text-gray-700">{field_description}</span>
+                      <span class="{status_color} flex items-center text-sm font-medium">
+                        <i class="{status_icon} mr-1"></i>
+                        {status_text}
+                      </span>
+                    </div>
+                    """
+                else:
+                    html += f"""
+                    <div class="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                      <span class="text-sm text-gray-700">{field_description}</span>
+                      <span class="text-gray-400 text-sm">Not Checked</span>
+                    </div>
+                    """
+            
+            html += "</div>"
+            
+            # Add category notes if available
+            notes_field = f"{category_name.lower().replace(' & ', '_').replace(' ', '_')}_notes"
+            notes_value = getattr(inspection_form, notes_field, '')
+            if notes_value:
+                html += f"""
+                <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <h5 class="font-medium text-gray-700 mb-1">Notes:</h5>
+                  <p class="text-sm text-gray-600">{notes_value}</p>
+                </div>
+                """
+            
+            html += "</div>"
+        
+        # Add overall notes and recommendations
+        if inspection_form.overall_notes or inspection_form.recommendations:
+            html += """
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-sticky-note text-blue-600 mr-2"></i>
+                Summary & Recommendations
+              </h4>
+            """
+            
+            if inspection_form.overall_notes:
+                html += f"""
+                <div class="mb-4">
+                  <h5 class="font-medium text-gray-700 mb-2">Overall Notes:</h5>
+                  <p class="text-sm text-gray-600 bg-white p-3 rounded border">{inspection_form.overall_notes}</p>
+                </div>
+                """
+            
+            if inspection_form.recommendations:
+                html += f"""
+                <div>
+                  <h5 class="font-medium text-gray-700 mb-2">Recommendations:</h5>
+                  <p class="text-sm text-gray-600 bg-white p-3 rounded border">{inspection_form.recommendations}</p>
+                </div>
+                """
+            
+            html += "</div>"
+        
+        # Add failed points summary if any
+        failed_points = inspection_form.failed_points
+        if failed_points:
+            html += f"""
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+              <h4 class="text-lg font-semibold text-red-800 mb-4 flex items-center">
+                <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                Issues Found ({len(failed_points)} items)
+              </h4>
+              <div class="space-y-2">
+            """
+            
+            for issue in failed_points:
+                html += f"""
+                <div class="flex items-center p-2 bg-white rounded border border-red-200">
+                  <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                  <span class="text-sm text-gray-700">{issue}</span>
+                </div>
+                """
+            
+            html += "</div></div>"
+        
+        html += "</div>"
+        
+        return html
+
+
+class StartInspectionWorkflowView(LoginRequiredMixin, CreateView):
+    """
+    New workflow: Create basic inspection record and redirect to form
+    """
+    model = Inspection
+    template_name = 'maintenance/start_inspection_workflow.html'
+    fields = ['vehicle', 'year', 'inspection_date']
+    
+    def get_success_url(self):
+        # Redirect to create the inspection form
+        return f'/inspection-forms/create/?inspection_id={self.object.id}'
+    
+    def form_valid(self, form):
+        """Create basic inspection record with default values"""
+        try:
+            with transaction.atomic():
+                # Generate unique inspection number
+                from .utils import generate_inspection_number
+                form.instance.inspection_number = generate_inspection_number()
+                
+                # Set default values for required fields
+                form.instance.inspection_result = 'FAI'  # Default to Failed, will be updated by form
+                form.instance.vehicle_health_index = 'Pending Assessment'
+                
+                # Save the inspection record
+                inspection = form.save()
+                
+                # Log successful creation
+                logger.info(
+                    f"Inspection workflow started. "
+                    f"Inspection ID: {inspection.id}, "
+                    f"Number: {inspection.inspection_number}, "
+                    f"Vehicle: {inspection.vehicle.vin}, "
+                    f"User: {self.request.user.username}"
+                )
+                
+                messages.success(
+                    self.request,
+                    f"Inspection {inspection.inspection_number} created. Please complete the inspection form."
+                )
+                
+                return super().form_valid(form)
+                
+        except ValidationError as e:
+            logger.warning(
+                f"Validation error during inspection workflow start. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}"
+            )
+            
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+            
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during inspection workflow start. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}", 
+                exc_info=True
+            )
+            
+            messages.error(
+                self.request,
+                "An unexpected error occurred while starting the inspection. "
+                "Please try again or contact support if the problem persists."
+            )
+            
+            return self.form_invalid(form)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Start New Inspection'
+        return context

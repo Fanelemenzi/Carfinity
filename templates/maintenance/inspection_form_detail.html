@@ -1,47 +1,125 @@
-{% extends 'base.html' %}
+{% extends 'base/base.html' %}
 {% load static %}
 {% load custom_filters %}
 
-{% block title %}Inspection Form Detail - {{ inspection_form.inspection.inspection_number }}{% endblock %}
+{% block title %}Inspection Results - {{ inspection_form.inspection.inspection_number }}{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
-    <div class="max-w-6xl mx-auto">
-        <!-- Header -->
-        <div class="bg-white shadow rounded-lg p-6 mb-6">
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-primary mr-2"></i>
+                            Inspection Results
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ inspection_form.technician.get_full_name|default:inspection_form.technician.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-primary">
+            <div class="text-sm font-medium text-gray-400">01. Vehicle Selection</div>
+            <div class="text-sm font-medium text-gray-400">02. Inspection Points</div>
+            <div class="text-sm font-medium text-primary">03. Results & Health Index</div>
+        </div>
+        <!-- Vehicle Health Index -->
+        {% if inspection_form.is_completed %}
+        <div class="bg-gradient-to-r from-primary to-blue-600 rounded-lg shadow p-8 mb-8 text-center text-white">
+            <div class="text-6xl font-bold mb-4">{{ inspection_form.inspection.vehicle_health_index|default:"Calculating..." }}</div>
+            <div class="text-xl font-medium mb-2">Vehicle Health Index</div>
+            <div class="text-sm opacity-90">
+                Based on comprehensive 50-point inspection results
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">
-                        Inspection Form: {{ inspection_form.inspection.inspection_number }}
-                    </h1>
-                    <div class="mt-2 text-gray-600">
-                        <p>Vehicle: {{ inspection_form.inspection.vehicle.vin }}</p>
-                        <p>Technician: {{ inspection_form.technician.get_full_name|default:inspection_form.technician.username }}</p>
-                        <p>Date: {{ inspection_form.inspection_date|date:"M d, Y H:i" }}</p>
-                        <p>Mileage: {{ inspection_form.mileage_at_inspection|floatformat:0 }}</p>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        {{ inspection_form.inspection.inspection_number }}
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Vehicle:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ inspection_form.inspection.vehicle.vin }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Technician:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ inspection_form.technician.get_full_name|default:inspection_form.technician.username }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Date:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ inspection_form.inspection_date|date:"M d, Y H:i" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Mileage:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ inspection_form.mileage_at_inspection|floatformat:0 }}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="text-right">
-                    <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-4 mb-4">
                         {% if inspection_form.is_completed %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                ✓ Completed
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                <i class="fas fa-check mr-1"></i>Completed
                             </span>
                         {% else %}
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                ⏳ In Progress
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-white">
+                                <i class="fas fa-clock mr-1"></i>In Progress
                             </span>
                         {% endif %}
                     </div>
-                    <div class="mt-2">
-                        <div class="text-sm text-gray-500">Progress</div>
+                    <div class="text-sm">
+                        <div class="text-gray-500 mb-1">Progress</div>
                         <div class="flex items-center space-x-2">
                             <div class="w-32 bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ inspection_form.completion_percentage }}%"></div>
+                                <div class="bg-primary h-2 rounded-full" style="width: {{ inspection_form.completion_percentage }}%"></div>
                             </div>
                             <span class="text-sm font-medium">{{ inspection_form.completion_percentage }}%</span>
                         </div>
-                        <div class="text-sm text-gray-500 mt-1">
+                        <div class="text-xs text-gray-500 mt-1">
                             {{ inspection_form.total_points_checked }}/50 points completed
                         </div>
                     </div>
@@ -49,12 +127,10 @@
             </div>
             
             {% if inspection_form.has_major_issues %}
-                <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
+                <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <div class="flex">
                         <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                            </svg>
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
                         </div>
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-red-800">
@@ -72,22 +148,22 @@
                 </div>
             {% endif %}
             
-            <div class="mt-4 flex space-x-4">
+            <div class="mt-6 flex space-x-4">
                 <a href="{% url 'maintenance_history:update_inspection_form' inspection_form.pk %}" 
-                   class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Edit Form
+                   class="bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md text-sm">
+                    <i class="fas fa-edit mr-2"></i>Edit Form
                 </a>
                 <a href="{% url 'maintenance_history:inspection_form_list' %}" 
-                   class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
-                    Back to List
+                   class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-md text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to List
                 </a>
             </div>
         </div>
 
         <!-- Inspection Categories -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {% for category_name, points in inspection_categories.items %}
-                <div class="bg-white shadow rounded-lg">
+                <div class="bg-white rounded-lg shadow border border-gray-200">
                     <div class="px-6 py-4 border-b border-gray-200">
                         <h3 class="text-lg font-medium text-gray-900">{{ category_name }}</h3>
                     </div>
@@ -99,27 +175,27 @@
                                         <div class="text-sm text-gray-700">{{ description }}</div>
                                         <div class="flex-shrink-0">
                                             {% if field_value == 'pass' %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                    ✓ Pass
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                                    <i class="fas fa-check mr-1"></i>Pass
                                                 </span>
                                             {% elif field_value == 'fail' %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    ✗ Fail
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger text-white">
+                                                    <i class="fas fa-times mr-1"></i>Fail
                                                 </span>
                                             {% elif field_value == 'major' %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                    ⚠️ Major
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger text-white">
+                                                    <i class="fas fa-exclamation-triangle mr-1"></i>Major
                                                 </span>
                                             {% elif field_value == 'minor' %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                    ⚠️ Minor
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-white">
+                                                    <i class="fas fa-exclamation mr-1"></i>Minor
                                                 </span>
                                             {% elif field_value == 'na' %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-500 text-white">
                                                     N/A
                                                 </span>
                                             {% else %}
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-300 text-gray-600">
                                                     Not Checked
                                                 </span>
                                             {% endif %}
@@ -133,8 +209,10 @@
                         {% with notes_field=category_name|lower|cut:" "|cut:"&"|add:"_notes" %}
                             {% with notes_value=inspection_form|getattr:notes_field %}
                                 {% if notes_value %}
-                                    <div class="mt-4 p-3 bg-gray-50 rounded-md">
-                                        <h4 class="text-sm font-medium text-gray-900 mb-2">Notes:</h4>
+                                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                        <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                            <i class="fas fa-sticky-note mr-1"></i>Notes:
+                                        </h4>
                                         <p class="text-sm text-gray-700">{{ notes_value }}</p>
                                     </div>
                                 {% endif %}
@@ -147,26 +225,41 @@
 
         <!-- Summary Section -->
         {% if inspection_form.overall_notes or inspection_form.recommendations %}
-            <div class="mt-6 bg-white shadow rounded-lg p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Summary & Recommendations</h3>
-                
-                {% if inspection_form.overall_notes %}
-                    <div class="mb-4">
-                        <h4 class="text-sm font-medium text-gray-900 mb-2">Overall Notes:</h4>
-                        <p class="text-sm text-gray-700">{{ inspection_form.overall_notes }}</p>
-                    </div>
-                {% endif %}
-                
-                {% if inspection_form.recommendations %}
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-900 mb-2">Recommendations:</h4>
-                        <p class="text-sm text-gray-700">{{ inspection_form.recommendations }}</p>
-                    </div>
-                {% endif %}
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Summary & Recommendations</h3>
+                    <p class="text-sm text-gray-500">Technician notes and recommendations</p>
+                </div>
+                <div class="p-6">
+                    {% if inspection_form.overall_notes %}
+                        <div class="mb-6">
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                <i class="fas fa-clipboard-list mr-1"></i>Overall Notes:
+                            </h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p class="text-sm text-gray-700">{{ inspection_form.overall_notes }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if inspection_form.recommendations %}
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                <i class="fas fa-lightbulb mr-1"></i>Recommendations:
+                            </h4>
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                <p class="text-sm text-blue-800">{{ inspection_form.recommendations }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         {% endif %}
     </div>
-</div>
+</body>
+</html>
 
-{% load custom_filters %}
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
 {% endblock %}

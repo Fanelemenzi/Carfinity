@@ -136,14 +136,16 @@
                         <button class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 hover:bg-gray-200">90D</button>
                     </div>
                 </div>
-                <canvas id="complianceChart" height="200"></canvas>
+                <div class="relative h-64 w-full">
+                    <canvas id="complianceChart"></canvas>
+                </div>
             </div>
 
             <!-- Vehicle Condition Distribution -->
             <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Vehicle Condition Distribution</h3>
-                <div class="flex justify-center mb-4">
-                    <canvas id="conditionChart" width="300" height="200"></canvas>
+                <div class="flex justify-center mb-4 h-48">
+                    <canvas id="conditionChart"></canvas>
                 </div>
                 <div class="grid grid-cols-2 gap-4 text-sm">
                     <div class="flex items-center">
@@ -306,7 +308,9 @@
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2">
-                    <canvas id="accidentChart" height="150"></canvas>
+                    <div class="relative h-64 w-full">
+                        <canvas id="accidentChart"></canvas>
+                    </div>
                 </div>
                 <div class="space-y-4">
                     <div class="bg-gray-50 p-4 rounded-lg">
@@ -360,6 +364,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                    },
                     plugins: {
                         legend: {
                             position: 'top',
@@ -459,7 +466,7 @@
                     document.getElementById('lastUpdated').textContent = '1 minute ago';
                 }, 60000);
                 
-            }, 30000); // Update every 30 seconds
+            }, 86400000); // Update every 24 hours (24 * 60 * 60 * 1000 ms)
         }
 
         // API integration functions
