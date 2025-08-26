@@ -65,8 +65,6 @@
           <ul class="space-y-4">
             <li><a class="block text-base font-medium text-black" href="{% url 'dashboard' %}" x-on:click="mobileNavOpen = false">Dashboard</a></li>
             <li><a class="block text-base font-medium text-black" href="{% url 'maintenance_history:technician_dashboard' %}" x-on:click="mobileNavOpen = false">Technician</a></li>
-            <li><a class="block text-base font-medium text-black" href="{% url 'insurance:insurance_dashboard' %}" x-on:click="mobileNavOpen = false">Insurance</a></li>
-            <li><a class="block text-base font-medium text-black" href="{% url 'about' %}" x-on:click="mobileNavOpen = false">About</a></li>
             <li><a class="block text-base font-medium text-black" href="{% url 'blog' %}" x-on:click="mobileNavOpen = false">Blog</a></li>
             <li><a class="block text-base font-medium text-black" href="{% url 'contact' %}" x-on:click="mobileNavOpen = false">Contact</a></li>
             <li class="relative" x-data="{ open: false }">

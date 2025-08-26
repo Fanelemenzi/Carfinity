@@ -737,7 +737,7 @@ class InspectionFormAjaxView(View):
                   <span class="text-gray-500">Vehicle Mileage:</span>
                   <span class="font-medium ml-2">{inspection_form.mileage_at_inspection:,} miles</span>
                 </div>
-                {'<div><span class="text-gray-500">Technician:</span><span class="font-medium ml-2">' + inspection_form.technician.first_name + ' ' + inspection_form.technician.last_name + '</span></div>' if inspection_form.technician else ''}
+                {'<div><span class="text-gray-500">Technician:</span><span class="font-medium ml-2">' + self._get_technician_display_name(inspection_form.technician) + '</span></div>' if inspection_form.technician else ''}
                 {'<div><span class="text-gray-500">Completed:</span><span class="font-medium ml-2">' + inspection_form.completed_at.strftime('%B %d, %Y at %I:%M %p') + '</span></div>' if inspection_form.completed_at else ''}
               </div>
             </div>
@@ -844,6 +844,23 @@ class InspectionFormAjaxView(View):
         html += "</div>"
         
         return html
+
+    def _get_technician_display_name(self, technician):
+        """Get a proper display name for the technician"""
+        if not technician:
+            return "Unknown"
+        
+        first_name = (technician.first_name or "").strip()
+        last_name = (technician.last_name or "").strip()
+        
+        if first_name and last_name:
+            return f"{first_name} {last_name}"
+        elif first_name:
+            return first_name
+        elif last_name:
+            return last_name
+        else:
+            return technician.username or f"User {technician.id}"
 
 
 class StartInspectionWorkflowView(LoginRequiredMixin, CreateView):

@@ -21,7 +21,7 @@
       <div
         class="relative w-full md:max-w-xl lg:max-w-4xl mx-auto px-6 md:px-20 py-10 md:py-20 bg-white rounded-4xl h-auto">
         <h1 class="text-3xl font-semibold text-gray-800 text-center">Carfinity Report</h1>
-        
+
         <!-- Help Information Banner -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
           <div class="flex items-start">
@@ -31,7 +31,8 @@
             <div class="ml-3">
               <h3 class="text-lg font-medium text-blue-800 mb-2">Understanding Your Vehicle Report</h3>
               <p class="text-blue-700 text-sm mb-2">
-                This comprehensive report provides detailed information about the vehicle's history, condition, and specifications. 
+                This comprehensive report provides detailed information about the vehicle's history, condition, and
+                specifications.
                 Use this data to make informed decisions about your vehicle purchase or ownership.
               </p>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-blue-600">
@@ -59,28 +60,8 @@
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
           <div class="flex items-center p-6 border-b">
             {% if vehicle_images %}
-            {% with primary_image_found=False %}
-            {% for image in vehicle_images %}
-            {% if image.is_primary %}
-            <img src="{{ image.image.url }}" alt="{{ image.get_image_type_display }} - {{ vehicle.vin }}"
+            <img src="{{ vehicle_images.0.image.url }}" alt="{{ vehicle_images.0.get_image_type_display }} - {{ vehicle.vin }}"
               class="w-24 h-24 object-cover rounded-lg mr-6">
-            {% with primary_image_found=True %}{% endwith %}
-            {% endif %}
-            {% endfor %}
-            {% if not primary_image_found %}
-            <!-- Use first available image if no primary image is set -->
-            {% if vehicle_images.0 %}
-            <img src="{{ vehicle_images.0.image.url }}"
-              alt="{{ vehicle_images.0.get_image_type_display }} - {{ vehicle.vin }}"
-              class="w-24 h-24 object-cover rounded-lg mr-6">
-            {% else %}
-            <!-- Fallback placeholder when images exist but can't be loaded -->
-            <div class="w-24 h-24 bg-gray-200 rounded-lg mr-6 flex items-center justify-center">
-              <i class="fas fa-car text-gray-400 text-2xl"></i>
-            </div>
-            {% endif %}
-            {% endif %}
-            {% endwith %}
             {% else %}
             <!-- No images available - show placeholder with clear indication -->
             <div
@@ -324,22 +305,22 @@
           <div class="bg-white p-5 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-2xl font-semibold text-gray-800">Inspections</h2>
-              <button 
-                id="toggleInspectionsBtn" 
-                onclick="toggleInspections()"
+              <button id="toggleInspectionsBtn" onclick="toggleInspections()"
                 class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                 <span id="toggleInspectionsText">Show Inspections</span>
                 <i id="toggleInspectionsIcon" class="fas fa-chevron-down ml-2 transition-transform duration-200"></i>
               </button>
             </div>
-            
+
             <!-- Help text for inspections -->
             <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
               <div class="flex items-start">
                 <i class="fas fa-lightbulb text-green-600 mt-1 mr-2"></i>
                 <div class="text-sm text-green-700">
-                  <strong>About Inspections:</strong> These are official vehicle safety and emissions inspections conducted by certified facilities. 
-                  Higher ratings indicate better vehicle condition. Regular inspections help ensure vehicle safety and compliance.
+                  <strong>About Inspections:</strong> These are official vehicle safety and emissions inspections
+                  conducted by certified facilities.
+                  Higher ratings indicate better vehicle condition. Regular inspections help ensure vehicle safety and
+                  compliance.
                 </div>
               </div>
             </div>
@@ -378,185 +359,192 @@
             <!-- Detailed inspections (initially hidden) -->
             <div id="inspectionsDetails" class="overflow-x-auto hidden">
               {% if inspections %}
-                {% for inspection in inspections %}
-                <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
-                  <!-- Inspection Header -->
-                  <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                    <div class="flex items-center">
-                      <div class="bg-green-100 text-green-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
-                        {{ forloop.counter }}
-                      </div>
-                      <div>
-                        <h4 class="font-semibold text-gray-800">{{ inspection.inspection_number }}</h4>
-                        <p class="text-sm text-gray-500">
-                          <i class="fas fa-calendar mr-1"></i>
-                          {{ inspection.inspection_date|date:"F j, Y" }}
-                        </p>
-                      </div>
+              {% for inspection in inspections %}
+              <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
+                <!-- Inspection Header -->
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                  <div class="flex items-center">
+                    <div
+                      class="bg-green-100 text-green-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
+                      {{ forloop.counter }}
                     </div>
-                    <div class="text-right">
-                      <div class="text-lg font-semibold 
+                    <div>
+                      <h4 class="font-semibold text-gray-800">{{ inspection.inspection_number }}</h4>
+                      <p class="text-sm text-gray-500">
+                        <i class="fas fa-calendar mr-1"></i>
+                        {{ inspection.inspection_date|date:"F j, Y" }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-lg font-semibold 
                         {% if inspection.inspection_result == 'PAS' %}text-green-600
                         {% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}text-yellow-600
                         {% else %}text-red-600{% endif %}">
-                        {{ inspection.get_inspection_result_display }}
-                      </div>
-                      <div class="text-xs text-gray-500">{{ inspection.year }}</div>
+                      {{ inspection.get_inspection_result_display }}
                     </div>
+                    <div class="text-xs text-gray-500">{{ inspection.year }}</div>
                   </div>
+                </div>
 
-                  <!-- Inspection Details Grid -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <!-- Inspection Result -->
-                    <div class="flex items-center">
-                      <div class="{% if inspection.inspection_result == 'PAS' %}text-green-600
+                <!-- Inspection Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  <!-- Inspection Result -->
+                  <div class="flex items-center">
+                    <div class="{% if inspection.inspection_result == 'PAS' %}text-green-600
                         {% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}text-yellow-600
                         {% else %}text-red-600{% endif %} mr-2">
-                        <i class="fas fa-{% if inspection.inspection_result == 'PAS' %}check-circle{% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}exclamation-triangle{% else %}times-circle{% endif %}"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Inspection Result</p>
-                        <p class="font-medium text-gray-700">{{ inspection.get_inspection_result_display }}</p>
-                      </div>
+                      <i
+                        class="fas fa-{% if inspection.inspection_result == 'PAS' %}check-circle{% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}exclamation-triangle{% else %}times-circle{% endif %}"></i>
                     </div>
-
-                    <!-- Vehicle Health Index -->
-                    <div class="flex items-center">
-                      <div class="text-blue-600 mr-2">
-                        <i class="fas fa-heartbeat"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Vehicle Health Index</p>
-                        <p class="font-medium text-gray-700">
-                          {% if inspection.vehicle_health_index %}
-                            {{ inspection.vehicle_health_index }}
-                          {% else %}
-                            Not Available
-                          {% endif %}
-                        </p>
-                      </div>
-                    </div>
-
-                    <!-- PDF Report -->
-                    <div class="flex items-center">
-                      <div class="text-red-600 mr-2">
-                        <i class="fas fa-file-pdf"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Inspection Report</p>
-                        <p class="font-medium text-gray-700">
-                          {% if inspection.has_pdf %}
-                            <button 
-                              onclick="openInspectionPDF('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
-                              class="text-blue-600 hover:text-blue-800 underline text-sm">
-                              <i class="fas fa-eye mr-1"></i>View PDF
-                            </button>
-                            <br><span class="text-xs text-gray-500">{{ inspection.pdf_file_size_mb }} MB</span>
-                          {% else %}
-                            <span class="text-gray-400">No PDF available</span>
-                          {% endif %}
-                        </p>
-                      </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Inspection Result</p>
+                      <p class="font-medium text-gray-700">{{ inspection.get_inspection_result_display }}</p>
                     </div>
                   </div>
 
-                  <!-- External Link Section -->
-                  {% if inspection.link_to_results %}
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
-                      <i class="fas fa-external-link-alt text-blue-600 mr-2"></i>
-                      External Inspection Results
-                    </h5>
-                    <a href="{{ inspection.link_to_results }}" 
-                       target="_blank" 
-                       class="text-blue-600 hover:text-blue-800 underline text-sm">
-                      <i class="fas fa-link mr-1"></i>View External Results
-                      <i class="fas fa-external-link-alt ml-1 text-xs"></i>
-                    </a>
-                  </div>
-                  {% endif %}
-
-                  <!-- Detailed Inspection Form Link -->
-                  {% if inspection.inspections_form %}
-                  <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <h5 class="font-semibold text-gray-700 mb-1 flex items-center">
-                          <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
-                          50-Point Inspection Form
-                        </h5>
-                        <p class="text-sm text-gray-600">
-                          Completion: {{ inspection.inspections_form.completion_percentage }}%
-                          {% if inspection.inspections_form.is_completed %}
-                            <span class="text-green-600 ml-2">
-                              <i class="fas fa-check-circle"></i> Completed
-                            </span>
-                          {% else %}
-                            <span class="text-yellow-600 ml-2">
-                              <i class="fas fa-clock"></i> In Progress
-                            </span>
-                          {% endif %}
-                        </p>
-                        {% if inspection.inspections_form.technician %}
-                        <p class="text-xs text-gray-500 mt-1">
-                          Technician: {{ inspection.inspections_form.technician.first_name }} {{ inspection.inspections_form.technician.last_name }}
-                        </p>
+                  <!-- Vehicle Health Index -->
+                  <div class="flex items-center">
+                    <div class="text-blue-600 mr-2">
+                      <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Vehicle Health Index</p>
+                      <p class="font-medium text-gray-700">
+                        {% if inspection.vehicle_health_index %}
+                        {{ inspection.vehicle_health_index }}
+                        {% else %}
+                        Not Available
                         {% endif %}
-                      </div>
-                      <button 
-                        onclick="openInspectionFormModal('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm">
-                        <i class="fas fa-eye mr-1"></i>View Details
-                      </button>
+                      </p>
                     </div>
                   </div>
-                  {% else %}
-                  <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <p class="text-sm text-gray-600 flex items-center">
-                      <i class="fas fa-info-circle text-gray-400 mr-2"></i>
-                      No detailed inspection form available for this record
-                    </p>
-                  </div>
-                  {% endif %}
 
-                  <!-- Inspection Metadata -->
-                  <div class="mt-3 pt-3 border-t border-gray-100">
-                    <div class="flex items-center justify-between text-xs text-gray-500">
-                      <div class="flex items-center">
-                        <i class="fas fa-clock mr-1"></i>
-                        <span>
-                          {% if inspection.created_at %}
-                            Created: {{ inspection.created_at|date:"M j, Y" }}
-                          {% endif %}
-                          {% if inspection.updated_at and inspection.updated_at != inspection.created_at %}
-                            | Updated: {{ inspection.updated_at|date:"M j, Y" }}
-                          {% endif %}
+                  <!-- PDF Report -->
+                  <div class="flex items-center">
+                    <div class="text-red-600 mr-2">
+                      <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Inspection Report</p>
+                      <p class="font-medium text-gray-700">
+                        {% if inspection.has_pdf %}
+                        <button onclick="openInspectionPDF('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
+                          class="text-blue-600 hover:text-blue-800 underline text-sm">
+                          <i class="fas fa-eye mr-1"></i>View PDF
+                        </button>
+                        <br><span class="text-xs text-gray-500">{{ inspection.pdf_file_size_mb }} MB</span>
+                        {% else %}
+                        <span class="text-gray-400">No PDF available</span>
+                        {% endif %}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- External Link Section -->
+                {% if inspection.link_to_results %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                  <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-external-link-alt text-blue-600 mr-2"></i>
+                    External Inspection Results
+                  </h5>
+                  <a href="{{ inspection.link_to_results }}" target="_blank"
+                    class="text-blue-600 hover:text-blue-800 underline text-sm">
+                    <i class="fas fa-link mr-1"></i>View External Results
+                    <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+                  </a>
+                </div>
+                {% endif %}
+
+                <!-- Detailed Inspection Form Link -->
+                {% if inspection.inspections_form %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h5 class="font-semibold text-gray-700 mb-1 flex items-center">
+                        <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                        50-Point Inspection Form
+                      </h5>
+                      <p class="text-sm text-gray-600">
+                        Completion: {{ inspection.inspections_form.completion_percentage }}%
+                        {% if inspection.inspections_form.is_completed %}
+                        <span class="text-green-600 ml-2">
+                          <i class="fas fa-check-circle"></i> Completed
                         </span>
-                      </div>
-                      {% if inspection.pdf_uploaded_at %}
-                      <div class="flex items-center">
-                        <i class="fas fa-upload mr-1"></i>
-                        <span>PDF uploaded: {{ inspection.pdf_uploaded_at|date:"M j, Y" }}</span>
-                      </div>
+                        {% else %}
+                        <span class="text-yellow-600 ml-2">
+                          <i class="fas fa-clock"></i> In Progress
+                        </span>
+                        {% endif %}
+                      </p>
+                      {% if inspection.inspections_form.technician %}
+                      <p class="text-xs text-gray-500 mt-1">
+                        Technician:
+                        {% if inspection.inspections_form.technician.first_name or inspection.inspections_form.technician.last_name %}
+                        {{ inspection.inspections_form.technician.first_name|default:"" }}{% if inspection.inspections_form.technician.first_name and inspection.inspections_form.technician.last_name %} {% endif %}{{ inspection.inspections_form.technician.last_name|default:"" }}
+                        {% else %}
+                        {{ inspection.inspections_form.technician.username }}
+                        {% endif %}
+                      </p>
                       {% endif %}
                     </div>
+                    <button
+                      onclick="openInspectionFormModal('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
+                      class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm">
+                      <i class="fas fa-eye mr-1"></i>View Details
+                    </button>
                   </div>
                 </div>
-                {% endfor %}
-              {% else %}
-                <div class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                  <div class="text-6xl text-gray-400 mb-4">
-                    <i class="fas fa-clipboard-check"></i>
-                  </div>
-                  <h3 class="text-lg font-medium text-gray-700 mb-2">No Inspection Records Available</h3>
-                  <p class="text-gray-500 text-center max-w-md">
-                    No inspection records have been found for this vehicle. Inspections may be added when the vehicle undergoes official safety and emissions testing.
+                {% else %}
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                  <p class="text-sm text-gray-600 flex items-center">
+                    <i class="fas fa-info-circle text-gray-400 mr-2"></i>
+                    No detailed inspection form available for this record
                   </p>
-                  <div class="mt-4 flex items-center text-sm text-gray-400">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <span>Check back after the next scheduled inspection</span>
+                </div>
+                {% endif %}
+
+                <!-- Inspection Metadata -->
+                <div class="mt-3 pt-3 border-t border-gray-100">
+                  <div class="flex items-center justify-between text-xs text-gray-500">
+                    <div class="flex items-center">
+                      <i class="fas fa-clock mr-1"></i>
+                      <span>
+                        {% if inspection.created_at %}
+                        Created: {{ inspection.created_at|date:"M j, Y" }}
+                        {% endif %}
+                        {% if inspection.updated_at and inspection.updated_at != inspection.created_at %}
+                        | Updated: {{ inspection.updated_at|date:"M j, Y" }}
+                        {% endif %}
+                      </span>
+                    </div>
+                    {% if inspection.pdf_uploaded_at %}
+                    <div class="flex items-center">
+                      <i class="fas fa-upload mr-1"></i>
+                      <span>PDF uploaded: {{ inspection.pdf_uploaded_at|date:"M j, Y" }}</span>
+                    </div>
+                    {% endif %}
                   </div>
                 </div>
+              </div>
+              {% endfor %}
+              {% else %}
+              <div
+                class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <div class="text-6xl text-gray-400 mb-4">
+                  <i class="fas fa-clipboard-check"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-700 mb-2">No Inspection Records Available</h3>
+                <p class="text-gray-500 text-center max-w-md">
+                  No inspection records have been found for this vehicle. Inspections may be added when the vehicle
+                  undergoes official safety and emissions testing.
+                </p>
+                <div class="mt-4 flex items-center text-sm text-gray-400">
+                  <i class="fas fa-info-circle mr-2"></i>
+                  <span>Check back after the next scheduled inspection</span>
+                </div>
+              </div>
               {% endif %}
             </div>
           </div>
@@ -568,22 +556,22 @@
           <div class="bg-white p-5 rounded-lg shadow">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-2xl font-semibold text-gray-800">Maintenance History</h2>
-              <button 
-                id="toggleMaintenanceBtn" 
-                onclick="toggleMaintenanceHistory()"
+              <button id="toggleMaintenanceBtn" onclick="toggleMaintenanceHistory()"
                 class="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
                 <span id="toggleMaintenanceText">Show History</span>
                 <i id="toggleMaintenanceIcon" class="fas fa-chevron-down ml-2 transition-transform duration-200"></i>
               </button>
             </div>
-            
+
             <!-- Help text for maintenance -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
               <div class="flex items-start">
                 <i class="fas fa-lightbulb text-blue-600 mt-1 mr-2"></i>
                 <div class="text-sm text-blue-700">
-                  <strong>About Maintenance History:</strong> These records show all documented maintenance work performed on the vehicle. 
-                  Regular maintenance indicates good vehicle care and can help predict future reliability. Look for consistent service intervals and major repairs.
+                  <strong>About Maintenance History:</strong> These records show all documented maintenance work
+                  performed on the vehicle.
+                  Regular maintenance indicates good vehicle care and can help predict future reliability. Look for
+                  consistent service intervals and major repairs.
                 </div>
               </div>
             </div>
@@ -622,174 +610,179 @@
             <!-- Detailed maintenance history table (initially hidden) -->
             <div id="maintenanceDetails" class="overflow-x-auto hidden">
               {% if maintenance_records %}
-                {% for record in maintenance_records %}
-                <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
-                  <!-- Record Header -->
-                  <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
-                    <div class="flex items-center">
-                      <div class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
-                        {{ forloop.counter }}
-                      </div>
-                      <div>
-                        <h4 class="font-semibold text-gray-800">{{ record.work_done }}</h4>
-                        <p class="text-sm text-gray-500">
-                          <i class="fas fa-calendar mr-1"></i>
-                          {{ record.date_performed|date:"F j, Y \a\t g:i A" }}
-                        </p>
-                      </div>
+              {% for record in maintenance_records %}
+              <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
+                <!-- Record Header -->
+                <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+                  <div class="flex items-center">
+                    <div
+                      class="bg-blue-100 text-blue-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
+                      {{ forloop.counter }}
                     </div>
-                    <div class="text-right">
-                      <div class="text-lg font-semibold text-gray-700">{{ record.mileage|floatformat:0 }} mi</div>
-                      <div class="text-xs text-gray-500">Mileage</div>
+                    <div>
+                      <h4 class="font-semibold text-gray-800">{{ record.work_done }}</h4>
+                      <p class="text-sm text-gray-500">
+                        <i class="fas fa-calendar mr-1"></i>
+                        {{ record.date_performed|date:"F j, Y \a\t g:i A" }}
+                      </p>
                     </div>
                   </div>
-
-                  <!-- Record Details Grid -->
-                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                    <!-- Technician -->
-                    <div class="flex items-center">
-                      <div class="text-blue-600 mr-2">
-                        <i class="fas fa-user-cog"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Technician</p>
-                        <p class="font-medium text-gray-700">
-                          {% if record.technician %}
-                            {{ record.technician.first_name }} {{ record.technician.last_name }}
-                            {% if record.technician.email %}
-                              <br><span class="text-xs text-gray-500">{{ record.technician.email }}</span>
-                            {% endif %}
-                          {% else %}
-                            N/A
-                          {% endif %}
-                        </p>
-                      </div>
-                    </div>
-
-                    <!-- Scheduled Maintenance -->
-                    <div class="flex items-center">
-                      <div class="text-green-600 mr-2">
-                        <i class="fas fa-clipboard-check"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Scheduled Maintenance</p>
-                        <p class="font-medium text-gray-700">
-                          {% if record.scheduled_maintenance %}
-                            {{ record.scheduled_maintenance.maintenance_type }}
-                          {% else %}
-                            Unscheduled
-                          {% endif %}
-                        </p>
-                      </div>
-                    </div>
-
-                    <!-- Service Image -->
-                    <div class="flex items-center">
-                      <div class="text-purple-600 mr-2">
-                        <i class="fas fa-camera"></i>
-                      </div>
-                      <div>
-                        <p class="text-xs text-gray-500">Service Image</p>
-                        <p class="font-medium text-gray-700">
-                          {% if record.service_image %}
-                            <button 
-                              onclick="openMaintenanceImageModal('{{ record.service_image.url }}', '{{ record.image_type_display }}', '{{ record.image_description|default:'' }}', '{{ record.work_done }}')"
-                              class="text-blue-600 hover:text-blue-800 underline text-sm">
-                              <i class="fas fa-eye mr-1"></i>View Image
-                            </button>
-                            {% if record.image_type %}
-                              <br><span class="text-xs text-gray-500">{{ record.image_type_display }}</span>
-                            {% endif %}
-                          {% else %}
-                            <span class="text-gray-400">No image</span>
-                          {% endif %}
-                        </p>
-                      </div>
-                    </div>
+                  <div class="text-right">
+                    <div class="text-lg font-semibold text-gray-700">{{ record.mileage|floatformat:0 }} mi</div>
+                    <div class="text-xs text-gray-500">Mileage</div>
                   </div>
+                </div>
 
-                  <!-- Parts Used Section -->
-                  {% if record.parts_used.all %}
-                  <div class="bg-gray-50 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
-                      <i class="fas fa-cogs text-orange-600 mr-2"></i>
-                      Parts Used
-                    </h5>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {% for part_usage in record.parts_used.all %}
-                      <div class="flex items-center justify-between bg-white rounded p-2 border">
-                        <div>
-                          <p class="font-medium text-gray-700">{{ part_usage.part.name }}</p>
-                          <p class="text-xs text-gray-500">Qty: {{ part_usage.quantity }}</p>
-                        </div>
-                        {% if part_usage.unit_cost %}
-                        <div class="text-right">
-                          <p class="font-semibold text-gray-700">${{ part_usage.total_cost|floatformat:2 }}</p>
-                          <p class="text-xs text-gray-500">${{ part_usage.unit_cost|floatformat:2 }} each</p>
-                        </div>
+                <!-- Record Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                  <!-- Technician -->
+                  <div class="flex items-center">
+                    <div class="text-blue-600 mr-2">
+                      <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Technician</p>
+                      <p class="font-medium text-gray-700">
+                        {% if record.technician %}
+                        {% if record.technician.first_name or record.technician.last_name %}
+                        {{ record.technician.first_name|default:"" }}{% if record.technician.first_name and record.technician.last_name %} {% endif %}{{ record.technician.last_name|default:"" }}
+                        {% else %}
+                        {{ record.technician.username }}
                         {% endif %}
-                      </div>
-                      {% endfor %}
-                    </div>
-                    <div class="mt-2 pt-2 border-t border-gray-200">
-                      <div class="text-center">
-                        <span class="text-sm text-gray-600">
-                          <i class="fas fa-info-circle mr-1"></i>
-                          Individual part costs shown above
-                        </span>
-                      </div>
+                        {% if record.technician.email %}
+                        <br><span class="text-xs text-gray-500">{{ record.technician.email }}</span>
+                        {% endif %}
+                        {% else %}
+                        N/A
+                        {% endif %}
+                      </p>
                     </div>
                   </div>
-                  {% endif %}
 
-                  <!-- Notes Section -->
-                  {% if record.notes %}
-                  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
-                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
-                      <i class="fas fa-sticky-note text-yellow-600 mr-2"></i>
-                      Additional Notes
-                    </h5>
-                    <p class="text-gray-700 text-sm">{{ record.notes }}</p>
+                  <!-- Scheduled Maintenance -->
+                  <div class="flex items-center">
+                    <div class="text-green-600 mr-2">
+                      <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Scheduled Maintenance</p>
+                      <p class="font-medium text-gray-700">
+                        {% if record.scheduled_maintenance %}
+                        {{ record.scheduled_maintenance.maintenance_type }}
+                        {% else %}
+                        Unscheduled
+                        {% endif %}
+                      </p>
+                    </div>
                   </div>
-                  {% endif %}
 
-                  <!-- Image Description -->
-                  {% if record.image_description %}
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
-                      <i class="fas fa-image text-blue-600 mr-2"></i>
-                      Image Description
-                    </h5>
-                    <p class="text-gray-700 text-sm">{{ record.image_description }}</p>
-                  </div>
-                  {% endif %}
-
-                  <!-- Record Timestamps -->
-                  <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400">
-                    <span>
-                      <i class="fas fa-plus-circle mr-1"></i>
-                      Created: {{ record.created_at|date:"M j, Y g:i A" }}
-                    </span>
-                    {% if record.updated_at != record.created_at %}
-                    <span>
-                      <i class="fas fa-edit mr-1"></i>
-                      Updated: {{ record.updated_at|date:"M j, Y g:i A" }}
-                    </span>
-                    {% endif %}
+                  <!-- Service Image -->
+                  <div class="flex items-center">
+                    <div class="text-purple-600 mr-2">
+                      <i class="fas fa-camera"></i>
+                    </div>
+                    <div>
+                      <p class="text-xs text-gray-500">Service Image</p>
+                      <p class="font-medium text-gray-700">
+                        {% if record.service_image %}
+                        <button
+                          onclick="openMaintenanceImageModal('{{ record.service_image.url }}', '{{ record.image_type_display }}', '{{ record.image_description|default:'' }}', '{{ record.work_done }}')"
+                          class="text-blue-600 hover:text-blue-800 underline text-sm">
+                          <i class="fas fa-eye mr-1"></i>View Image
+                        </button>
+                        {% if record.image_type %}
+                        <br><span class="text-xs text-gray-500">{{ record.image_type_display }}</span>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-gray-400">No image</span>
+                        {% endif %}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                {% endfor %}
-              {% else %}
-                <div class="p-8 text-center text-gray-500">
-                  <div class="flex flex-col items-center">
-                    <i class="fas fa-clipboard-list text-4xl mb-3 text-gray-300"></i>
-                    <h3 class="text-lg font-medium text-gray-600 mb-2">No Maintenance Records Found</h3>
-                    <p class="text-gray-500 max-w-md">
-                      No maintenance records have been documented for this vehicle yet. 
-                      Regular maintenance records help track vehicle care and can indicate reliability.
-                    </p>
+
+                <!-- Parts Used Section -->
+                {% if record.parts_used.all %}
+                <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                  <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-cogs text-orange-600 mr-2"></i>
+                    Parts Used
+                  </h5>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {% for part_usage in record.parts_used.all %}
+                    <div class="flex items-center justify-between bg-white rounded p-2 border">
+                      <div>
+                        <p class="font-medium text-gray-700">{{ part_usage.part.name }}</p>
+                        <p class="text-xs text-gray-500">Qty: {{ part_usage.quantity }}</p>
+                      </div>
+                      {% if part_usage.unit_cost %}
+                      <div class="text-right">
+                        <p class="font-semibold text-gray-700">R{{ part_usage.total_cost|floatformat:2 }}</p>
+                        <p class="text-xs text-gray-500">R{{ part_usage.unit_cost|floatformat:2 }} each</p>
+                      </div>
+                      {% endif %}
+                    </div>
+                    {% endfor %}
+                  </div>
+                  <div class="mt-2 pt-2 border-t border-gray-200">
+                    <div class="text-center">
+                      <span class="text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Individual part costs shown above
+                      </span>
+                    </div>
                   </div>
                 </div>
+                {% endif %}
+
+                <!-- Notes Section -->
+                {% if record.notes %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-3">
+                  <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-sticky-note text-yellow-600 mr-2"></i>
+                    Additional Notes
+                  </h5>
+                  <p class="text-gray-700 text-sm">{{ record.notes }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Image Description -->
+                {% if record.image_description %}
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+                    <i class="fas fa-image text-blue-600 mr-2"></i>
+                    Image Description
+                  </h5>
+                  <p class="text-gray-700 text-sm">{{ record.image_description }}</p>
+                </div>
+                {% endif %}
+
+                <!-- Record Timestamps -->
+                <div class="mt-3 pt-3 border-t border-gray-100 flex justify-between text-xs text-gray-400">
+                  <span>
+                    <i class="fas fa-plus-circle mr-1"></i>
+                    Created: {{ record.created_at|date:"M j, Y g:i A" }}
+                  </span>
+                  {% if record.updated_at != record.created_at %}
+                  <span>
+                    <i class="fas fa-edit mr-1"></i>
+                    Updated: {{ record.updated_at|date:"M j, Y g:i A" }}
+                  </span>
+                  {% endif %}
+                </div>
+              </div>
+              {% empty %}
+              <div class="p-8 text-center text-gray-500">
+                <div class="flex flex-col items-center">
+                  <i class="fas fa-clipboard-list text-4xl mb-3 text-gray-300"></i>
+                  <h3 class="text-lg font-medium text-gray-600 mb-2">No Maintenance Records Found</h3>
+                  <p class="text-gray-500 max-w-md">
+                    No maintenance records have been documented for this vehicle yet.
+                    Regular maintenance records help track vehicle care and can indicate reliability.
+                  </p>
+                </div>
+              </div>
+              {% endfor %}
               {% endif %}
             </div>
           </div>
@@ -802,7 +795,7 @@
             <i class="fas fa-question-circle text-blue-600 mr-2"></i>
             How to Interpret This Report
           </h3>
-          
+
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Status Indicators -->
             <div class="bg-white rounded-lg p-4 border">
@@ -903,8 +896,10 @@
             <div class="flex items-start">
               <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-1"></i>
               <div class="text-sm text-yellow-800">
-                <strong>Important:</strong> This report is based on available data and should be used as a reference tool. 
-                Always conduct a thorough physical inspection and consider professional evaluation before making purchase decisions. 
+                <strong>Important:</strong> This report is based on available data and should be used as a reference
+                tool.
+                Always conduct a thorough physical inspection and consider professional evaluation before making
+                purchase decisions.
                 Information accuracy depends on data sources and reporting completeness.
               </div>
             </div>
@@ -975,16 +970,16 @@
       const modal = document.getElementById('imageModal');
       const modalImage = document.getElementById('modalImage');
       const modalCaption = document.getElementById('modalCaption');
-      
+
       modalImage.src = imageUrl;
       modalImage.alt = `${imageType} - ${workDone}`;
-      
+
       let caption = `${imageType} - ${workDone}`;
       if (description) {
         caption += '\n' + description;
       }
       modalCaption.textContent = caption;
-      
+
       modal.classList.remove('hidden');
       document.body.style.overflow = 'hidden';
     }
@@ -1009,7 +1004,7 @@
       const summary = document.getElementById('maintenanceSummary');
       const toggleText = document.getElementById('toggleMaintenanceText');
       const toggleIcon = document.getElementById('toggleMaintenanceIcon');
-      
+
       if (details.classList.contains('hidden')) {
         // Show details, hide summary
         details.classList.remove('hidden');
@@ -1031,7 +1026,7 @@
       const summary = document.getElementById('inspectionsSummary');
       const toggleText = document.getElementById('toggleInspectionsText');
       const toggleIcon = document.getElementById('toggleInspectionsIcon');
-      
+
       if (details.classList.contains('hidden')) {
         // Show details, hide summary
         details.classList.remove('hidden');
@@ -1077,15 +1072,20 @@
           </div>
         </div>
       `;
-      
+
       // Add modal to page
       document.body.insertAdjacentHTML('beforeend', modalHTML);
       document.body.style.overflow = 'hidden';
-      
+
       // Load inspection form details via AJAX
-      fetch(`/maintenance-history/inspection-form/ajax/${inspectionId}/`)
-        .then(response => response.json())
+      console.log('Loading inspection form details for ID:', inspectionId);
+      fetch(`/inspection-form/ajax/${inspectionId}/`)
+        .then(response => {
+          console.log('Response status:', response.status);
+          return response.json();
+        })
         .then(data => {
+          console.log('Response data:', data);
           if (data.success) {
             updateInspectionFormModalContent(data.html);
           } else {
@@ -1099,11 +1099,13 @@
           }
         })
         .catch(error => {
+          console.error('Network error:', error);
           updateInspectionFormModalContent(`
             <div class="text-center py-8">
               <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
-              <p class="text-gray-600">Error loading inspection form details.</p>
-              <p class="text-sm text-gray-500 mt-2">Network error. Please check your connection and try again.</p>
+              <p class="text-gray-600">Network error occurred.</p>
+              <p class="text-sm text-gray-500 mt-2">Please check your connection and try again.</p>
+              <p class="text-xs text-gray-400 mt-2">Error: ${error.message}</p>
             </div>
           `);
         });
@@ -1130,14 +1132,14 @@
     }
 
     // Close modal when clicking outside
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
       if (e.target && e.target.id === 'inspectionFormModal') {
         closeInspectionFormModal();
       }
     });
 
     // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') {
         const modal = document.getElementById('inspectionFormModal');
         if (modal) {
