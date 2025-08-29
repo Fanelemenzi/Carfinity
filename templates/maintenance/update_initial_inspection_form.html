@@ -1,0 +1,252 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Update Initial Inspection - {{ initial_inspection.inspection_number }}{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Initial Inspection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-search-plus text-primary mr-2"></i>
+                            Update Initial Inspection
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-primary">
+            <div class="text-sm font-medium text-gray-400">01. Vehicle Selection</div>
+            <div class="text-sm font-medium text-primary">02. Update Initial Inspection Points</div>
+            <div class="text-sm font-medium text-gray-400">03. Results & Assessment</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Update {{ initial_inspection.inspection_number }}
+                    </h2>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-500">Vehicle:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ initial_inspection.vehicle.vin }}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-500">Current Progress:</span>
+                            <span class="font-medium text-gray-900 ml-2">{{ initial_inspection.completion_percentage }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">160-Point Initial Inspection Form</h3>
+                <p class="text-sm text-gray-500">Update inspection points and assessment</p>
+            </div>
+            
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <!-- Form Errors -->
+                {% if form.non_field_errors %}
+                <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-danger"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                            <ul class="list-disc list-inside space-y-1">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Basic Information -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label for="{{ form.overall_notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clipboard-list mr-1"></i>{{ form.overall_notes.label }}
+                        </label>
+                        {{ form.overall_notes|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        {% if form.overall_notes.errors %}
+                            <p class="text-sm mt-1 text-danger">{{ form.overall_notes.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.recommendations.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-lightbulb mr-1"></i>{{ form.recommendations.label }}
+                        </label>
+                        {{ form.recommendations|add_class:"w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" }}
+                        {% if form.recommendations.errors %}
+                            <p class="text-sm mt-1 text-danger">{{ form.recommendations.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Road Test Section (Points 1-33) -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Road Test (Points 1-33)</h3>
+                        <p class="text-sm text-gray-500">Engine performance, transmission, brakes, and driving dynamics</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Engine Performance -->
+                            <div class="space-y-4">
+                                <h4 class="text-md font-medium text-gray-800 mb-3">Engine Performance</h4>
+                                {% for field_name, description in road_test_fields %}
+                                    {% if 'engine' in field_name or 'idle' in field_name or 'acceleration' in field_name or 'exhaust' in field_name %}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ description }}</label>
+                                            <select name="{{ field_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
+                                                <option value="">Not Checked</option>
+                                                <option value="pass">Pass</option>
+                                                <option value="fail">Fail</option>
+                                                <option value="major">Major Issue</option>
+                                                <option value="minor">Minor Issue</option>
+                                                <option value="needs_attention">Needs Attention</option>
+                                                <option value="na">N/A</option>
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+
+                            <!-- Braking System -->
+                            <div class="space-y-4">
+                                <h4 class="text-md font-medium text-gray-800 mb-3">Braking System</h4>
+                                {% for field_name, description in road_test_fields %}
+                                    {% if 'brake' in field_name %}
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ description }}</label>
+                                            <select name="{{ field_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
+                                                <option value="">Not Checked</option>
+                                                <option value="pass">Pass</option>
+                                                <option value="fail">Fail</option>
+                                                <option value="major">Major Issue</option>
+                                                <option value="minor">Minor Issue</option>
+                                                <option value="needs_attention">Needs Attention</option>
+                                                <option value="na">N/A</option>
+                                            </select>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frame & Structure Section (Points 34-54) -->
+                <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Frame, Structure & Underbody (Points 34-54)</h3>
+                        <p class="text-sm text-gray-500">Structural integrity and underbody components</p>
+                    </div>
+                    <div class="p-6">
+                        {% for field_name, description in frame_structure_fields %}
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ description }}</label>
+                                <select name="{{ field_name }}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-primary focus:border-primary">
+                                    <option value="">Not Checked</option>
+                                    <option value="pass">Pass</option>
+                                    <option value="fail">Fail</option>
+                                    <option value="major">Major Issue</option>
+                                    <option value="minor">Minor Issue</option>
+                                    <option value="needs_attention">Needs Attention</option>
+                                    <option value="na">N/A</option>
+                                </select>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Note about additional fields -->
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-yellow-400"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-yellow-800">
+                                        Additional frame and structure inspection fields will be available when the model is fully implemented.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-between items-center space-x-4">
+                    <a href="{% url 'maintenance_history:initial_inspection_list' %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm">
+                        <i class="fas fa-arrow-left mr-2"></i>Cancel
+                    </a>
+                    <div class="flex space-x-4">
+                        <button type="submit" name="save_draft" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm">
+                            <i class="fas fa-save mr-2"></i>Save Draft
+                        </button>
+                        <button type="submit" name="save_complete" class="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-sm">
+                            <i class="fas fa-check mr-2"></i>Save & Complete
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
+{% endblock %}

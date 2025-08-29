@@ -1,7 +1,7 @@
 from django import forms
 from django.db import transaction
 from django.core.exceptions import ValidationError
-from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
+from .models import MaintenanceRecord, PartUsage, Inspection, Inspections, InitialInspection
 from maintenance.models import Part, ScheduledMaintenance
 import json
 
@@ -503,3 +503,197 @@ class InspectionRecordForm(forms.ModelForm):
             raise ValidationError("An inspection with this number already exists.")
         
         return inspection_number
+
+
+class InitialInspectionForm(forms.ModelForm):
+    """
+    Django form for the 160-Point Initial Vehicle Inspection for Second-Hand Vehicles
+    Based on the InitialInspection model
+    """
+    
+    class Meta:
+        model = InitialInspection
+        fields = [
+            'vehicle',
+            'inspection_number',
+            'technician',
+            'inspection_date',
+            'mileage_at_inspection',
+            # Road Test (Points 1-33)
+            'cold_engine_operation',
+            'throttle_operation',
+            'warmup_operation',
+            'operating_temp_performance',
+            'normal_operating_temp',
+            'brake_vibrations',
+            'engine_fan_operation',
+            'brake_pedal_specs',
+            'abs_operation',
+            'parking_brake_operation',
+            'seat_belt_condition',
+            'seat_belt_operation',
+            'transmission_operation',
+            'auto_trans_cold',
+            'auto_trans_operating',
+            'steering_feel',
+            'steering_centered',
+            'vehicle_tracking',
+            'tilt_telescopic_steering',
+            'washer_fluid_spray',
+            'front_wipers',
+            'rear_wipers',
+            'wiper_rest_position',
+            'wiper_blade_replacement',
+            'speedometer_function',
+            'odometer_function',
+            'cruise_control',
+            'heater_operation',
+            'ac_operation',
+            'engine_noise',
+            'interior_noise',
+            'wind_road_noise',
+            'tire_vibration',
+            # Frame, Structure & Underbody (Points 34-54) - Add when model is complete
+            'frame_unibody_condition',
+            # Overall
+            'overall_notes',
+            'recommendations',
+            'is_completed'
+        ]
+        
+        widgets = {
+            'vehicle': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'inspection_number': forms.TextInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Enter unique inspection number'
+            }),
+            'technician': forms.Select(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            }),
+            'inspection_date': forms.DateTimeInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'type': 'datetime-local'
+            }),
+            'mileage_at_inspection': forms.NumberInput(attrs={
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+                'placeholder': 'Enter current mileage',
+                'min': '0',
+                'step': '1'
+            }),
+            'is_completed': forms.CheckboxInput(attrs={
+                'class': 'rounded border-gray-300 text-blue-600 shadow-sm focus:ring-blue-500'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add common styling to all status choice fields
+        status_widget_attrs = {
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+        }
+        
+        # Apply styling to all road test status fields
+        road_test_fields = [
+            'cold_engine_operation', 'throttle_operation', 'warmup_operation', 'operating_temp_performance',
+            'normal_operating_temp', 'brake_vibrations', 'engine_fan_operation', 'brake_pedal_specs',
+            'abs_operation', 'parking_brake_operation', 'seat_belt_condition', 'seat_belt_operation',
+            'transmission_operation', 'auto_trans_cold', 'auto_trans_operating', 'steering_feel',
+            'steering_centered', 'vehicle_tracking', 'tilt_telescopic_steering', 'washer_fluid_spray',
+            'front_wipers', 'rear_wipers', 'wiper_rest_position', 'wiper_blade_replacement',
+            'speedometer_function', 'odometer_function', 'cruise_control', 'heater_operation',
+            'ac_operation', 'engine_noise', 'interior_noise', 'wind_road_noise', 'tire_vibration',
+            'frame_unibody_condition'
+        ]
+        
+        for field_name in road_test_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget.attrs.update(status_widget_attrs)
+        
+        # Add styling to notes fields
+        notes_widget_attrs = {
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+            'rows': 4,
+            'placeholder': 'Enter detailed observations, findings, and notes...'
+        }
+        
+        notes_fields = ['overall_notes', 'recommendations']
+        
+        for field_name in notes_fields:
+            if field_name in self.fields:
+                self.fields[field_name].widget = forms.Textarea(attrs=notes_widget_attrs)
+    
+    def clean_inspection_number(self):
+        """Custom validation for inspection number uniqueness"""
+        inspection_number = self.cleaned_data.get('inspection_number')
+        
+        # Check for uniqueness (excluding current instance if editing)
+        queryset = InitialInspection.objects.filter(inspection_number=inspection_number)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise ValidationError("An initial inspection with this number already exists.")
+        
+        return inspection_number
+    
+    def clean_mileage_at_inspection(self):
+        """Custom validation for mileage field"""
+        mileage = self.cleaned_data.get('mileage_at_inspection')
+        
+        if mileage is None or mileage == '':
+            raise ValidationError("Vehicle mileage is required.")
+        
+        try:
+            mileage = int(mileage)
+        except (ValueError, TypeError):
+            raise ValidationError("Please enter a valid mileage number.")
+        
+        if mileage < 0:
+            raise ValidationError("Mileage cannot be negative.")
+        
+        if mileage > 9999999:  # Reasonable upper limit
+            raise ValidationError("Mileage seems unreasonably high. Please check the value.")
+        
+        return mileage
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Check if form is marked as completed
+        is_completed = cleaned_data.get('is_completed', False)
+        
+        if is_completed:
+            # Validate that critical inspection points are filled for initial inspection
+            critical_fields = [
+                'cold_engine_operation', 'brake_pedal_specs', 'seat_belt_condition', 
+                'transmission_operation', 'steering_feel', 'tire_vibration',
+                'frame_unibody_condition'
+            ]
+            
+            missing_fields = []
+            for field in critical_fields:
+                if not cleaned_data.get(field):
+                    missing_fields.append(self.fields[field].label)
+            
+            if missing_fields:
+                raise ValidationError(
+                    f"The following critical inspection points must be completed before marking as finished: {', '.join(missing_fields)}"
+                )
+        
+        return cleaned_data
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Set completion timestamp if form is being marked as completed
+        if instance.is_completed and not instance.completed_at:
+            from django.utils import timezone
+            instance.completed_at = timezone.now()
+        
+        if commit:
+            instance.save()
+        
+        return instance

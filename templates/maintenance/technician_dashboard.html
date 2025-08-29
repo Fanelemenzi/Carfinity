@@ -141,7 +141,7 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                 <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -152,6 +152,20 @@
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-900">New Inspection</p>
                             <p class="text-xs text-gray-500">Start 50-point check</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'maintenance_history:create_inspection_record' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-search-plus text-accent group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Initial Inspection</p>
+                            <p class="text-xs text-gray-500">160-point pre-purchase</p>
                         </div>
                     </div>
                 </a>
@@ -203,17 +217,17 @@
         <!-- Inspection Workflow Section -->
         <div class="mb-8">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-900">Inspection Workflow</h2>
-                <span class="text-sm text-gray-500">Complete Process</span>
+                <h2 class="text-xl font-bold text-gray-900">Inspection Workflows</h2>
+                <span class="text-sm text-gray-500">Complete Processes</span>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Start New Inspection Card -->
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
                     <div class="flex items-center mb-4">
                         <span class="text-2xl mr-3">✅</span>
                         <div>
-                            <h3 class="text-lg font-bold text-gray-900">Start New Inspection</h3>
-                            <p class="text-sm text-gray-600">Begin comprehensive 50-point vehicle inspection</p>
+                            <h3 class="text-lg font-bold text-gray-900">50-Point Inspection</h3>
+                            <p class="text-sm text-gray-600">Quarterly vehicle health check</p>
                         </div>
                     </div>
                     
@@ -244,7 +258,49 @@
                     <div class="text-center">
                         <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md">
                             <span class="mr-2">🚀</span>
-                            Start New Inspection
+                            Start Inspection
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Initial Inspection Card -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-3">🔍</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">160-Point Initial</h3>
+                            <p class="text-sm text-gray-600">Pre-purchase comprehensive check</p>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-3 mb-6">
+                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Vehicle Setup</div>
+                                <div class="text-xs text-gray-600">VIN, mileage, technician details</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">160-Point Check</div>
+                                <div class="text-xs text-gray-600">Road test, frame, structure</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Assessment</div>
+                                <div class="text-xs text-gray-600">Purchase recommendation</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{% url 'maintenance_history:create_inspection_record' %}" class="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                            <span class="mr-2">🔍</span>
+                            Start Initial
                         </a>
                     </div>
                 </div>
@@ -263,6 +319,11 @@
                         <a href="{% url 'maintenance_history:inspection_form_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📝</span>
                             <span class="font-medium text-gray-900 text-sm">Inspection Forms ({{ pending_inspections|default:0 }} pending)</span>
+                        </a>
+                        
+                        <a href="{% url 'maintenance_history:initial_inspection_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🔍</span>
+                            <span class="font-medium text-gray-900 text-sm">Initial Inspections</span>
                         </a>
                         
                         <a href="{% url 'maintenance_history:inspection_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">

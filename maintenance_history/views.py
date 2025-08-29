@@ -1,4 +1,4 @@
-from django.views.generic import CreateView, ListView, DetailView
+from django.views.generic import CreateView, ListView, DetailView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.db import transaction
@@ -11,8 +11,8 @@ from django.utils.decorators import method_decorator
 import logging
 import json
 from django.utils import timezone
-from .models import MaintenanceRecord, PartUsage, Inspection, Inspections
-from .forms import MaintenanceRecordForm, InspectionForm, InspectionRecordForm
+from .models import MaintenanceRecord, PartUsage, Inspection, Inspections, InitialInspection
+from .forms import MaintenanceRecordForm, InspectionForm, InspectionRecordForm, InitialInspectionForm
 from maintenance.models import Part
 
 # Set up logging
@@ -935,4 +935,223 @@ class StartInspectionWorkflowView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['page_title'] = 'Start New Inspection'
+        return context
+
+# Initial Inspection Views (160-point pre-purchase inspections)
+class InitialInspectionListView(LoginRequiredMixin, ListView):
+    """List view for initial inspections"""
+    model = InitialInspection
+    template_name = 'maintenance/initial_inspection_list.html'
+    context_object_name = 'initial_inspections'
+    paginate_by = 20
+    
+    def get_queryset(self):
+        """Filter initial inspections by technician and apply search/filter parameters"""
+        queryset = InitialInspection.objects.select_related('vehicle', 'technician').order_by('-inspection_date')
+        
+        # Apply filters from GET parameters
+        status = self.request.GET.get('status')
+        technician = self.request.GET.get('technician')
+        date_from = self.request.GET.get('date_from')
+        
+        if status == 'completed':
+            queryset = queryset.filter(is_completed=True)
+        elif status == 'in_progress':
+            queryset = queryset.filter(is_completed=False)
+            
+        if technician:
+            queryset = queryset.filter(technician_id=technician)
+            
+        if date_from:
+            queryset = queryset.filter(inspection_date__gte=date_from)
+            
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Add technicians for filter dropdown
+        from django.contrib.auth.models import User
+        context['technicians'] = User.objects.filter(
+            initial_inspections__isnull=False
+        ).distinct().order_by('first_name', 'last_name')
+        return context
+
+
+class InitialInspectionDetailView(LoginRequiredMixin, DetailView):
+    """Detail view for initial inspection results"""
+    model = InitialInspection
+    template_name = 'maintenance/initial_inspection_detail.html'
+    context_object_name = 'initial_inspection'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add field groupings for template display
+        context['engine_performance_fields'] = [
+            ('engine_start_condition', 'Engine start condition'),
+            ('idle_quality', 'Idle quality'),
+            ('acceleration_response', 'Acceleration response'),
+            ('engine_noise_levels', 'Engine noise levels'),
+            ('exhaust_smoke_color', 'Exhaust smoke color'),
+        ]
+        
+        context['braking_system_fields'] = [
+            ('brake_pedal_feel', 'Brake pedal feel'),
+            ('brake_response', 'Brake response'),
+            ('brake_noise', 'Brake noise'),
+            ('parking_brake_operation', 'Parking brake operation'),
+        ]
+        
+        return context
+
+
+class CreateInitialInspectionView(LoginRequiredMixin, CreateView):
+    """Create view for new initial inspection"""
+    model = InitialInspection
+    form_class = InitialInspectionForm
+    template_name = 'maintenance/create_initial_inspection_form.html'
+    
+    def form_valid(self, form):
+        """Handle successful form submission"""
+        try:
+            with transaction.atomic():
+                # Set default technician if not specified
+                if not form.instance.technician:
+                    form.instance.technician = self.request.user
+                
+                initial_inspection = form.save()
+                
+                logger.info(
+                    f"Initial inspection created successfully. "
+                    f"Inspection ID: {initial_inspection.id}, "
+                    f"Technician: {self.request.user.username}, "
+                    f"Vehicle: {initial_inspection.vehicle.vin}"
+                )
+                
+                messages.success(
+                    self.request,
+                    f"Initial inspection {initial_inspection.inspection_number} created successfully."
+                )
+                
+                return super().form_valid(form)
+                
+        except ValidationError as e:
+            logger.warning(
+                f"Validation error during initial inspection creation. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}"
+            )
+            
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+            
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during initial inspection creation. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}", 
+                exc_info=True
+            )
+            
+            messages.error(
+                self.request,
+                "An unexpected error occurred while creating the initial inspection. "
+                "Please try again or contact support if the problem persists."
+            )
+            
+            return self.form_invalid(form)
+    
+    def get_success_url(self):
+        return f"/maintenance-history/initial-inspections/{self.object.pk}/"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = 'Create Initial Inspection'
+        return context
+
+
+class UpdateInitialInspectionView(LoginRequiredMixin, UpdateView):
+    """Update view for initial inspection"""
+    model = InitialInspection
+    form_class = InitialInspectionForm
+    template_name = 'maintenance/update_initial_inspection_form.html'
+    context_object_name = 'initial_inspection'
+    
+    def form_valid(self, form):
+        """Handle successful form submission"""
+        try:
+            with transaction.atomic():
+                initial_inspection = form.save()
+                
+                logger.info(
+                    f"Initial inspection updated successfully. "
+                    f"Inspection ID: {initial_inspection.id}, "
+                    f"User: {self.request.user.username}, "
+                    f"Vehicle: {initial_inspection.vehicle.vin}"
+                )
+                
+                messages.success(
+                    self.request,
+                    f"Initial inspection {initial_inspection.inspection_number} updated successfully."
+                )
+                
+                return super().form_valid(form)
+                
+        except ValidationError as e:
+            logger.warning(
+                f"Validation error during initial inspection update. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}"
+            )
+            
+            form.add_error(None, str(e))
+            return self.form_invalid(form)
+            
+        except Exception as e:
+            logger.error(
+                f"Unexpected error during initial inspection update. "
+                f"User: {self.request.user.username}, "
+                f"Error: {str(e)}", 
+                exc_info=True
+            )
+            
+            messages.error(
+                self.request,
+                "An unexpected error occurred while updating the initial inspection. "
+                "Please try again or contact support if the problem persists."
+            )
+            
+            return self.form_invalid(form)
+    
+    def get_success_url(self):
+        return f"/maintenance-history/initial-inspections/{self.object.pk}/"
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = f'Update Initial Inspection - {self.object.inspection_number}'
+        
+        # Add field groupings for the form
+        context['road_test_fields'] = [
+            ('engine_start_condition', 'Engine Start Condition'),
+            ('idle_quality', 'Idle Quality'),
+            ('acceleration_response', 'Acceleration Response'),
+            ('engine_noise_levels', 'Engine Noise Levels'),
+            ('exhaust_smoke_color', 'Exhaust Smoke Color'),
+            ('transmission_shifting', 'Transmission Shifting'),
+            ('brake_pedal_feel', 'Brake Pedal Feel'),
+            ('brake_response', 'Brake Response'),
+            ('brake_noise', 'Brake Noise'),
+            ('steering_response', 'Steering Response'),
+            ('steering_alignment', 'Steering Alignment'),
+            ('suspension_comfort', 'Suspension Comfort'),
+            ('tire_wear_patterns', 'Tire Wear Patterns'),
+            ('road_noise_levels', 'Road Noise Levels'),
+            ('seat_belt_condition', 'Seat Belt Condition'),
+            ('seat_belt_operation', 'Seat Belt Operation'),
+        ]
+        
+        context['frame_structure_fields'] = [
+            ('frame_unibody_condition', 'Frame/Unibody Condition'),
+        ]
+        
         return context

@@ -261,3 +261,1146 @@ def generate_inspection_summary(inspection_form: Inspections) -> Dict[str, any]:
         'vehicle_vin': inspection_form.inspection.vehicle.vin,
         'mileage': inspection_form.mileage_at_inspection,
     }
+
+
+def get_initial_inspection_field_weights():
+    """
+    Return categorized field weights for 160-point initial inspection.
+    
+    Returns:
+        Dict containing field weights organized by criticality level
+    """
+    
+    # Critical Safety Systems (Weight: 10-12 points each)
+    critical_systems = {
+        'brake_vibrations': 12,
+        'brake_pedal_specs': 12,
+        'abs_operation': 11,
+        'parking_brake_operation': 11,
+        'seat_belt_condition': 10,
+        'seat_belt_operation': 10,
+        'steering_feel': 12,
+        'steering_centered': 11,
+        'vehicle_tracking': 12,
+        'tire_condition': 11,
+        'tread_depth': 12,
+        'tire_specifications': 10,
+        'brake_calipers_lines': 11,
+        'brake_pad_life': 12,
+        'brake_rotors_drums': 11,
+        'headlight_alignment': 10,
+        'brake_lights': 10,
+        'turn_signals': 10,
+        'airbags_present': 11,
+    }
+    
+    # Important Mechanical Systems (Weight: 6-9 points each)
+    important_systems = {
+        'cold_engine_operation': 8,
+        'throttle_operation': 7,
+        'operating_temp_performance': 8,
+        'normal_operating_temp': 7,
+        'engine_fan_operation': 6,
+        'transmission_operation': 9,
+        'auto_trans_cold': 8,
+        'auto_trans_operating': 8,
+        'frame_unibody_condition': 9,
+        'panel_alignment': 7,
+        'underbody_condition': 8,
+        'suspension_leaks_wear': 8,
+        'struts_shocks_condition': 8,
+        'power_steering_leaks': 7,
+        'exhaust_system': 7,
+        'engine_trans_mounts': 7,
+        'drive_axle_shafts': 8,
+        'cv_joints_boots': 7,
+        'engine_fluid_leaks': 8,
+        'transmission_leaks': 7,
+        'differential_fluid': 6,
+        'battery_test': 8,
+        'charging_system': 8,
+        'coolant_level': 7,
+        'coolant_protection': 6,
+        'oil_filter_change': 7,
+        'fluid_levels': 7,
+        'fluid_contamination': 6,
+    }
+    
+    # Standard Systems (Weight: 3-5 points each)
+    standard_systems = {
+        'warmup_operation': 5,
+        'speedometer_function': 4,
+        'odometer_function': 4,
+        'cruise_control': 3,
+        'heater_operation': 5,
+        'ac_operation': 5,
+        'engine_noise': 4,
+        'interior_noise': 3,
+        'wind_road_noise': 3,
+        'tire_vibration': 4,
+        'wheel_covers': 3,
+        'brake_system_equipment': 4,
+        'drive_belts_hoses': 5,
+        'air_filter_condition': 4,
+        'battery_damage': 4,
+        'battery_posts_cables': 4,
+        'battery_secured': 3,
+        'oil_sludge_check': 4,
+        'owners_manual': 3,
+        'fuel_gauge': 4,
+        'battery_voltage_gauge': 3,
+        'temp_gauge': 4,
+        'horn_function': 4,
+        'emissions_test': 5,
+        'tail_lights': 4,
+        'side_marker_lights': 3,
+        'backup_lights': 4,
+        'license_plate_lights': 3,
+        'exterior_lights_condition': 4,
+    }
+    
+    # Interior and Convenience Systems (Weight: 2-4 points each)
+    interior_systems = {
+        'instrument_panel': 4,
+        'hvac_panel': 3,
+        'instrument_dimmer': 2,
+        'hazard_flashers': 3,
+        'rearview_mirror': 3,
+        'exterior_mirrors': 3,
+        'remote_mirror_control': 2,
+        'glass_condition': 4,
+        'window_tint': 2,
+        'dome_courtesy_lights': 2,
+        'power_windows': 3,
+        'window_locks': 2,
+        'audio_system': 3,
+        'audio_speakers': 2,
+        'antenna': 2,
+        'clock_operation': 1,
+        'power_outlet': 2,
+        'doors_operation': 4,
+        'door_locks': 3,
+        'keyless_entry': 2,
+        'master_keys': 3,
+        'theft_deterrent': 2,
+        'seat_adjustments': 3,
+        'seat_heaters': 2,
+        'memory_seat': 2,
+        'headrests': 3,
+        'rear_defogger': 3,
+        'defogger_indicator': 2,
+        'luggage_light': 2,
+        'hood_trunk_latches': 3,
+        'emergency_trunk_release': 3,
+        'fuel_door_release': 2,
+    }
+    
+    # Appearance and Minor Systems (Weight: 1-3 points each)
+    minor_systems = {
+        'tilt_telescopic_steering': 2,
+        'washer_fluid_spray': 3,
+        'front_wipers': 3,
+        'rear_wipers': 2,
+        'wiper_rest_position': 2,
+        'wiper_blade_replacement': 2,
+        'underhood_labels': 1,
+        'ashtrays': 1,
+        'headliner_trim': 2,
+        'floor_mats': 2,
+        'luggage_cleanliness': 2,
+        'spare_tire_cover': 2,
+        'spare_tire_present': 3,
+        'spare_tire_tread': 3,
+        'spare_tire_pressure': 3,
+        'spare_tire_damage': 2,
+        'spare_tire_secured': 2,
+        'jack_tools': 2,
+        'acceptable_aftermarket': 1,
+        'unacceptable_removal': 1,
+        'body_surface': 3,
+        'exterior_cleanliness': 2,
+        'paint_finish': 2,
+        'paint_scratches': 2,
+        'wheels_cleanliness': 2,
+        'wheel_wells': 1,
+        'tires_dressed': 1,
+        'engine_compartment_clean': 2,
+        'insulation_pad': 1,
+        'engine_dressed': 1,
+        'door_jambs': 1,
+        'glove_console': 1,
+        'cabin_air_filter': 2,
+        'seats_carpets': 2,
+        'vehicle_odors': 2,
+        'glass_cleanliness': 1,
+        'interior_debris': 1,
+        'dash_vents': 1,
+        'crevices_clean': 1,
+        'upholstery_panels': 2,
+        'paint_repairs': 2,
+        'glass_repairs': 2,
+        'bumpers_condition': 2,
+        'interior_surfaces': 2,
+        'sunroof_convertible': 2,
+        'seat_heaters_optional': 2,
+        'navigation_system': 2,
+        'head_unit_software': 1,
+        'transfer_case': 3,
+        'truck_bed_condition': 2,
+        'truck_bed_liner': 1,
+        'backup_camera': 2,
+    }
+    
+    # Advanced and Hybrid Systems (Weight: 2-4 points each)
+    advanced_systems = {
+        'sos_indicator': 2,
+        'lane_keep_assist': 3,
+        'adaptive_cruise': 3,
+        'parking_assist': 2,
+        'hybrid_battery': 4,
+        'battery_control_module': 4,
+        'hybrid_power_mgmt': 4,
+        'electric_motor': 4,
+        'ecvt_operation': 3,
+        'power_inverter': 3,
+        'inverter_coolant': 3,
+        'ev_modes': 2,
+        'hybrid_park_mechanism': 3,
+        'multi_info_display': 2,
+        'touch_tracer_display': 2,
+        'hill_start_assist': 3,
+        'remote_ac': 2,
+        'solar_ventilation': 2,
+    }
+    
+    return {
+        'critical': critical_systems,
+        'important': important_systems,
+        'standard': standard_systems,
+        'interior': interior_systems,
+        'minor': minor_systems,
+        'advanced': advanced_systems,
+    }
+
+
+def calculate_initial_inspection_health_index(inspection) -> Tuple[str, str]:
+    """
+    Calculate vehicle health index based on 160-point initial inspection results.
+    
+    Args:
+        inspection: InitialInspection model instance with completed form data
+        
+    Returns:
+        Tuple of (health_index, inspection_result)
+        - health_index: String representation of the calculated health score
+        - inspection_result: One of the RESULT_CHOICES from Inspection model
+    """
+    
+    # Get field weights
+    field_weights = get_initial_inspection_field_weights()
+    
+    # Combine all systems
+    all_systems = {}
+    for category in field_weights.values():
+        all_systems.update(category)
+    
+    # Calculate scores
+    total_possible_score = 0
+    actual_score = 0
+    major_failures = 0
+    minor_failures = 0
+    critical_failures = 0
+    
+    for field_name, weight in all_systems.items():
+        field_value = getattr(inspection, field_name, None)
+        
+        if field_value:  # Only count if field was actually inspected
+            total_possible_score += weight
+            
+            if field_value == 'pass':
+                actual_score += weight
+            elif field_value == 'minor' or field_value == 'needs_attention':
+                actual_score += weight * 0.7  # 70% score for minor issues
+                minor_failures += 1
+            elif field_value == 'major':
+                actual_score += weight * 0.3  # 30% score for major issues
+                major_failures += 1
+                # Check if this is a critical system
+                if field_name in field_weights['critical']:
+                    critical_failures += 1
+            elif field_value == 'fail':
+                # 0% score for complete failures
+                if field_name in field_weights['critical']:
+                    critical_failures += 1
+                else:
+                    major_failures += 1
+            # 'na' (Not Applicable) doesn't affect the score
+    
+    # Calculate health index percentage
+    if total_possible_score > 0:
+        health_percentage = (actual_score / total_possible_score) * 100
+    else:
+        health_percentage = 0
+    
+    # Determine health index category
+    if health_percentage >= 90:
+        health_index = "Excellent (90-100%)"
+    elif health_percentage >= 80:
+        health_index = "Good (80-89%)"
+    elif health_percentage >= 70:
+        health_index = "Fair (70-79%)"
+    elif health_percentage >= 60:
+        health_index = "Poor (60-69%)"
+    else:
+        health_index = "Critical (<60%)"
+    
+    # Determine inspection result based on failures and health score
+    inspection_result = _determine_initial_inspection_result(
+        health_percentage, critical_failures, major_failures, minor_failures, inspection
+    )
+    
+    return health_index, inspection_result
+
+
+def _determine_initial_inspection_result(
+    health_percentage: float, 
+    critical_failures: int, 
+    major_failures: int,
+    minor_failures: int,
+    inspection
+) -> str:
+    """
+    Determine the inspection result based on health percentage and failure counts.
+    
+    Returns one of: "PAS", "PMD", "PJD", "FMD", "FJD", "FAI"
+    """
+    
+    # For initial inspections, we use stricter criteria due to the comprehensive nature
+    
+    # Critical system failures result in immediate failure
+    if critical_failures >= 3 or health_percentage < 40:
+        return "FAI"  # Failed
+    elif critical_failures >= 1 and health_percentage < 60:
+        return "FJD"  # Failed due to major Defects
+    elif major_failures > 8 or health_percentage < 70:
+        return "FMD"  # Failed due to minor Defects
+    
+    # No critical failures - determine pass level
+    if major_failures == 0 and minor_failures <= 5:
+        return "PAS"  # Passed
+    elif major_failures <= 2 and minor_failures <= 10:
+        return "PMD"  # Passed with minor Defects
+    elif major_failures <= 5:
+        return "PJD"  # Passed with major Defects
+    else:
+        return "FMD"  # Failed due to minor Defects
+
+
+def categorize_initial_inspection_failures(inspection) -> Dict:
+    """
+    Categorize failures by system and severity for initial inspection.
+    
+    Args:
+        inspection: InitialInspection model instance
+        
+    Returns:
+        Dictionary containing categorized failure information
+    """
+    field_weights = get_initial_inspection_field_weights()
+    
+    categorized_failures = {
+        'critical': [],
+        'important': [],
+        'standard': [],
+        'interior': [],
+        'minor': [],
+        'advanced': [],
+    }
+    
+    for category_name, fields in field_weights.items():
+        for field_name, weight in fields.items():
+            field_value = getattr(inspection, field_name, None)
+            if field_value in ['fail', 'major', 'minor', 'needs_attention']:
+                # Get the verbose name from the model field
+                try:
+                    field_obj = inspection._meta.get_field(field_name)
+                    description = field_obj.verbose_name or field_name.replace('_', ' ').title()
+                except:
+                    description = field_name.replace('_', ' ').title()
+                
+                categorized_failures[category_name].append({
+                    'field': field_name,
+                    'description': description,
+                    'severity': field_value,
+                    'weight': weight
+                })
+    
+    return categorized_failures
+
+
+def calculate_system_scores(inspection) -> Dict[str, float]:
+    """
+    Calculate individual system scores for initial inspection.
+    
+    Args:
+        inspection: InitialInspection model instance
+        
+    Returns:
+        Dictionary with system names and their percentage scores
+    """
+    field_weights = get_initial_inspection_field_weights()
+    system_scores = {}
+    
+    for system_name, fields in field_weights.items():
+        total_possible = 0
+        actual_score = 0
+        
+        for field_name, weight in fields.items():
+            field_value = getattr(inspection, field_name, None)
+            
+            if field_value:  # Only count inspected fields
+                total_possible += weight
+                
+                if field_value == 'pass':
+                    actual_score += weight
+                elif field_value in ['minor', 'needs_attention']:
+                    actual_score += weight * 0.7
+                elif field_value == 'major':
+                    actual_score += weight * 0.3
+                # 'fail' gets 0 points
+        
+        if total_possible > 0:
+            system_scores[system_name] = round((actual_score / total_possible) * 100, 1)
+        else:
+            system_scores[system_name] = 0.0
+    
+    return system_scores
+de
+f get_initial_inspection_recommendations(inspection) -> List[str]:
+    """
+    Generate maintenance recommendations based on initial inspection results.
+    
+    Args:
+        inspection: InitialInspection model instance with completed form data
+        
+    Returns:
+        List of recommendation strings with urgency indicators
+    """
+    recommendations = []
+    
+    # Define recommendation mappings for initial inspection fields
+    recommendation_map = {
+        # Critical Safety Systems - URGENT recommendations
+        'brake_vibrations': "URGENT: Inspect and repair brake system - abnormal vibrations detected",
+        'brake_pedal_specs': "URGENT: Adjust brake pedal free play and travel to specifications",
+        'abs_operation': "URGENT: Diagnose and repair ABS system malfunction",
+        'parking_brake_operation': "URGENT: Repair parking brake system - safety critical",
+        'seat_belt_condition': "URGENT: Replace damaged seat belts immediately",
+        'seat_belt_operation': "URGENT: Repair seat belt mechanism - safety critical",
+        'steering_feel': "URGENT: Inspect steering system - abnormal feel detected",
+        'steering_centered': "URGENT: Perform wheel alignment - steering wheel not centered",
+        'vehicle_tracking': "URGENT: Perform wheel alignment - vehicle not tracking straight",
+        'tire_condition': "URGENT: Replace damaged tires immediately",
+        'tread_depth': "URGENT: Replace tires - insufficient tread depth (<5/32\")",
+        'tire_specifications': "URGENT: Replace tires with correct OEM specifications",
+        'brake_calipers_lines': "URGENT: Repair brake calipers and lines - leaks detected",
+        'brake_pad_life': "URGENT: Replace brake pads - less than 50% life remaining",
+        'brake_rotors_drums': "URGENT: Replace brake rotors/drums - out of specification",
+        'headlight_alignment': "URGENT: Align headlights for proper visibility",
+        'brake_lights': "URGENT: Repair brake lights - safety critical",
+        'turn_signals': "URGENT: Repair turn signals - safety critical",
+        'airbags_present': "URGENT: Inspect airbag system - deployment signs detected",
+        
+        # Important Mechanical Systems
+        'cold_engine_operation': "Diagnose cold engine operation issues",
+        'throttle_operation': "Service throttle system for proper cold start operation",
+        'operating_temp_performance': "Diagnose engine performance issues at operating temperature",
+        'normal_operating_temp': "Inspect cooling system - engine not reaching normal temperature",
+        'engine_fan_operation': "Repair engine cooling fan system",
+        'transmission_operation': "Service transmission/clutch system",
+        'auto_trans_cold': "Service automatic transmission - cold operation issues",
+        'auto_trans_operating': "Service automatic transmission - operating temperature issues",
+        'frame_unibody_condition': "Inspect and repair frame/unibody damage",
+        'panel_alignment': "Adjust body panel alignment",
+        'underbody_condition': "Repair underbody damage and corrosion",
+        'suspension_leaks_wear': "Replace worn suspension components",
+        'struts_shocks_condition': "Replace leaking struts/shocks",
+        'power_steering_leaks': "Repair power steering system leaks",
+        'exhaust_system': "Repair exhaust system leaks and damage",
+        'engine_trans_mounts': "Replace worn engine/transmission mounts",
+        'drive_axle_shafts': "Repair drive/axle shaft damage",
+        'cv_joints_boots': "Replace worn CV joints and boots",
+        'engine_fluid_leaks': "Repair engine fluid leaks",
+        'transmission_leaks': "Repair transmission case/pan leaks",
+        'differential_fluid': "Service differential fluid",
+        'battery_test': "Replace battery - failed load test",
+        'charging_system': "Repair charging system malfunction",
+        'coolant_level': "Top up coolant and check for leaks",
+        'coolant_protection': "Service cooling system - insufficient freeze protection",
+        'oil_filter_change': "Change engine oil and filter",
+        'fluid_levels': "Top up all fluid levels",
+        'fluid_contamination': "Replace contaminated fluids",
+        
+        # Standard Systems
+        'warmup_operation': "Diagnose warm-up operation issues",
+        'speedometer_function': "Repair speedometer malfunction",
+        'odometer_function': "Repair odometer registration issues",
+        'cruise_control': "Repair cruise control system",
+        'heater_operation': "Repair heating system",
+        'ac_operation': "Service air conditioning system",
+        'engine_noise': "Diagnose abnormal engine noise",
+        'interior_noise': "Address interior squeaks and rattles",
+        'wind_road_noise': "Inspect door seals and weatherstripping",
+        'tire_vibration': "Balance tires and inspect for damage",
+        'wheel_covers': "Secure or replace wheel covers",
+        'brake_system_equipment': "Install missing brake system components",
+        'drive_belts_hoses': "Replace cracked drive belts and hoses",
+        'air_filter_condition': "Replace air filter",
+        'battery_damage': "Replace damaged battery",
+        'battery_posts_cables': "Clean battery posts and replace damaged cables",
+        'battery_secured': "Properly secure battery",
+        'oil_sludge_check': "Perform engine flush - oil sludge detected",
+        'owners_manual': "Obtain owner's manual and warranty booklet",
+        'fuel_gauge': "Repair fuel gauge malfunction",
+        'battery_voltage_gauge': "Repair battery voltage gauge",
+        'temp_gauge': "Repair engine temperature gauge",
+        'horn_function': "Repair horn operation",
+        'emissions_test': "Perform required emissions testing",
+        'tail_lights': "Replace tail light bulbs",
+        'side_marker_lights': "Replace side marker light bulbs",
+        'backup_lights': "Replace backup light bulbs",
+        'license_plate_lights': "Replace license plate light bulbs",
+        'exterior_lights_condition': "Replace damaged exterior light housings",
+        
+        # Interior and Convenience Systems
+        'instrument_panel': "Repair instrument panel/warning lights",
+        'hvac_panel': "Repair HVAC panel controls",
+        'instrument_dimmer': "Repair instrument light dimmer",
+        'hazard_flashers': "Repair hazard flasher system",
+        'rearview_mirror': "Replace or adjust rear-view mirror",
+        'exterior_mirrors': "Repair exterior mirror adjustment",
+        'remote_mirror_control': "Repair remote mirror control",
+        'glass_condition': "Repair or replace damaged glass",
+        'window_tint': "Ensure window tint compliance with laws",
+        'dome_courtesy_lights': "Replace dome/courtesy light bulbs",
+        'power_windows': "Repair power window operation",
+        'window_locks': "Repair window lock function",
+        'audio_system': "Repair audio/CD/Aux system",
+        'audio_speakers': "Replace distorted speakers",
+        'antenna': "Repair or replace antenna",
+        'clock_operation': "Repair clock function",
+        'power_outlet': "Repair 12v power outlet",
+        'doors_operation': "Adjust door operation",
+        'door_locks': "Repair door lock mechanisms",
+        'keyless_entry': "Repair remote keyless entry",
+        'master_keys': "Obtain second master key",
+        'theft_deterrent': "Repair theft deterrent system",
+        'seat_adjustments': "Repair seat adjustment mechanisms",
+        'seat_heaters': "Repair seat heater function",
+        'memory_seat': "Repair memory seat controls",
+        'headrests': "Repair headrest adjustment",
+        'rear_defogger': "Repair rear defogger",
+        'defogger_indicator': "Replace defogger indicator light",
+        'luggage_light': "Replace luggage compartment light",
+        'hood_trunk_latches': "Repair hood and trunk latches",
+        'emergency_trunk_release': "Repair emergency trunk release",
+        'fuel_door_release': "Repair fuel door release",
+        
+        # Appearance and Minor Systems
+        'spare_tire_present': "Obtain spare tire or inflator kit",
+        'spare_tire_tread': "Replace spare tire - insufficient tread",
+        'spare_tire_pressure': "Inflate spare tire to correct pressure",
+        'spare_tire_damage': "Replace damaged spare tire",
+        'spare_tire_secured': "Properly secure spare tire",
+        'jack_tools': "Obtain complete jack and tool set",
+        'body_surface': "Repair body surface damage",
+        'paint_scratches': "Touch up paint scratches and chips",
+        'paint_repairs': "Repair improper paint work",
+        'glass_repairs': "Repair improper glass work",
+        'bumpers_condition': "Repair bumper cuts and gouges",
+        'interior_surfaces': "Repair excessive wear on interior surfaces",
+        'cabin_air_filter': "Replace cabin air filter",
+        'vehicle_odors': "Address vehicle odors",
+        'upholstery_panels': "Repair upholstery and panel damage",
+        
+        # Advanced Systems
+        'navigation_system': "Service navigation system and clear memory",
+        'head_unit_software': "Update head unit software",
+        'transfer_case': "Service 4WD transfer case",
+        'truck_bed_condition': "Repair truck bed damage",
+        'truck_bed_liner': "Secure truck bed liner",
+        'backup_camera': "Repair backup camera function",
+        'lane_keep_assist': "Service Lane Keep Assist system",
+        'adaptive_cruise': "Service Adaptive Cruise/Pre-Collision systems",
+        'parking_assist': "Repair Intelligent Parking Assist",
+        
+        # Hybrid Systems
+        'hybrid_battery': "Service hybrid battery system",
+        'battery_control_module': "Repair battery control module",
+        'hybrid_power_mgmt': "Service hybrid power management system",
+        'electric_motor': "Service electric motor/generator",
+        'ecvt_operation': "Service ECVT transmission",
+        'power_inverter': "Repair power inverter",
+        'inverter_coolant': "Service inverter coolant system",
+        'ev_modes': "Repair EV/Eco/Power mode functions",
+        'hybrid_park_mechanism': "Repair hybrid transaxle park mechanism",
+    }
+    
+    # Get field weights to determine criticality
+    field_weights = get_initial_inspection_field_weights()
+    critical_fields = field_weights['critical']
+    
+    # Check each field for issues and generate recommendations
+    for field_name, recommendation in recommendation_map.items():
+        field_value = getattr(inspection, field_name, None)
+        if field_value in ['fail', 'major', 'minor', 'needs_attention']:
+            
+            # Add urgency prefix for critical systems if not already present
+            if field_name in critical_fields and not recommendation.startswith("URGENT:"):
+                recommendation = f"URGENT: {recommendation}"
+            elif field_value == 'fail':
+                recommendation = f"CRITICAL: {recommendation}"
+            elif field_value == 'major':
+                recommendation = f"HIGH PRIORITY: {recommendation}"
+            
+            recommendations.append(recommendation)
+    
+    # Add general recommendations based on overall condition
+    failed_points = inspection.failed_points
+    critical_issues = inspection.safety_critical_issues
+    
+    if len(critical_issues) > 0:
+        recommendations.insert(0, f"URGENT: Address {len(critical_issues)} safety-critical issue(s) before operating vehicle")
+    
+    if len(failed_points) > 15:
+        recommendations.append("RECOMMENDATION: Schedule comprehensive vehicle reconditioning due to multiple issues")
+    elif len(failed_points) > 8:
+        recommendations.append("RECOMMENDATION: Schedule major service to address multiple system issues")
+    
+    # Add cost estimation recommendation
+    try:
+        if inspection.estimated_repair_cost and inspection.estimated_repair_cost > 5000:
+            recommendations.append(f"COST CONSIDERATION: Estimated repair cost ${inspection.estimated_repair_cost:,.2f} - evaluate vehicle value vs repair costs")
+    except:
+        pass
+    
+    if not recommendations:
+        recommendations.append("Vehicle is in good condition - continue regular maintenance schedule")
+    
+    return recommendations
+
+
+def generate_initial_inspection_number() -> str:
+    """
+    Generate a unique initial inspection number in format: INIT-YYYY-NNNN
+    """
+    from datetime import datetime
+    from .models import InitialInspection
+    
+    current_year = datetime.now().year
+    prefix = f"INIT-{current_year}-"
+    
+    # Find the highest number for this year
+    existing_inspections = InitialInspection.objects.filter(
+        inspection_number__startswith=prefix
+    ).order_by('-inspection_number')
+    
+    if existing_inspections.exists():
+        last_number = existing_inspections.first().inspection_number
+        try:
+            # Extract the number part and increment
+            number_part = int(last_number.split('-')[-1])
+            next_number = number_part + 1
+        except (ValueError, IndexError):
+            next_number = 1
+    else:
+        next_number = 1
+    
+    return f"{prefix}{next_number:04d}"
+def 
+generate_initial_inspection_summary(inspection) -> Dict:
+    """
+    Generate a comprehensive summary of the initial inspection results.
+    
+    Args:
+        inspection: InitialInspection model instance with completed form data
+        
+    Returns:
+        Dictionary containing comprehensive inspection summary data
+    """
+    health_index, inspection_result = calculate_initial_inspection_health_index(inspection)
+    recommendations = get_initial_inspection_recommendations(inspection)
+    failed_points = inspection.failed_points
+    critical_issues = inspection.safety_critical_issues
+    system_scores = calculate_system_scores(inspection)
+    categorized_failures = categorize_initial_inspection_failures(inspection)
+    
+    # Calculate additional metrics
+    total_issues = len(failed_points)
+    critical_issue_count = len(critical_issues)
+    
+    # Determine overall assessment
+    if "Excellent" in health_index:
+        overall_assessment = "Excellent condition - ready for immediate use"
+    elif "Good" in health_index:
+        overall_assessment = "Good condition - minor maintenance recommended"
+    elif "Fair" in health_index:
+        overall_assessment = "Fair condition - moderate repairs needed"
+    elif "Poor" in health_index:
+        overall_assessment = "Poor condition - significant repairs required"
+    else:
+        overall_assessment = "Critical condition - major repairs required before use"
+    
+    # Calculate estimated timeframe for repairs
+    if critical_issue_count > 0:
+        repair_timeframe = "Immediate attention required"
+    elif total_issues > 10:
+        repair_timeframe = "1-2 weeks for comprehensive repairs"
+    elif total_issues > 5:
+        repair_timeframe = "3-5 days for moderate repairs"
+    elif total_issues > 0:
+        repair_timeframe = "1-2 days for minor repairs"
+    else:
+        repair_timeframe = "No repairs needed"
+    
+    # Generate priority recommendations (top 5 most critical)
+    priority_recommendations = []
+    urgent_recommendations = [r for r in recommendations if r.startswith("URGENT:")]
+    critical_recommendations = [r for r in recommendations if r.startswith("CRITICAL:")]
+    high_priority_recommendations = [r for r in recommendations if r.startswith("HIGH PRIORITY:")]
+    
+    priority_recommendations.extend(urgent_recommendations[:3])
+    priority_recommendations.extend(critical_recommendations[:2])
+    if len(priority_recommendations) < 5:
+        priority_recommendations.extend(high_priority_recommendations[:5-len(priority_recommendations)])
+    
+    return {
+        # Basic inspection information
+        'inspection_number': inspection.inspection_number,
+        'vehicle_vin': inspection.vehicle.vin,
+        'inspection_date': inspection.inspection_date,
+        'technician': inspection.technician.get_full_name() if inspection.technician else None,
+        'mileage': inspection.mileage_at_inspection,
+        'is_completed': inspection.is_completed,
+        'completed_at': inspection.completed_at,
+        
+        # Scoring and health metrics
+        'health_index': health_index,
+        'inspection_result': inspection_result,
+        'overall_assessment': overall_assessment,
+        'completion_percentage': inspection.completion_percentage,
+        'total_points_checked': inspection.total_points_checked,
+        
+        # Issue analysis
+        'total_issues': total_issues,
+        'critical_issue_count': critical_issue_count,
+        'failed_points': failed_points,
+        'critical_issues': critical_issues,
+        'has_major_issues': inspection.has_major_issues,
+        
+        # System-specific scores
+        'system_scores': system_scores,
+        'categorized_failures': categorized_failures,
+        
+        # Recommendations and actions
+        'recommendations': recommendations,
+        'priority_recommendations': priority_recommendations,
+        'repair_timeframe': repair_timeframe,
+        
+        # Cost and value assessment
+        'estimated_repair_cost': float(inspection.estimated_repair_cost) if inspection.estimated_repair_cost else None,
+        'overall_condition_rating': inspection.overall_condition_rating,
+        
+        # Additional notes
+        'overall_notes': inspection.overall_notes,
+        'technician_recommendations': inspection.recommendations,
+        
+        # Section-specific notes
+        'section_notes': {
+            'road_test': inspection.road_test_notes,
+            'frame_structure': inspection.frame_structure_notes,
+            'under_hood': inspection.under_hood_notes,
+            'functional_walkaround': inspection.functional_walkaround_notes,
+            'interior_functions': inspection.interior_functions_notes,
+            'exterior_appearance': inspection.exterior_appearance_notes,
+            'optional_systems': inspection.optional_systems_notes,
+            'safety_systems': inspection.safety_systems_notes,
+            'hybrid_components': inspection.hybrid_components_notes,
+        },
+        
+        # Report metadata
+        'report_generated_at': timezone.now(),
+        'inspection_type': '160-Point Initial Vehicle Inspection',
+        'report_version': '1.0',
+    }
+
+
+def generate_initial_inspection_executive_summary(inspection) -> str:
+    """
+    Generate a concise executive summary of the initial inspection.
+    
+    Args:
+        inspection: InitialInspection model instance
+        
+    Returns:
+        String containing executive summary
+    """
+    summary_data = generate_initial_inspection_summary(inspection)
+    
+    health_index = summary_data['health_index']
+    total_issues = summary_data['total_issues']
+    critical_issues = summary_data['critical_issue_count']
+    overall_assessment = summary_data['overall_assessment']
+    
+    summary = f"""
+EXECUTIVE SUMMARY - Initial Vehicle Inspection
+
+Vehicle: {summary_data['vehicle_vin']}
+Inspection Date: {summary_data['inspection_date'].strftime('%B %d, %Y')}
+Technician: {summary_data['technician'] or 'Not Assigned'}
+Mileage: {summary_data['mileage']:,} miles
+
+OVERALL CONDITION: {health_index}
+ASSESSMENT: {overall_assessment}
+
+FINDINGS SUMMARY:
+- Total Issues Identified: {total_issues}
+- Safety-Critical Issues: {critical_issues}
+- Completion Rate: {summary_data['completion_percentage']}%
+
+"""
+    
+    if critical_issues > 0:
+        summary += f"⚠️  URGENT: {critical_issues} safety-critical issue(s) require immediate attention before operating this vehicle.\n\n"
+    
+    if summary_data['priority_recommendations']:
+        summary += "TOP PRIORITY ACTIONS:\n"
+        for i, rec in enumerate(summary_data['priority_recommendations'][:3], 1):
+            summary += f"{i}. {rec}\n"
+        summary += "\n"
+    
+    if summary_data['estimated_repair_cost']:
+        summary += f"Estimated Repair Cost: ${summary_data['estimated_repair_cost']:,.2f}\n"
+    
+    summary += f"Repair Timeframe: {summary_data['repair_timeframe']}\n"
+    
+    return summary.strip()
+
+
+def generate_initial_inspection_detailed_report(inspection) -> Dict:
+    """
+    Generate a detailed technical report for initial inspection.
+    
+    Args:
+        inspection: InitialInspection model instance
+        
+    Returns:
+        Dictionary containing detailed technical report data
+    """
+    summary_data = generate_initial_inspection_summary(inspection)
+    system_scores = summary_data['system_scores']
+    categorized_failures = summary_data['categorized_failures']
+    
+    # Create detailed system analysis
+    system_analysis = {}
+    system_names = {
+        'critical': 'Critical Safety Systems',
+        'important': 'Important Mechanical Systems',
+        'standard': 'Standard Systems',
+        'interior': 'Interior & Convenience Systems',
+        'minor': 'Appearance & Minor Systems',
+        'advanced': 'Advanced & Hybrid Systems',
+    }
+    
+    for system_key, system_name in system_names.items():
+        score = system_scores.get(system_key, 0)
+        failures = categorized_failures.get(system_key, [])
+        
+        if score >= 90:
+            status = "Excellent"
+        elif score >= 80:
+            status = "Good"
+        elif score >= 70:
+            status = "Fair"
+        elif score >= 60:
+            status = "Poor"
+        else:
+            status = "Critical"
+        
+        system_analysis[system_key] = {
+            'name': system_name,
+            'score': score,
+            'status': status,
+            'failure_count': len(failures),
+            'failures': failures,
+        }
+    
+    # Generate recommendations by priority
+    recommendations_by_priority = {
+        'urgent': [r for r in summary_data['recommendations'] if r.startswith("URGENT:")],
+        'critical': [r for r in summary_data['recommendations'] if r.startswith("CRITICAL:")],
+        'high_priority': [r for r in summary_data['recommendations'] if r.startswith("HIGH PRIORITY:")],
+        'standard': [r for r in summary_data['recommendations'] if not any(r.startswith(p) for p in ["URGENT:", "CRITICAL:", "HIGH PRIORITY:", "RECOMMENDATION:", "COST CONSIDERATION:"])],
+        'general': [r for r in summary_data['recommendations'] if r.startswith("RECOMMENDATION:")],
+        'cost_considerations': [r for r in summary_data['recommendations'] if r.startswith("COST CONSIDERATION:")],
+    }
+    
+    return {
+        **summary_data,
+        'system_analysis': system_analysis,
+        'recommendations_by_priority': recommendations_by_priority,
+        'detailed_report_type': 'Technical Analysis Report',
+    }
+
+
+def export_initial_inspection_data(inspection, format_type='json') -> str:
+    """
+    Export initial inspection data in specified format.
+    
+    Args:
+        inspection: InitialInspection model instance
+        format_type: Export format ('json', 'csv', 'summary')
+        
+    Returns:
+        String containing exported data
+    """
+    if format_type == 'summary':
+        return generate_initial_inspection_executive_summary(inspection)
+    
+    elif format_type == 'json':
+        import json
+        detailed_report = generate_initial_inspection_detailed_report(inspection)
+        
+        # Convert datetime objects to strings for JSON serialization
+        def serialize_datetime(obj):
+            if hasattr(obj, 'isoformat'):
+                return obj.isoformat()
+            raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+        
+        return json.dumps(detailed_report, indent=2, default=serialize_datetime)
+    
+    elif format_type == 'csv':
+        import csv
+        from io import StringIO
+        
+        summary_data = generate_initial_inspection_summary(inspection)
+        output = StringIO()
+        
+        # Write basic inspection data
+        writer = csv.writer(output)
+        writer.writerow(['Field', 'Value'])
+        writer.writerow(['Inspection Number', summary_data['inspection_number']])
+        writer.writerow(['Vehicle VIN', summary_data['vehicle_vin']])
+        writer.writerow(['Inspection Date', summary_data['inspection_date']])
+        writer.writerow(['Technician', summary_data['technician']])
+        writer.writerow(['Mileage', summary_data['mileage']])
+        writer.writerow(['Health Index', summary_data['health_index']])
+        writer.writerow(['Inspection Result', summary_data['inspection_result']])
+        writer.writerow(['Total Issues', summary_data['total_issues']])
+        writer.writerow(['Critical Issues', summary_data['critical_issue_count']])
+        writer.writerow(['Completion Percentage', f"{summary_data['completion_percentage']}%"])
+        
+        # Write failed points
+        writer.writerow([])
+        writer.writerow(['Failed Points'])
+        for point in summary_data['failed_points']:
+            writer.writerow([point])
+        
+        # Write recommendations
+        writer.writerow([])
+        writer.writerow(['Recommendations'])
+        for rec in summary_data['recommendations']:
+            writer.writerow([rec])
+        
+        return output.getvalue()
+    
+    else:
+        raise ValueError(f"Unsupported format type: {format_type}")
+def
+ validate_initial_inspection_completion(inspection) -> Tuple[bool, List[str]]:
+    """
+    Validate that an initial inspection is ready for completion and scoring.
+    
+    Args:
+        inspection: InitialInspection model instance
+        
+    Returns:
+        Tuple of (is_valid, list_of_issues)
+    """
+    issues = []
+    
+    # Check minimum completion percentage
+    if inspection.completion_percentage < 80:
+        issues.append(f"Inspection only {inspection.completion_percentage}% complete (minimum 80% required)")
+    
+    # Check critical safety systems
+    critical_fields = [
+        'brake_vibrations', 'brake_pedal_specs', 'abs_operation', 'parking_brake_operation',
+        'seat_belt_condition', 'seat_belt_operation', 'steering_feel', 'vehicle_tracking',
+        'tire_condition', 'tread_depth', 'brake_pad_life', 'headlight_alignment'
+    ]
+    
+    missing_critical = []
+    for field in critical_fields:
+        if not getattr(inspection, field):
+            try:
+                field_obj = inspection._meta.get_field(field)
+                missing_critical.append(field_obj.verbose_name)
+            except:
+                missing_critical.append(field.replace('_', ' ').title())
+    
+    if missing_critical:
+        issues.append(f"Critical safety systems not inspected: {', '.join(missing_critical[:5])}")
+    
+    # Check for required technician
+    if not inspection.technician:
+        issues.append("Technician must be assigned before completion")
+    
+    # Check for basic vehicle information
+    if not inspection.mileage_at_inspection:
+        issues.append("Vehicle mileage must be recorded")
+    
+    return len(issues) == 0, issues
+
+
+def sync_initial_inspection_with_regular_inspection(initial_inspection):
+    """
+    Create or update a regular Inspection record based on initial inspection results.
+    This helps maintain consistency between the two inspection systems.
+    
+    Args:
+        initial_inspection: InitialInspection model instance
+    """
+    if not initial_inspection.is_completed:
+        return None
+    
+    try:
+        from .models import Inspection
+        
+        # Generate inspection number for regular inspection if needed
+        regular_inspection_number = f"REG-{initial_inspection.inspection_number}"
+        
+        # Get or create regular inspection record
+        regular_inspection, created = Inspection.objects.get_or_create(
+            vehicle=initial_inspection.vehicle,
+            inspection_number=regular_inspection_number,
+            defaults={
+                'year': initial_inspection.inspection_date.year,
+                'inspection_date': initial_inspection.inspection_date.date(),
+                'inspection_result': initial_inspection.inspection_result,
+                'vehicle_health_index': initial_inspection.vehicle_health_index,
+            }
+        )
+        
+        if not created:
+            # Update existing record
+            regular_inspection.inspection_result = initial_inspection.inspection_result
+            regular_inspection.vehicle_health_index = initial_inspection.vehicle_health_index
+            regular_inspection.save()
+        
+        return regular_inspection
+        
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error syncing initial inspection {initial_inspection.pk} with regular inspection: {str(e)}")
+        return None
+
+
+def get_inspection_workflow_status(vehicle):
+    """
+    Get the current inspection workflow status for a vehicle.
+    
+    Args:
+        vehicle: Vehicle model instance
+        
+    Returns:
+        Dictionary with workflow status information
+    """
+    from .models import InitialInspection, Inspection
+    
+    # Get latest initial inspection
+    latest_initial = InitialInspection.objects.filter(vehicle=vehicle).order_by('-inspection_date').first()
+    
+    # Get latest regular inspection
+    latest_regular = Inspection.objects.filter(vehicle=vehicle).order_by('-inspection_date').first()
+    
+    status = {
+        'vehicle_vin': vehicle.vin,
+        'has_initial_inspection': latest_initial is not None,
+        'has_regular_inspection': latest_regular is not None,
+        'initial_inspection_completed': latest_initial.is_completed if latest_initial else False,
+        'workflow_stage': 'none',
+        'recommendations': []
+    }
+    
+    if not latest_initial:
+        status['workflow_stage'] = 'needs_initial_inspection'
+        status['recommendations'].append('Schedule initial 160-point inspection')
+    elif not latest_initial.is_completed:
+        status['workflow_stage'] = 'initial_inspection_in_progress'
+        status['recommendations'].append(f'Complete initial inspection ({latest_initial.completion_percentage}% done)')
+    elif latest_initial.is_completed:
+        # Check if initial inspection found major issues
+        critical_issues = len(latest_initial.safety_critical_issues)
+        total_issues = len(latest_initial.failed_points)
+        
+        if critical_issues > 0:
+            status['workflow_stage'] = 'requires_repairs'
+            status['recommendations'].append(f'Address {critical_issues} critical safety issue(s) before regular use')
+        elif total_issues > 10:
+            status['workflow_stage'] = 'requires_maintenance'
+            status['recommendations'].append(f'Address {total_issues} maintenance issues')
+        else:
+            status['workflow_stage'] = 'ready_for_service'
+            status['recommendations'].append('Vehicle ready for regular maintenance schedule')
+    
+    # Add scoring information if available
+    if latest_initial and latest_initial.is_completed:
+        try:
+            status['health_index'] = latest_initial.vehicle_health_index
+            status['inspection_result'] = latest_initial.inspection_result
+            status['last_inspection_date'] = latest_initial.inspection_date
+        except:
+            pass
+    
+    return status
+
+
+def generate_inspection_workflow_report(vehicles=None):
+    """
+    Generate a workflow status report for vehicles.
+    
+    Args:
+        vehicles: QuerySet of vehicles (if None, includes all vehicles)
+        
+    Returns:
+        Dictionary with workflow report data
+    """
+    from vehicles.models import Vehicle
+    
+    if vehicles is None:
+        vehicles = Vehicle.objects.all()
+    
+    report_data = {
+        'total_vehicles': vehicles.count(),
+        'workflow_summary': {
+            'needs_initial_inspection': 0,
+            'initial_inspection_in_progress': 0,
+            'requires_repairs': 0,
+            'requires_maintenance': 0,
+            'ready_for_service': 0,
+        },
+        'vehicle_details': []
+    }
+    
+    for vehicle in vehicles:
+        status = get_inspection_workflow_status(vehicle)
+        report_data['vehicle_details'].append(status)
+        
+        # Update summary counts
+        workflow_stage = status['workflow_stage']
+        if workflow_stage in report_data['workflow_summary']:
+            report_data['workflow_summary'][workflow_stage] += 1
+    
+    return report_data

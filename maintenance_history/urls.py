@@ -62,6 +62,20 @@ urlpatterns = [
          api_views.PartDetailsAPIView.as_view(), 
          name='part_details_api'),
     
+    # Initial Inspection URLs (160-point pre-purchase inspections)
+    path('initial-inspections/', 
+         views.InitialInspectionListView.as_view(), 
+         name='initial_inspection_list'),
+    path('initial-inspections/<int:pk>/', 
+         views.InitialInspectionDetailView.as_view(), 
+         name='initial_inspection_detail'),
+    path('initial-inspections/create/', 
+         views.CreateInitialInspectionView.as_view(), 
+         name='create_initial_inspection'),
+    path('initial-inspections/<int:pk>/update/', 
+         views.UpdateInitialInspectionView.as_view(), 
+         name='update_initial_inspection'),
+    
     # API endpoint for scheduled maintenance
     path('api/scheduled-maintenance/', 
          api_views.ScheduledMaintenanceAPIView.as_view(), 

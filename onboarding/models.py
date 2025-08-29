@@ -30,3 +30,4 @@ class PendingVehicleOnboarding(models.Model):
 
     def __str__(self):
         return f"Pending Vehicle for {self.client.username} (by {self.submitted_by.username if self.submitted_by else 'Unknown'})"
+

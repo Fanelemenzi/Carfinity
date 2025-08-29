@@ -1,0 +1,370 @@
+{% load static %}
+
+<!DOCTYPE html>
+<!-- Inspections -->
+<div class="bg-white p-5 rounded-lg shadow">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-semibold text-gray-800">Inspections</h2>
+      <button id="toggleInspectionsBtn" onclick="toggleInspections()"
+        class="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
+        <span id="toggleInspectionsText">Show Inspections</span>
+        <i id="toggleInspectionsIcon" class="fas fa-chevron-down ml-2 transition-transform duration-200"></i>
+      </button>
+    </div>
+
+    <!-- Help text for inspections -->
+    <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+      <div class="flex items-start">
+        <i class="fas fa-lightbulb text-green-600 mt-1 mr-2"></i>
+        <div class="text-sm text-green-700">
+          <strong>About Inspections:</strong> These are official vehicle safety and emissions inspections
+          conducted by certified facilities.
+          Higher ratings indicate better vehicle condition. Regular inspections help ensure vehicle safety and
+          compliance.
+        </div>
+      </div>
+    </div>
+
+    <!-- Initial Inspections Information Block -->
+    {% if initial_inspections %}
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center">
+          <i class="fas fa-search-plus text-amber-600 text-xl mr-3"></i>
+          <div>
+            <h3 class="text-lg font-semibold text-amber-800">Initial Vehicle Inspections</h3>
+            <p class="text-sm text-amber-700">Comprehensive 160-point pre-purchase inspections</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <div class="text-2xl font-bold text-amber-600">{{ initial_inspections|length }}</div>
+          <div class="text-xs text-amber-600">
+            {% if initial_inspections|length == 1 %}
+            Initial Inspection
+            {% else %}
+            Initial Inspections
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        {% for initial_inspection in initial_inspections %}
+        <div class="bg-white border border-amber-200 rounded-lg p-3">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center">
+              <div
+                class="bg-amber-100 text-amber-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-2">
+                {{ forloop.counter }}
+              </div>
+              <div>
+                <h4 class="font-semibold text-gray-800 text-sm">{{ initial_inspection.inspection_number }}</h4>
+                <p class="text-xs text-gray-500">
+                  <i class="fas fa-calendar mr-1"></i>
+                  {{ initial_inspection.inspection_date|date:"M j, Y" }}
+                </p>
+              </div>
+            </div>
+            <div class="text-right">
+              {% if initial_inspection.is_completed %}
+              <span
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <i class="fas fa-check mr-1"></i>Completed
+              </span>
+              {% else %}
+              <span
+                class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                <i class="fas fa-clock mr-1"></i>In Progress
+              </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+            <div>
+              <span class="text-gray-500">Progress:</span>
+              <div class="flex items-center mt-1">
+                <div class="w-12 bg-gray-200 rounded-full h-1.5 mr-2">
+                  <div class="bg-amber-600 h-1.5 rounded-full"
+                    style="width: {{ initial_inspection.completion_percentage }}%"></div>
+                </div>
+                <span class="text-gray-600 font-medium">{{ initial_inspection.completion_percentage }}%</span>
+              </div>
+            </div>
+            <div>
+              <span class="text-gray-500">Technician:</span>
+              <p class="font-medium text-gray-700 mt-1">
+                {% if initial_inspection.technician %}
+                {{ initial_inspection.technician.get_full_name|default:initial_inspection.technician.username }}
+                {% else %}
+                Not Assigned
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          {% if initial_inspection.has_major_issues %}
+          <div class="bg-red-50 border border-red-200 rounded p-2 mb-3">
+            <div class="flex items-center text-xs text-red-700">
+              <i class="fas fa-exclamation-triangle mr-1"></i>
+              <span class="font-medium">{{ initial_inspection.failed_points|length }} Issue(s) Found</span>
+            </div>
+          </div>
+          {% endif %}
+
+          <div class="flex items-center justify-between">
+            <div class="text-xs text-gray-500">
+              <i class="fas fa-tachometer-alt mr-1"></i>
+              {{ initial_inspection.mileage_at_inspection|floatformat:0 }} miles
+            </div>
+            <button
+              onclick="openInitialInspectionModal('{{ initial_inspection.id }}', '{{ initial_inspection.inspection_number }}')"
+              class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 transition-colors duration-200">
+              <i class="fas fa-eye mr-1"></i>View Details
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="bg-amber-100 border border-amber-300 rounded-lg p-3">
+        <div class="flex items-start">
+          <i class="fas fa-info-circle text-amber-600 mt-0.5 mr-2"></i>
+          <div class="text-sm text-amber-800">
+            <strong>About Initial Inspections:</strong> These comprehensive 160-point inspections are conducted
+            before vehicle purchase to assess overall condition, identify potential issues, and provide purchase
+            recommendations. They include road testing, structural analysis, and detailed component evaluation.
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Summary when collapsed -->
+    <div id="inspectionsSummary" class="mb-4">
+      <div class="bg-gray-50 rounded-lg p-4 border">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="text-2xl text-green-600 mr-3">
+              <i class="fas fa-clipboard-check"></i>
+            </div>
+            <div>
+              <p class="font-semibold text-gray-700">Total Inspections</p>
+              <p class="text-sm text-gray-500">Click "Show Inspections" to view detailed records</p>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-3xl font-bold text-green-600">
+              {{ inspections|length }}
+            </div>
+            <div class="text-xs text-green-600">
+              {% if inspections|length == 0 %}
+              No Inspections
+              {% elif inspections|length == 1 %}
+              Inspection Found
+              {% else %}
+              Inspections Found
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detailed inspections (initially hidden) -->
+    <div id="inspectionsDetails" class="overflow-x-auto hidden">
+      {% if inspections %}
+      {% for inspection in inspections %}
+      <div class="bg-white border border-gray-200 rounded-lg mb-4 p-4 shadow-sm">
+        <!-- Inspection Header -->
+        <div class="flex items-center justify-between mb-3 pb-3 border-b border-gray-100">
+          <div class="flex items-center">
+            <div
+              class="bg-green-100 text-green-800 rounded-full w-8 h-8 flex items-center justify-center text-sm font-semibold mr-3">
+              {{ forloop.counter }}
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-800">{{ inspection.inspection_number }}</h4>
+              <p class="text-sm text-gray-500">
+                <i class="fas fa-calendar mr-1"></i>
+                {{ inspection.inspection_date|date:"F j, Y" }}
+              </p>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="text-lg font-semibold 
+                {% if inspection.inspection_result == 'PAS' %}text-green-600
+                {% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}text-yellow-600
+                {% else %}text-red-600{% endif %}">
+              {{ inspection.get_inspection_result_display }}
+            </div>
+            <div class="text-xs text-gray-500">{{ inspection.year }}</div>
+          </div>
+        </div>
+
+        <!-- Inspection Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+          <!-- Inspection Result -->
+          <div class="flex items-center">
+            <div class="{% if inspection.inspection_result == 'PAS' %}text-green-600
+                {% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}text-yellow-600
+                {% else %}text-red-600{% endif %} mr-2">
+              <i
+                class="fas fa-{% if inspection.inspection_result == 'PAS' %}check-circle{% elif inspection.inspection_result == 'PMD' or inspection.inspection_result == 'PJD' %}exclamation-triangle{% else %}times-circle{% endif %}"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Inspection Result</p>
+              <p class="font-medium text-gray-700">{{ inspection.get_inspection_result_display }}</p>
+            </div>
+          </div>
+
+          <!-- Vehicle Health Index -->
+          <div class="flex items-center">
+            <div class="text-blue-600 mr-2">
+              <i class="fas fa-heartbeat"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Vehicle Health Index</p>
+              <p class="font-medium text-gray-700">
+                {% if inspection.vehicle_health_index %}
+                {{ inspection.vehicle_health_index }}
+                {% else %}
+                Not Available
+                {% endif %}
+              </p>
+            </div>
+          </div>
+
+          <!-- PDF Report -->
+          <div class="flex items-center">
+            <div class="text-red-600 mr-2">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500">Inspection Report</p>
+              <p class="font-medium text-gray-700">
+                {% if inspection.has_pdf %}
+                <button onclick="openInspectionPDF('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
+                  class="text-blue-600 hover:text-blue-800 underline text-sm">
+                  <i class="fas fa-eye mr-1"></i>View PDF
+                </button>
+                <br><span class="text-xs text-gray-500">{{ inspection.pdf_file_size_mb }} MB</span>
+                {% else %}
+                <span class="text-gray-400">No PDF available</span>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- External Link Section -->
+        {% if inspection.link_to_results %}
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+          <h5 class="font-semibold text-gray-700 mb-2 flex items-center">
+            <i class="fas fa-external-link-alt text-blue-600 mr-2"></i>
+            External Inspection Results
+          </h5>
+          <a href="{{ inspection.link_to_results }}" target="_blank"
+            class="text-blue-600 hover:text-blue-800 underline text-sm">
+            <i class="fas fa-link mr-1"></i>View External Results
+            <i class="fas fa-external-link-alt ml-1 text-xs"></i>
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Detailed Inspection Form Link -->
+        {% if inspection.inspections_form %}
+        <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h5 class="font-semibold text-gray-700 mb-1 flex items-center">
+                <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                50-Point Inspection Form
+              </h5>
+              <p class="text-sm text-gray-600">
+                Completion: {{ inspection.inspections_form.completion_percentage }}%
+                {% if inspection.inspections_form.is_completed %}
+                <span class="text-green-600 ml-2">
+                  <i class="fas fa-check-circle"></i> Completed
+                </span>
+                {% else %}
+                <span class="text-yellow-600 ml-2">
+                  <i class="fas fa-clock"></i> In Progress
+                </span>
+                {% endif %}
+              </p>
+              {% if inspection.inspections_form.technician %}
+              <p class="text-xs text-gray-500 mt-1">
+                Technician:
+                {% if inspection.inspections_form.technician.first_name or
+                inspection.inspections_form.technician.last_name %}
+                {{ inspection.inspections_form.technician.first_name|default:"" }}{% if
+                inspection.inspections_form.technician.first_name and
+                inspection.inspections_form.technician.last_name %} {% endif %}{{
+                inspection.inspections_form.technician.last_name|default:"" }}
+                {% else %}
+                {{ inspection.inspections_form.technician.username }}
+                {% endif %}
+              </p>
+              {% endif %}
+            </div>
+            <button
+              onclick="openInspectionFormModal('{{ inspection.id }}', '{{ inspection.inspection_number }}')"
+              class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm">
+              <i class="fas fa-eye mr-1"></i>View Details
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
+          <p class="text-sm text-gray-600 flex items-center">
+            <i class="fas fa-info-circle text-gray-400 mr-2"></i>
+            No detailed inspection form available for this record
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Inspection Metadata -->
+        <div class="mt-3 pt-3 border-t border-gray-100">
+          <div class="flex items-center justify-between text-xs text-gray-500">
+            <div class="flex items-center">
+              <i class="fas fa-clock mr-1"></i>
+              <span>
+                {% if inspection.created_at %}
+                Created: {{ inspection.created_at|date:"M j, Y" }}
+                {% endif %}
+                {% if inspection.updated_at and inspection.updated_at != inspection.created_at %}
+                | Updated: {{ inspection.updated_at|date:"M j, Y" }}
+                {% endif %}
+              </span>
+            </div>
+            {% if inspection.pdf_uploaded_at %}
+            <div class="flex items-center">
+              <i class="fas fa-upload mr-1"></i>
+              <span>PDF uploaded: {{ inspection.pdf_uploaded_at|date:"M j, Y" }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div
+        class="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+        <div class="text-6xl text-gray-400 mb-4">
+          <i class="fas fa-clipboard-check"></i>
+        </div>
+        <h3 class="text-lg font-medium text-gray-700 mb-2">No Inspection Records Available</h3>
+        <p class="text-gray-500 text-center max-w-md">
+          No inspection records have been found for this vehicle. Inspections may be added when the vehicle
+          undergoes official safety and emissions testing.
+        </p>
+        <div class="mt-4 flex items-center text-sm text-gray-400">
+          <i class="fas fa-info-circle mr-2"></i>
+          <span>Check back after the next scheduled inspection</span>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <!--End of Inspections-->
