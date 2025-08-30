@@ -514,11 +514,13 @@ class InitialInspectionForm(forms.ModelForm):
     class Meta:
         model = InitialInspection
         fields = [
+            # Basic Information
             'vehicle',
             'inspection_number',
             'technician',
             'inspection_date',
             'mileage_at_inspection',
+            
             # Road Test (Points 1-33)
             'cold_engine_operation',
             'throttle_operation',
@@ -553,11 +555,182 @@ class InitialInspectionForm(forms.ModelForm):
             'interior_noise',
             'wind_road_noise',
             'tire_vibration',
-            # Frame, Structure & Underbody (Points 34-54) - Add when model is complete
+            'road_test_notes',
+            
+            # Frame, Structure & Underbody (Points 34-54)
             'frame_unibody_condition',
-            # Overall
+            'panel_alignment',
+            'underbody_condition',
+            'suspension_leaks_wear',
+            'struts_shocks_condition',
+            'power_steering_leaks',
+            'wheel_covers',
+            'tire_condition',
+            'tread_depth',
+            'tire_specifications',
+            'brake_calipers_lines',
+            'brake_system_equipment',
+            'brake_pad_life',
+            'brake_rotors_drums',
+            'exhaust_system',
+            'engine_trans_mounts',
+            'drive_axle_shafts',
+            'cv_joints_boots',
+            'engine_fluid_leaks',
+            'transmission_leaks',
+            'differential_fluid',
+            'frame_structure_notes',
+            
+            # Under Hood (Points 55-68)
+            'drive_belts_hoses',
+            'underhood_labels',
+            'air_filter_condition',
+            'battery_damage',
+            'battery_test',
+            'battery_posts_cables',
+            'battery_secured',
+            'charging_system',
+            'coolant_level',
+            'coolant_protection',
+            'oil_filter_change',
+            'oil_sludge_check',
+            'fluid_levels',
+            'fluid_contamination',
+            'under_hood_notes',
+            
+            # Functional & Walkaround (Points 69-82)
+            'owners_manual',
+            'fuel_gauge',
+            'battery_voltage_gauge',
+            'temp_gauge',
+            'horn_function',
+            'airbags_present',
+            'headlight_alignment',
+            'emissions_test',
+            'tail_lights',
+            'brake_lights',
+            'side_marker_lights',
+            'backup_lights',
+            'license_plate_lights',
+            'exterior_lights_condition',
+            'functional_walkaround_notes',
+            
+            # Interior Functions (Points 83-128)
+            'instrument_panel',
+            'hvac_panel',
+            'instrument_dimmer',
+            'turn_signals',
+            'hazard_flashers',
+            'rearview_mirror',
+            'exterior_mirrors',
+            'remote_mirror_control',
+            'glass_condition',
+            'window_tint',
+            'dome_courtesy_lights',
+            'power_windows',
+            'window_locks',
+            'audio_system',
+            'audio_speakers',
+            'antenna',
+            'clock_operation',
+            'power_outlet',
+            'ashtrays',
+            'headliner_trim',
+            'floor_mats',
+            'doors_operation',
+            'door_locks',
+            'keyless_entry',
+            'master_keys',
+            'theft_deterrent',
+            'seat_adjustments',
+            'seat_heaters',
+            'memory_seat',
+            'headrests',
+            'rear_defogger',
+            'defogger_indicator',
+            'luggage_light',
+            'luggage_cleanliness',
+            'hood_trunk_latches',
+            'emergency_trunk_release',
+            'fuel_door_release',
+            'spare_tire_cover',
+            'spare_tire_present',
+            'spare_tire_tread',
+            'spare_tire_pressure',
+            'spare_tire_damage',
+            'spare_tire_secured',
+            'jack_tools',
+            'acceptable_aftermarket',
+            'unacceptable_removal',
+            'interior_functions_notes',
+            
+            # Exterior Appearance (Points 129-152)
+            'body_surface',
+            'exterior_cleanliness',
+            'paint_finish',
+            'paint_scratches',
+            'wheels_cleanliness',
+            'wheel_wells',
+            'tires_dressed',
+            'engine_compartment_clean',
+            'insulation_pad',
+            'engine_dressed',
+            'door_jambs',
+            'glove_console',
+            'cabin_air_filter',
+            'seats_carpets',
+            'vehicle_odors',
+            'glass_cleanliness',
+            'interior_debris',
+            'dash_vents',
+            'crevices_clean',
+            'upholstery_panels',
+            'paint_repairs',
+            'glass_repairs',
+            'bumpers_condition',
+            'interior_surfaces',
+            'exterior_appearance_notes',
+            
+            # Optional/Additional Systems (Points 153-160)
+            'sunroof_convertible',
+            'seat_heaters_optional',
+            'navigation_system',
+            'head_unit_software',
+            'transfer_case',
+            'truck_bed_condition',
+            'truck_bed_liner',
+            'backup_camera',
+            'optional_systems_notes',
+            
+            # Advanced Safety Systems
+            'sos_indicator',
+            'lane_keep_assist',
+            'adaptive_cruise',
+            'parking_assist',
+            'safety_systems_notes',
+            
+            # Hybrid Components
+            'hybrid_battery',
+            'battery_control_module',
+            'hybrid_power_mgmt',
+            'electric_motor',
+            'ecvt_operation',
+            'power_inverter',
+            'inverter_coolant',
+            'ev_modes',
+            'hybrid_park_mechanism',
+            'multi_info_display',
+            'touch_tracer_display',
+            'hill_start_assist',
+            'remote_ac',
+            'solar_ventilation',
+            'hybrid_components_notes',
+            
+            # Overall Assessment
+            'overall_condition_rating',
             'overall_notes',
             'recommendations',
+            'estimated_repair_cost',
             'is_completed'
         ]
         
@@ -592,38 +765,51 @@ class InitialInspectionForm(forms.ModelForm):
         
         # Add common styling to all status choice fields
         status_widget_attrs = {
-            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500'
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-primary focus:border-primary'
         }
         
-        # Apply styling to all road test status fields
-        road_test_fields = [
-            'cold_engine_operation', 'throttle_operation', 'warmup_operation', 'operating_temp_performance',
-            'normal_operating_temp', 'brake_vibrations', 'engine_fan_operation', 'brake_pedal_specs',
-            'abs_operation', 'parking_brake_operation', 'seat_belt_condition', 'seat_belt_operation',
-            'transmission_operation', 'auto_trans_cold', 'auto_trans_operating', 'steering_feel',
-            'steering_centered', 'vehicle_tracking', 'tilt_telescopic_steering', 'washer_fluid_spray',
-            'front_wipers', 'rear_wipers', 'wiper_rest_position', 'wiper_blade_replacement',
-            'speedometer_function', 'odometer_function', 'cruise_control', 'heater_operation',
-            'ac_operation', 'engine_noise', 'interior_noise', 'wind_road_noise', 'tire_vibration',
-            'frame_unibody_condition'
-        ]
+        # Get all status choice fields from the model
+        status_fields = []
+        for field in self.Meta.fields:
+            if field in self.fields and hasattr(self.fields[field], 'choices') and field not in ['vehicle', 'technician', 'overall_condition_rating']:
+                status_fields.append(field)
         
-        for field_name in road_test_fields:
+        # Apply styling to all status choice fields
+        for field_name in status_fields:
             if field_name in self.fields:
                 self.fields[field_name].widget.attrs.update(status_widget_attrs)
         
         # Add styling to notes fields
         notes_widget_attrs = {
-            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500',
+            'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-primary focus:border-primary',
             'rows': 4,
             'placeholder': 'Enter detailed observations, findings, and notes...'
         }
         
-        notes_fields = ['overall_notes', 'recommendations']
+        notes_fields = [
+            'road_test_notes', 'frame_structure_notes', 'under_hood_notes', 
+            'functional_walkaround_notes', 'interior_functions_notes', 
+            'exterior_appearance_notes', 'optional_systems_notes', 
+            'safety_systems_notes', 'hybrid_components_notes',
+            'overall_notes', 'recommendations'
+        ]
         
         for field_name in notes_fields:
             if field_name in self.fields:
                 self.fields[field_name].widget = forms.Textarea(attrs=notes_widget_attrs)
+        
+        # Special styling for overall condition rating
+        if 'overall_condition_rating' in self.fields:
+            self.fields['overall_condition_rating'].widget.attrs.update(status_widget_attrs)
+        
+        # Special styling for estimated repair cost
+        if 'estimated_repair_cost' in self.fields:
+            self.fields['estimated_repair_cost'].widget.attrs.update({
+                'class': 'w-full mt-1 block rounded-md border-gray-300 shadow-sm focus:ring-primary focus:border-primary',
+                'placeholder': '0.00',
+                'step': '0.01',
+                'min': '0'
+            })
     
     def clean_inspection_number(self):
         """Custom validation for inspection number uniqueness"""

@@ -61,7 +61,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- Key Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
             <!-- Total Inspections -->
             <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
                 <div class="flex items-center">
@@ -125,6 +125,22 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Initial Inspections -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-amber-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-search-plus text-amber-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Initial Inspections</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ total_initial_inspections|default:0 }}</p>
+                        <p class="text-xs text-amber-600">160-point checks</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Quick Actions Section -->
@@ -156,7 +172,7 @@
                     </div>
                 </a>
 
-                <a href="{% url 'maintenance_history:create_inspection_record' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:create_initial_inspection' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
                             <div class="w-8 h-8 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors duration-200">
@@ -298,7 +314,7 @@
                     </div>
                     
                     <div class="text-center">
-                        <a href="{% url 'maintenance_history:create_inspection_record' %}" class="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <a href="{% url 'maintenance_history:create_initial_inspection' %}" class="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-sm hover:shadow-md">
                             <span class="mr-2">🔍</span>
                             Start Initial
                         </a>

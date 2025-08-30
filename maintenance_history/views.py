@@ -43,6 +43,15 @@ class TechnicianDashboardView(LoginRequiredMixin, ListView):
             technician=self.request.user
         ).count()
         
+        # Get initial inspection statistics
+        user_initial_inspections = InitialInspection.objects.filter(technician=self.request.user)
+        context['total_initial_inspections'] = user_initial_inspections.count()
+        context['pending_initial_inspections'] = user_initial_inspections.filter(is_completed=False).count()
+        context['completed_initial_today'] = user_initial_inspections.filter(
+            inspection_date__date=timezone.now().date(),
+            is_completed=True
+        ).count()
+        
         return context
 
 class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):
@@ -1062,7 +1071,7 @@ class CreateInitialInspectionView(LoginRequiredMixin, CreateView):
             return self.form_invalid(form)
     
     def get_success_url(self):
-        return f"/maintenance-history/initial-inspections/{self.object.pk}/"
+        return f"/initial-inspections/{self.object.pk}/"
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

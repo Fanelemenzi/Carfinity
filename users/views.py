@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from vehicles.models import Vehicle, VehicleStatus, VehicleOwnership, VehicleImage  # Add VehicleImage
-from maintenance_history.models import MaintenanceRecord, Inspection
+from maintenance_history.models import MaintenanceRecord, Inspection, InitialInspection
 from vehicle_equip.models import PowertrainAndDrivetrain, ChassisSuspensionAndBraking, ElectricalSystem, ExteriorFeaturesAndBody, ActiveSafetyAndADAS
 from django.http import JsonResponse
 from .forms import SignUpForm
@@ -179,6 +179,11 @@ def search_results(request):
             'inspections_form__technician'
         ).order_by('-inspection_date')
         
+        # Get initial inspections
+        initial_inspections = InitialInspection.objects.filter(vehicle=vehicle).select_related(
+            'technician'
+        ).order_by('-inspection_date')
+        
         # Get vehicle images
         vehicle_images = VehicleImage.objects.filter(vehicle=vehicle).order_by('-is_primary', '-uploaded_at')
         
@@ -194,6 +199,7 @@ def search_results(request):
             'status': vehicle_status,
             'maintenance_records': maintenance_records,
             'inspections': inspections,
+            'initial_inspections': initial_inspections,
             'vehicle_images': vehicle_images,
             'powertrain': powertrain,
             'chassis': chassis,
