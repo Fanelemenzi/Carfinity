@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django import forms
+from django.db import models
 from vehicles.models import Vehicle, VehicleStatus, VehicleOwnership, VehicleImage  # Add VehicleImage
 from maintenance_history.models import MaintenanceRecord, Inspection, InitialInspection
 from vehicle_equip.models import PowertrainAndDrivetrain, ChassisSuspensionAndBraking, ElectricalSystem, ExteriorFeaturesAndBody, ActiveSafetyAndADAS
@@ -47,29 +48,218 @@ def logout_user(request):
     return redirect('home')
 
 def dashboard(request):
+    from django.db.models import Count, Sum, Avg, Q
+    from django.utils import timezone
+    from datetime import datetime, timedelta
+    from maintenance.models import ScheduledMaintenance, Part
+    from maintenance_history.models import Inspection, MaintenanceRecord, PartUsage
+    from decimal import Decimal
+    
     owned_vehicles = []
     scheduled_maintenance = []
     inspections = []
     selected_vehicle = None
+    
+    # Initialize dashboard metrics
+    dashboard_metrics = {
+        'total_vehicles': 0,
+        'upcoming_maintenance': 0,
+        'overdue_maintenance': 0,
+        'average_health': 0,
+        'monthly_cost': 0,
+    }
+    
+    vehicle_health_data = []
+    upcoming_maintenance_data = []
+    recent_inspections = []
+    recent_maintenance = []
+    low_stock_parts = []
+    
     if request.user.is_authenticated:
-        owned_vehicles = VehicleOwnership.objects.filter(user=request.user, is_current_owner=True).select_related('vehicle')
+        # Get user's vehicles
+        owned_vehicles = VehicleOwnership.objects.filter(
+            user=request.user, 
+            is_current_owner=True
+        ).select_related('vehicle')
+        
+        user_vehicles = [ownership.vehicle for ownership in owned_vehicles]
+        
+        # Calculate Key Metrics
+        dashboard_metrics['total_vehicles'] = len(user_vehicles)
+        
+        if user_vehicles:
+            # Get current date for calculations
+            today = timezone.now().date()
+            thirty_days_from_now = today + timedelta(days=30)
+            current_month_start = today.replace(day=1)
+            
+            # Upcoming and Overdue Maintenance
+            all_scheduled = ScheduledMaintenance.objects.filter(
+                assigned_plan__vehicle__in=user_vehicles,
+                status__in=['PENDING', 'OVERDUE']
+            )
+            
+            upcoming_count = all_scheduled.filter(
+                due_date__lte=thirty_days_from_now,
+                due_date__gte=today
+            ).count()
+            
+            overdue_count = all_scheduled.filter(
+                due_date__lt=today
+            ).count()
+            
+            dashboard_metrics['upcoming_maintenance'] = upcoming_count
+            dashboard_metrics['overdue_maintenance'] = overdue_count
+            
+            # Update overdue status
+            all_scheduled.filter(due_date__lt=today).update(status='OVERDUE')
+            
+            # Average Vehicle Health (from latest inspections)
+            health_scores = []
+            for vehicle in user_vehicles:
+                latest_inspection = Inspection.objects.filter(
+                    vehicle=vehicle
+                ).order_by('-inspection_date').first()
+                
+                if latest_inspection and latest_inspection.vehicle_health_index:
+                    try:
+                        # Extract numeric value from health index string
+                        health_str = latest_inspection.vehicle_health_index
+                        if '%' in health_str:
+                            health_value = float(health_str.replace('%', ''))
+                        elif 'Excellent' in health_str:
+                            health_value = 95.0
+                        elif 'Good' in health_str:
+                            health_value = 80.0
+                        elif 'Fair' in health_str:
+                            health_value = 65.0
+                        elif 'Poor' in health_str:
+                            health_value = 40.0
+                        else:
+                            # Try to extract number from string
+                            import re
+                            numbers = re.findall(r'\d+\.?\d*', health_str)
+                            health_value = float(numbers[0]) if numbers else 75.0
+                        
+                        health_scores.append(health_value)
+                        
+                        # Add to vehicle health data
+                        vehicle_health_data.append({
+                            'vehicle': vehicle,
+                            'health_score': health_value,
+                            'health_category': get_health_category(health_value),
+                            'last_inspection': latest_inspection.inspection_date,
+                        })
+                    except (ValueError, AttributeError):
+                        # Default health score if parsing fails
+                        health_scores.append(75.0)
+                        vehicle_health_data.append({
+                            'vehicle': vehicle,
+                            'health_score': 75.0,
+                            'health_category': 'Good',
+                            'last_inspection': latest_inspection.inspection_date if latest_inspection else None,
+                        })
+                else:
+                    # No inspection data available
+                    vehicle_health_data.append({
+                        'vehicle': vehicle,
+                        'health_score': None,
+                        'health_category': 'No Data',
+                        'last_inspection': None,
+                    })
+            
+            if health_scores:
+                dashboard_metrics['average_health'] = round(sum(health_scores) / len(health_scores), 1)
+            
+            # Monthly Maintenance Cost
+            current_month_maintenance = MaintenanceRecord.objects.filter(
+                vehicle__in=user_vehicles,
+                date_performed__gte=current_month_start
+            )
+            
+            # Calculate total cost from parts used
+            monthly_cost = 0
+            for record in current_month_maintenance:
+                parts_cost = PartUsage.objects.filter(
+                    maintenance_record=record,
+                    unit_cost__isnull=False
+                ).aggregate(
+                    total=Sum('unit_cost')
+                )['total'] or 0
+                monthly_cost += float(parts_cost)
+            
+            dashboard_metrics['monthly_cost'] = round(monthly_cost, 2)
+            
+            # Get Upcoming Maintenance Data (next 30 days)
+            upcoming_maintenance_data = ScheduledMaintenance.objects.filter(
+                assigned_plan__vehicle__in=user_vehicles,
+                due_date__lte=thirty_days_from_now,
+                status__in=['PENDING', 'OVERDUE']
+            ).select_related(
+                'assigned_plan__vehicle',
+                'task'
+            ).order_by('due_date')[:10]  # Limit to 10 most urgent
+            
+            # Get Recent Inspections
+            recent_inspections = Inspection.objects.filter(
+                vehicle__in=user_vehicles
+            ).select_related('vehicle').order_by('-inspection_date')[:5]
+            
+            # Get Recent Maintenance Records
+            recent_maintenance = MaintenanceRecord.objects.filter(
+                vehicle__in=user_vehicles
+            ).select_related(
+                'vehicle', 'technician'
+            ).prefetch_related(
+                'parts_used__part'
+            ).order_by('-date_performed')[:5]
+            
+            # Get Low Stock Parts (if user has access to parts inventory)
+            low_stock_parts = Part.objects.filter(
+                stock_quantity__lte=models.F('minimum_stock_level')
+            ).order_by('stock_quantity')[:5]
+        
+        # Handle vehicle selection for detailed view
         vehicle_id = request.GET.get('vehicle_id')
         if vehicle_id:
-            from maintenance.models import ScheduledMaintenance
-            from maintenance_history.models import Inspection
-            selected_vehicle = Vehicle.objects.get(id=vehicle_id)
-            # Scheduled Maintenance
-            scheduled_maintenance = ScheduledMaintenance.objects.filter(
-                assigned_plan__vehicle=selected_vehicle
-            )
-            # Inspections
-            inspections = Inspection.objects.filter(vehicle=selected_vehicle)
+            try:
+                selected_vehicle = Vehicle.objects.get(id=vehicle_id)
+                # Scheduled Maintenance for selected vehicle
+                scheduled_maintenance = ScheduledMaintenance.objects.filter(
+                    assigned_plan__vehicle=selected_vehicle
+                ).select_related('task').order_by('due_date')
+                
+                # Inspections for selected vehicle
+                inspections = Inspection.objects.filter(
+                    vehicle=selected_vehicle
+                ).order_by('-inspection_date')
+            except Vehicle.DoesNotExist:
+                selected_vehicle = None
+    
     return render(request, 'dashboard/dashboard.html', {
         'owned_vehicles': owned_vehicles,
         'scheduled_maintenance': scheduled_maintenance,
         'inspections': inspections,
         'selected_vehicle': selected_vehicle,
+        'dashboard_metrics': dashboard_metrics,
+        'vehicle_health_data': vehicle_health_data,
+        'upcoming_maintenance_data': upcoming_maintenance_data,
+        'recent_inspections': recent_inspections,
+        'recent_maintenance': recent_maintenance,
+        'low_stock_parts': low_stock_parts,
     })
+
+
+def get_health_category(health_score):
+    """Convert health score to category"""
+    if health_score >= 90:
+        return 'Excellent'
+    elif health_score >= 75:
+        return 'Good'
+    elif health_score >= 60:
+        return 'Fair'
+    else:
+        return 'Needs Attention'
 
 def login_dashboard(request):
     return render(request, 'dashboard/login_dashboard.html', {})
