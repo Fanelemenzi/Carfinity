@@ -20,26 +20,132 @@
 
         {% if messages %}
             {% for message in messages %}
-                <div class="relative px-4 md:px-14 mx-auto">
-                    <div class="max-w-4xl mx-auto">
-                        <div class="p-4 mb-4 bg-white rounded-3xl shadow-md">
-                            <div class="flex items-center">
-                               
-                                <span class="sr-only">Info</span>
-                                <h3 class="text-lg font-semibold text-gray-800">{{ message.tags|title }}</h3>
+            <!-- Message Dialog -->
+            <dialog id="message-dialog-{{ forloop.counter }}" aria-labelledby="message-title-{{ forloop.counter }}" class="fixed inset-0 size-auto max-h-none max-w-none overflow-y-auto bg-transparent backdrop:bg-transparent z-50" open>
+                <!-- Backdrop -->
+                <div class="fixed inset-0 bg-gray-500/75 transition-opacity duration-300 ease-out"></div>
+
+                <div tabindex="0" class="flex min-h-full items-end justify-center p-4 text-center focus:outline-none sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all duration-300 ease-out sm:my-8 sm:w-full sm:max-w-lg">
+                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                            <div class="sm:flex sm:items-start">
+                                <!-- Icon -->
+                                <div class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full sm:mx-0 sm:size-10
+                                    {% if message.tags == 'success' %}bg-green-100{% elif message.tags == 'error' %}bg-red-100{% elif message.tags == 'warning' %}bg-yellow-100{% else %}bg-blue-100{% endif %}">
+                                    {% if message.tags == 'success' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6 text-green-600">
+                                            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    {% elif message.tags == 'error' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6 text-red-600">
+                                            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    {% elif message.tags == 'warning' %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6 text-yellow-600">
+                                            <path d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    {% else %}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-6 text-blue-600">
+                                            <path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Content -->
+                                <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                    <h3 id="message-title-{{ forloop.counter }}" class="text-base font-semibold text-gray-900">
+                                        {% if message.tags == 'success' %}Success
+                                        {% elif message.tags == 'error' %}Error
+                                        {% elif message.tags == 'warning' %}Warning
+                                        {% else %}Notice
+                                        {% endif %}
+                                    </h3>
+                                    <div class="mt-2">
+                                        <p class="text-sm text-gray-500">{{ message }}</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="mt-2 text-base text-gray-600">
-                                {{ message }}
-                            </div>
-                            <div class="mt-4 flex justify-end">
-                                <button type="button" onclick="window.location.href='{% url 'home' %}'" class="text-gray-800 bg-transparent border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-lg text-sm px-3 py-1.5 text-center" data-dismiss-target="#alert-additional-content-5" aria-label="Close">
-                                    Dismiss
+                        </div>
+                        
+                        <!-- Actions -->
+                        <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                            {% if message.tags == 'error' %}
+                                <button type="button" onclick="dismissMessage('{{ forloop.counter }}')" class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-red-500 sm:ml-3 sm:w-auto">
+                                    OK
                                 </button>
-                            </div>
+                            {% elif message.tags == 'warning' %}
+                                <button type="button" onclick="dismissMessage('{{ forloop.counter }}')" class="inline-flex w-full justify-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-yellow-500 sm:ml-3 sm:w-auto">
+                                    OK
+                                </button>
+                            {% elif message.tags == 'success' %}
+                                <button type="button" onclick="dismissMessage('{{ forloop.counter }}')" class="inline-flex w-full justify-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-green-500 sm:ml-3 sm:w-auto">
+                                    Great!
+                                </button>
+                            {% else %}
+                                <button type="button" onclick="dismissMessage('{{ forloop.counter }}')" class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-500 sm:ml-3 sm:w-auto">
+                                    OK
+                                </button>
+                            {% endif %}
+                            
+                            {% if message.tags == 'error' or message.tags == 'warning' %}
+                                <button type="button" onclick="dismissMessage('{{ forloop.counter }}')" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-xs ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                                    Cancel
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+            </dialog>
             {% endfor %}
+            
+            <script>
+                function dismissMessage(messageId) {
+                    const dialog = document.getElementById('message-dialog-' + messageId);
+                    if (dialog) {
+                        // Add closing animation classes
+                        const panel = dialog.querySelector('div > div');
+                        const backdrop = dialog.querySelector('div:first-child');
+                        
+                        if (panel && backdrop) {
+                            panel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+                            backdrop.classList.add('opacity-0');
+                            
+                            setTimeout(() => {
+                                dialog.remove();
+                            }, 200);
+                        } else {
+                            dialog.remove();
+                        }
+                    }
+                }
+                
+                // Auto-dismiss success messages after 5 seconds
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        setTimeout(() => {
+                            dismissMessage('{{ forloop.counter }}');
+                        }, 5000);
+                    {% endif %}
+                {% endfor %}
+                
+                // Allow clicking outside to dismiss
+                {% for message in messages %}
+                document.getElementById('message-dialog-{{ forloop.counter }}').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        dismissMessage('{{ forloop.counter }}');
+                    }
+                });
+                {% endfor %}
+                
+                // Allow ESC key to dismiss
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        {% for message in messages %}
+                        dismissMessage('{{ forloop.counter }}');
+                        {% endfor %}
+                    }
+                });
+            </script>
         {% endif %}
 
         {% block content %}

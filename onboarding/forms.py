@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.models import User
 # from django_countries.fields import CountryField
 from vehicles.models import Vehicle, VehicleImage
-from onboarding.models import PendingVehicleOnboarding
+from onboarding.models import PendingVehicleOnboarding, CustomerOnboarding, VehicleOnboarding
 from django.core.serializers import serialize
 import datetime
 import cloudinary.uploader
@@ -306,5 +306,283 @@ class VehicleImagesForm(forms.Form):
         has_images = any(cleaned_data.get(field) for field in image_fields)
         if not has_images:
             raise forms.ValidationError("Please upload at least one image of the vehicle.")
+        
+        return cleaned_data
+
+
+# --- Customer Onboarding Form ---
+class CustomerOnboardingForm(forms.ModelForm):
+    """Comprehensive form for customer onboarding questionnaire"""
+    
+    class Meta:
+        model = CustomerOnboarding
+        exclude = ['user', 'completed_at', 'updated_at']
+        
+        widgets = {
+            'customer_type': forms.Select(attrs={'class': 'form-control'}),
+            'preferred_communication': forms.Select(attrs={'class': 'form-control'}),
+            'reminder_frequency': forms.Select(attrs={'class': 'form-control'}),
+            'service_radius': forms.Select(attrs={'class': 'form-control'}),
+            'monthly_maintenance_budget': forms.Select(attrs={'class': 'form-control'}),
+            'mobile_service_interest': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'emergency_service_interest': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'maintenance_knowledge': forms.Select(attrs={'class': 'form-control'}),
+            'current_mechanic': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Joe\'s Auto Shop'}),
+            'maintenance_tracking_method': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., Excel spreadsheet, paper records'}),
+            'biggest_maintenance_challenge': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Describe your biggest challenge...'}),
+            'primary_goal': forms.Select(attrs={'class': 'form-control'}),
+            'service_priority': forms.Select(attrs={'class': 'form-control'}),
+            'preferred_payment_model': forms.Select(attrs={'class': 'form-control'}),
+            'parts_preference': forms.Select(attrs={'class': 'form-control'}),
+            'auto_insurance_provider': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g., State Farm, Geico'}),
+            'vehicle_under_warranty': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'extended_warranty_interest': forms.Select(attrs={'class': 'form-control'}),
+            'how_heard_about_service': forms.Select(attrs={'class': 'form-control'}),
+            'potential_referrals': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'interested_in_referral_rewards': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        
+        labels = {
+            'customer_type': 'What type of customer are you?',
+            'preferred_communication': 'How would you prefer to receive maintenance reminders?',
+            'reminder_frequency': 'How often would you like maintenance reminders?',
+            'service_radius': 'How far are you willing to travel for service?',
+            'monthly_maintenance_budget': 'What\'s your approximate monthly budget for vehicle maintenance?',
+            'mobile_service_interest': 'Are you interested in mobile mechanic services?',
+            'emergency_service_interest': 'Would you like 24/7 emergency roadside assistance?',
+            'maintenance_knowledge': 'How would you describe your car maintenance knowledge?',
+            'current_mechanic': 'Do you currently have a trusted mechanic or service center?',
+            'maintenance_tracking_method': 'How do you currently track vehicle maintenance?',
+            'biggest_maintenance_challenge': 'What\'s your biggest challenge with vehicle maintenance?',
+            'primary_goal': 'What\'s your primary goal for vehicle maintenance?',
+            'service_priority': 'What\'s most important to you?',
+            'preferred_payment_model': 'Payment preference',
+            'parts_preference': 'Parts preference',
+            'auto_insurance_provider': 'Current auto insurance provider',
+            'vehicle_under_warranty': 'Is your vehicle still under manufacturer warranty?',
+            'extended_warranty_interest': 'Interest in extended warranty or service protection plans',
+            'how_heard_about_service': 'How did you hear about our service?',
+            'potential_referrals': 'Do you know others who might benefit from our services?',
+            'interested_in_referral_rewards': 'Would you be interested in earning referral rewards?',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add help text and styling to fields
+        self.fields['customer_type'].help_text = "This helps us tailor our services to your needs"
+        self.fields['preferred_communication'].help_text = "We'll use this method for maintenance reminders and updates"
+        self.fields['service_radius'].help_text = "This helps us recommend nearby service providers"
+        self.fields['monthly_maintenance_budget'].help_text = "This helps us recommend appropriate service plans"
+        self.fields['maintenance_knowledge'].help_text = "This helps us provide appropriate guidance and explanations"
+        self.fields['primary_goal'].help_text = "This helps us prioritize recommendations for you"
+        self.fields['service_priority'].help_text = "This helps us match you with the right service providers"
+        
+        # Make certain fields required for better user experience
+        self.fields['customer_type'].required = True
+        self.fields['preferred_communication'].required = True
+        self.fields['primary_goal'].required = True
+        self.fields['service_priority'].required = True
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Custom validation logic
+        customer_type = cleaned_data.get('customer_type')
+        monthly_budget = cleaned_data.get('monthly_maintenance_budget')
+        
+        # Suggest higher budget for fleet customers
+        if customer_type in ['large_fleet', 'medium_business'] and monthly_budget == 'under_50':
+            self.add_error('monthly_maintenance_budget', 
+                          'Fleet customers typically require higher maintenance budgets. Please consider a higher range.')
+        
+        return cleaned_data
+
+
+# --- Vehicle Onboarding Form ---
+class VehicleOnboardingForm(forms.ModelForm):
+    """Form for vehicle-specific onboarding questions"""
+    
+    class Meta:
+        model = VehicleOnboarding
+        exclude = ['customer_onboarding', 'added_at', 'updated_at']
+        
+        widgets = {
+            'vin_number': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter 17-character VIN',
+                'maxlength': '17',
+                'style': 'text-transform: uppercase;'
+            }),
+            'make': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Toyota, Ford, Honda'
+            }),
+            'model': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Camry, F-150, Civic'
+            }),
+            'year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1900',
+                'max': '2030',
+                'placeholder': 'e.g., 2020'
+            }),
+            'primary_usage': forms.Select(attrs={'class': 'form-control'}),
+            'current_odometer': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Current mileage',
+                'min': '0'
+            }),
+            'estimated_annual_mileage': forms.Select(attrs={'class': 'form-control'}),
+            'typical_driving_conditions': forms.Select(attrs={'class': 'form-control'}),
+            'current_condition': forms.Select(attrs={'class': 'form-control'}),
+            'last_oil_change': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'last_major_service': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'current_problems': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Describe any current issues or concerns...'
+            }),
+            'under_warranty': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'warranty_expires': forms.DateInput(attrs={
+                'class': 'form-control',
+                'type': 'date'
+            }),
+            'maintenance_preference': forms.Select(attrs={'class': 'form-control'}),
+            'vehicle_nickname': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'e.g., Work Truck, Family Car (optional)'
+            }),
+        }
+        
+        labels = {
+            'vin_number': 'Vehicle Identification Number (VIN)',
+            'make': 'Vehicle Make',
+            'model': 'Vehicle Model',
+            'year': 'Model Year',
+            'primary_usage': 'How do you primarily use this vehicle?',
+            'current_odometer': 'Current Odometer Reading (miles)',
+            'estimated_annual_mileage': 'Estimated Annual Mileage',
+            'typical_driving_conditions': 'Typical Driving Conditions',
+            'current_condition': 'Current Vehicle Condition',
+            'last_oil_change': 'Last Oil Change Date',
+            'last_major_service': 'Last Major Service Date',
+            'current_problems': 'Current Problems or Concerns',
+            'under_warranty': 'Currently Under Manufacturer Warranty',
+            'warranty_expires': 'Warranty Expiration Date',
+            'maintenance_preference': 'Maintenance Priority for This Vehicle',
+            'vehicle_nickname': 'Vehicle Nickname',
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Add help text for key fields
+        self.fields['vin_number'].help_text = "17-character Vehicle Identification Number (usually found on dashboard or driver's door)"
+        self.fields['primary_usage'].help_text = "This helps us recommend appropriate maintenance schedules"
+        self.fields['current_odometer'].help_text = "Current mileage reading from your odometer"
+        self.fields['estimated_annual_mileage'].help_text = "This affects maintenance frequency recommendations"
+        self.fields['typical_driving_conditions'].help_text = "Different conditions require different maintenance approaches"
+        self.fields['current_condition'].help_text = "Honest assessment helps us provide better recommendations"
+        self.fields['last_oil_change'].help_text = "Leave blank if unknown"
+        self.fields['last_major_service'].help_text = "Leave blank if unknown"
+        self.fields['current_problems'].help_text = "Any issues you've noticed - helps prioritize maintenance"
+        self.fields['warranty_expires'].help_text = "Only fill if vehicle is under warranty"
+        self.fields['maintenance_preference'].help_text = "What's most important for this specific vehicle"
+        self.fields['vehicle_nickname'].help_text = "Helpful for households with multiple vehicles"
+        
+        # Make essential fields required
+        self.fields['vin_number'].required = True
+        self.fields['primary_usage'].required = True
+        self.fields['current_odometer'].required = True
+        self.fields['estimated_annual_mileage'].required = True
+        self.fields['typical_driving_conditions'].required = True
+        self.fields['current_condition'].required = True
+        self.fields['maintenance_preference'].required = True
+        
+        # Add JavaScript for VIN validation
+        self.fields['vin_number'].widget.attrs.update({
+            'pattern': '[A-HJ-NPR-Z0-9]{17}',
+            'title': 'Please enter a valid 17-character VIN (no I, O, or Q)'
+        })
+    
+    def clean_vin_number(self):
+        vin = self.cleaned_data.get('vin_number', '').upper()
+        
+        # Basic VIN validation
+        if len(vin) != 17:
+            raise forms.ValidationError("VIN must be exactly 17 characters long.")
+        
+        # Check for invalid characters
+        invalid_chars = set('IOQ')
+        if any(char in invalid_chars for char in vin):
+            raise forms.ValidationError("VIN cannot contain the letters I, O, or Q.")
+        
+        # Check for valid characters only
+        valid_chars = set('ABCDEFGHJKLMNPRSTUVWXYZ0123456789')
+        if not all(char in valid_chars for char in vin):
+            raise forms.ValidationError("VIN contains invalid characters.")
+        
+        return vin
+    
+    def clean_year(self):
+        year = self.cleaned_data.get('year')
+        if year:
+            current_year = datetime.datetime.now().year
+            if year < 1900 or year > current_year + 1:
+                raise forms.ValidationError(f"Please enter a valid year between 1900 and {current_year + 1}.")
+        return year
+    
+    def clean_current_odometer(self):
+        odometer = self.cleaned_data.get('current_odometer')
+        if odometer is not None and odometer < 0:
+            raise forms.ValidationError("Odometer reading cannot be negative.")
+        if odometer is not None and odometer > 999999:
+            raise forms.ValidationError("Odometer reading seems unusually high. Please verify.")
+        return odometer
+    
+    def clean_warranty_expires(self):
+        warranty_expires = self.cleaned_data.get('warranty_expires')
+        under_warranty = self.cleaned_data.get('under_warranty')
+        
+        if under_warranty and not warranty_expires:
+            raise forms.ValidationError("Please provide warranty expiration date if vehicle is under warranty.")
+        
+        if warranty_expires and warranty_expires < datetime.date.today():
+            raise forms.ValidationError("Warranty expiration date cannot be in the past.")
+        
+        return warranty_expires
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        
+        # Cross-field validation
+        make = cleaned_data.get('make')
+        model = cleaned_data.get('model')
+        year = cleaned_data.get('year')
+        vin = cleaned_data.get('vin_number')
+        
+        # Only suggest VIN lookup if VIN is provided but make/model/year are ALL missing
+        # Don't block form submission if some fields are filled
+        if vin and not any([make, model, year]):
+            # This is just a suggestion, not an error
+            pass
+        
+        # Validate service dates make sense
+        last_oil_change = cleaned_data.get('last_oil_change')
+        last_major_service = cleaned_data.get('last_major_service')
+        
+        if last_oil_change and last_oil_change > datetime.date.today():
+            self.add_error('last_oil_change', "Oil change date cannot be in the future.")
+        
+        if last_major_service and last_major_service > datetime.date.today():
+            self.add_error('last_major_service', "Service date cannot be in the future.")
         
         return cleaned_data

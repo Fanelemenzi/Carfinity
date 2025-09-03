@@ -14,6 +14,7 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path('search-results/', views.search_results, name='search_results'),
     path('onboarding/', views.typeform_redirect, name='typeform_onboarding'),
+    path('check-onboarding/', views.check_onboarding_status, name='check_onboarding_status'),
     #path('create-record/', views.create_record, name='create_record'),
    
 ]

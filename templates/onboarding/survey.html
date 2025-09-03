@@ -1,0 +1,950 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content%}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>Customer & Vehicle Onboarding Survey</title>
+  <style>
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+    }
+    .form-check-input {
+      margin-right: 0.5rem;
+    }
+    .help-text {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    
+    /* Required field highlighting */
+    .required-field {
+      position: relative;
+    }
+    
+    .required-field .form-label::after {
+      content: " *";
+      color: #ef4444;
+      font-weight: bold;
+    }
+    
+    .required-field .form-control {
+      border-left: 4px solid #fbbf24;
+      background-color: #fffbeb;
+    }
+    
+    .required-field .form-control:focus {
+      border-left-color: #8b5cf6;
+      background-color: #ffffff;
+    }
+    
+    .required-field .form-control.border-red-500 {
+      border-left-color: #ef4444;
+      background-color: #fef2f2;
+    }
+    
+    .required-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background-color: #ef4444;
+      border-radius: 50%;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans">
+  <div class="min-h-screen py-8">
+    <div class="w-full max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-8">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Welcome to Our Service</h1>
+        <p class="text-gray-600">Help us understand your needs better with this quick survey</p>
+        
+        <!-- Required Fields Legend -->
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4 max-w-md mx-auto">
+          <div class="flex items-center justify-center">
+            <div class="flex items-center text-sm text-amber-800">
+              <div class="w-4 h-4 bg-amber-400 rounded mr-2"></div>
+              <span class="font-medium">Yellow highlighted fields are required</span>
+              <span class="required-indicator ml-1"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step Indicator with Progress Bar -->
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4 w-full">
+          <!-- Step 1 -->
+          <div class="relative flex-1 flex items-center">
+            <div id="indicator-1" class="w-12 h-12 flex items-center justify-center bg-purple-600 text-white rounded-full transition-colors duration-300 text-sm font-semibold">1</div>
+            <div id="line-1" class="absolute w-full h-1 bg-gray-300 left-0 top-1/2 transform translate-y-[-50%] z-[-1] transition-colors duration-300"></div>
+            <span class="absolute top-14 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">Customer Info</span>
+          </div>
+          <!-- Step 2 -->
+          <div class="relative flex-1 flex items-center">
+            <div id="indicator-2" class="w-12 h-12 flex items-center justify-center bg-gray-300 text-gray-600 rounded-full transition-colors duration-300 text-sm font-semibold">2</div>
+            <div id="line-2" class="absolute w-full h-1 bg-gray-300 left-0 top-1/2 transform translate-y-[-50%] z-[-1] transition-colors duration-300"></div>
+            <span class="absolute top-14 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">Vehicle Info</span>
+          </div>
+          <!-- Step 3 -->
+          <div class="relative">
+            <div id="indicator-3" class="w-12 h-12 flex items-center justify-center bg-gray-300 text-gray-600 rounded-full transition-colors duration-300 text-sm font-semibold">3</div>
+            <span class="absolute top-14 left-1/2 transform -translate-x-1/2 text-xs text-gray-600 whitespace-nowrap">Review</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-gray-200 rounded-full h-3 mb-12">
+        <div id="progress-bar" class="bg-purple-600 h-3 rounded-full transition-all duration-300" style="width: 33.33%;"></div>
+      </div>
+
+      <!-- Form Content -->
+      <form id="multi-step-form" method="post">
+        {% csrf_token %}
+        
+        <!-- Display form errors -->
+        {% if customer_form.errors or vehicle_form.errors %}
+          <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                <div class="mt-2 text-sm text-red-700">
+                  {% if customer_form.non_field_errors %}
+                    <div class="mb-2">
+                      <strong>Customer Information:</strong>
+                      {{ customer_form.non_field_errors }}
+                    </div>
+                  {% endif %}
+                  {% if vehicle_form.non_field_errors %}
+                    <div class="mb-2">
+                      <strong>Vehicle Information:</strong>
+                      {{ vehicle_form.non_field_errors }}
+                    </div>
+                  {% endif %}
+                  {% for field, errors in customer_form.errors.items %}
+                    {% if field != '__all__' %}
+                      <div class="mb-1">
+                        <strong>{{ field|title }}:</strong> {{ errors|join:", " }}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                  {% for field, errors in vehicle_form.errors.items %}
+                    {% if field != '__all__' %}
+                      <div class="mb-1">
+                        <strong>{{ field|title }}:</strong> {{ errors|join:", " }}
+                      </div>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        
+        <!-- Step 1: Customer Onboarding -->
+        <div id="step-1" class="step">
+          <h2 class="section-title">Step 1: Tell Us About Yourself</h2>
+          
+          <!-- Customer Type & Communication -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field">
+              <label class="form-label" for="id_customer_type">What type of customer are you?</label>
+              <select name="customer_type" id="id_customer_type" class="form-control" required>
+                <option value="">Select customer type</option>
+                <option value="individual" {% if customer_form.customer_type.value == 'individual' %}selected{% endif %}>Individual Owner</option>
+                <option value="small_business" {% if customer_form.customer_type.value == 'small_business' %}selected{% endif %}>Small Business (2-10 vehicles)</option>
+                <option value="medium_business" {% if customer_form.customer_type.value == 'medium_business' %}selected{% endif %}>Medium Business (11-50 vehicles)</option>
+                <option value="large_fleet" {% if customer_form.customer_type.value == 'large_fleet' %}selected{% endif %}>Large Fleet (50+ vehicles)</option>
+              </select>
+              {% if customer_form.customer_type.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ customer_form.customer_type.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">This helps us tailor our services to your needs</div>
+            </div>
+            
+            <div class="form-group required-field">
+              <label class="form-label" for="id_preferred_communication">How would you prefer to receive maintenance reminders?</label>
+              <select name="preferred_communication" id="id_preferred_communication" class="form-control" required>
+                <option value="">Select communication method</option>
+                <option value="email" {% if customer_form.preferred_communication.value == 'email' %}selected{% endif %}>Email</option>
+                <option value="sms" {% if customer_form.preferred_communication.value == 'sms' %}selected{% endif %}>SMS/Text</option>
+                <option value="phone" {% if customer_form.preferred_communication.value == 'phone' %}selected{% endif %}>Phone Call</option>
+                <option value="app_notification" {% if customer_form.preferred_communication.value == 'app_notification' %}selected{% endif %}>In-App Notification</option>
+              </select>
+              {% if customer_form.preferred_communication.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ customer_form.preferred_communication.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">We'll use this method for maintenance reminders and updates</div>
+            </div>
+          </div>
+
+          <!-- Service Preferences -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="form-label" for="id_reminder_frequency">How often would you like maintenance reminders?</label>
+              <select name="reminder_frequency" id="id_reminder_frequency" class="form-control">
+                <option value="monthly" selected>Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="biweekly">Bi-weekly</option>
+                <option value="quarterly">Quarterly</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_service_radius">How far are you willing to travel for service?</label>
+              <select name="service_radius" id="id_service_radius" class="form-control">
+                <option value="">Select service radius</option>
+                <option value="5">Within 5 miles</option>
+                <option value="10">Within 10 miles</option>
+                <option value="15">Within 15 miles</option>
+                <option value="25">Within 25 miles</option>
+                <option value="50">Within 50 miles</option>
+              </select>
+              <div class="help-text">This helps us recommend nearby service providers</div>
+            </div>
+          </div>
+
+          <!-- Budget & Service Level -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="form-label" for="id_monthly_maintenance_budget">What's your approximate monthly budget for vehicle maintenance?</label>
+              <select name="monthly_maintenance_budget" id="id_monthly_maintenance_budget" class="form-control">
+                <option value="">Select budget range</option>
+                <option value="under_50">Under $50/month</option>
+                <option value="50_100">$50-100/month</option>
+                <option value="100_200">$100-200/month</option>
+                <option value="200_500">$200-500/month</option>
+                <option value="over_500">Over $500/month</option>
+                <option value="as_needed">Pay as needed (no budget)</option>
+              </select>
+              <div class="help-text">This helps us recommend appropriate service plans</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_maintenance_knowledge">How would you describe your car maintenance knowledge?</label>
+              <select name="maintenance_knowledge" id="id_maintenance_knowledge" class="form-control">
+                <option value="">Select knowledge level</option>
+                <option value="beginner">Beginner - I know very little about car maintenance</option>
+                <option value="intermediate">Intermediate - I know basic maintenance</option>
+                <option value="advanced">Advanced - I do some repairs myself</option>
+                <option value="expert">Expert - I handle most maintenance myself</option>
+              </select>
+              <div class="help-text">This helps us provide appropriate guidance and explanations</div>
+            </div>
+          </div>
+
+          <!-- Service Interests -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="flex items-center">
+                <input type="checkbox" name="mobile_service_interest" id="id_mobile_service_interest" class="form-check-input">
+                <span class="form-label mb-0">Are you interested in mobile mechanic services?</span>
+              </label>
+              <div class="help-text ml-6">We come to you for convenient service</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="flex items-center">
+                <input type="checkbox" name="emergency_service_interest" id="id_emergency_service_interest" class="form-check-input">
+                <span class="form-label mb-0">Would you like 24/7 emergency roadside assistance?</span>
+              </label>
+              <div class="help-text ml-6">Peace of mind for unexpected breakdowns</div>
+            </div>
+          </div>
+
+          <!-- Goals & Priorities -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field">
+              <label class="form-label" for="id_primary_goal">What's your primary goal for vehicle maintenance?</label>
+              <select name="primary_goal" id="id_primary_goal" class="form-control" required>
+                <option value="">Select primary goal</option>
+                <option value="save_money" {% if customer_form.primary_goal.value == 'save_money' %}selected{% endif %}>Save money on repairs</option>
+                <option value="extend_vehicle_life" {% if customer_form.primary_goal.value == 'extend_vehicle_life' %}selected{% endif %}>Extend vehicle lifespan</option>
+                <option value="avoid_breakdowns" {% if customer_form.primary_goal.value == 'avoid_breakdowns' %}selected{% endif %}>Avoid unexpected breakdowns</option>
+                <option value="maintain_warranty" {% if customer_form.primary_goal.value == 'maintain_warranty' %}selected{% endif %}>Maintain warranty coverage</option>
+                <option value="improve_safety" {% if customer_form.primary_goal.value == 'improve_safety' %}selected{% endif %}>Improve vehicle safety</option>
+                <option value="better_fuel_economy" {% if customer_form.primary_goal.value == 'better_fuel_economy' %}selected{% endif %}>Improve fuel economy</option>
+                <option value="convenience" {% if customer_form.primary_goal.value == 'convenience' %}selected{% endif %}>Make maintenance more convenient</option>
+              </select>
+              {% if customer_form.primary_goal.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ customer_form.primary_goal.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">This helps us prioritize recommendations for you</div>
+            </div>
+            
+            <div class="form-group required-field">
+              <label class="form-label" for="id_service_priority">What's most important to you?</label>
+              <select name="service_priority" id="id_service_priority" class="form-control" required>
+                <option value="">Select priority</option>
+                <option value="convenience" {% if customer_form.service_priority.value == 'convenience' %}selected{% endif %}>Convenience</option>
+                <option value="cost" {% if customer_form.service_priority.value == 'cost' %}selected{% endif %}>Cost</option>
+                <option value="service_quality" {% if customer_form.service_priority.value == 'service_quality' %}selected{% endif %}>Service Quality</option>
+              </select>
+              {% if customer_form.service_priority.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ customer_form.service_priority.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">This helps us match you with the right service providers</div>
+            </div>
+          </div>
+
+          <!-- Current Setup -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="form-label" for="id_current_mechanic">Do you currently have a trusted mechanic or service center?</label>
+              <input type="text" name="current_mechanic" id="id_current_mechanic" class="form-control" placeholder="e.g., Joe's Auto Shop">
+              <div class="help-text">Optional - helps us understand your current situation</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_maintenance_tracking_method">How do you currently track vehicle maintenance?</label>
+              <input type="text" name="maintenance_tracking_method" id="id_maintenance_tracking_method" class="form-control" placeholder="e.g., Excel spreadsheet, paper records">
+              <div class="help-text">Optional - helps us recommend better tracking methods</div>
+            </div>
+          </div>
+
+          <!-- Additional Preferences -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="form-label" for="id_preferred_payment_model">Payment preference</label>
+              <select name="preferred_payment_model" id="id_preferred_payment_model" class="form-control">
+                <option value="">Select payment model</option>
+                <option value="subscription">Subscription maintenance plans</option>
+                <option value="pay_per_service">Pay-per-service</option>
+                <option value="both">Both options interest me</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_parts_preference">Parts preference</label>
+              <select name="parts_preference" id="id_parts_preference" class="form-control">
+                <option value="">Select parts preference</option>
+                <option value="oem_only">OEM parts only</option>
+                <option value="quality_aftermarket">Quality aftermarket parts acceptable</option>
+                <option value="cost_effective">Most cost-effective option</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Vehicle Onboarding -->
+        <div id="step-2" class="step hidden">
+          <h2 class="section-title">Step 2: Tell Us About Your Vehicle</h2>
+          
+          <!-- Vehicle Identification -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field md:col-span-2">
+              <label class="form-label" for="id_vin_number">Vehicle Identification Number (VIN)</label>
+              <input type="text" name="vin_number" id="id_vin_number" class="form-control" maxlength="17" style="text-transform: uppercase;" placeholder="Enter 17-character VIN" value="{{ vehicle_form.vin_number.value|default:'' }}" required>
+              {% if vehicle_form.vin_number.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.vin_number.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">17-character Vehicle Identification Number (usually found on dashboard or driver's door)</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="form-group">
+              <label class="form-label" for="id_make">Vehicle Make</label>
+              <input type="text" name="make" id="id_make" class="form-control" placeholder="e.g., Toyota, Ford, Honda" value="{{ vehicle_form.make.value|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_model">Vehicle Model</label>
+              <input type="text" name="model" id="id_model" class="form-control" placeholder="e.g., Camry, F-150, Civic" value="{{ vehicle_form.model.value|default:'' }}">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_year">Model Year</label>
+              <input type="number" name="year" id="id_year" class="form-control" min="1900" max="2030" placeholder="e.g., 2020" value="{{ vehicle_form.year.value|default:'' }}">
+            </div>
+          </div>
+
+          <!-- Usage Information -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field">
+              <label class="form-label" for="id_primary_usage">How do you primarily use this vehicle?</label>
+              <select name="primary_usage" id="id_primary_usage" class="form-control" required>
+                <option value="">Select primary usage</option>
+                <option value="daily_commute" {% if vehicle_form.primary_usage.value == 'daily_commute' %}selected{% endif %}>Daily commuting</option>
+                <option value="weekend_only" {% if vehicle_form.primary_usage.value == 'weekend_only' %}selected{% endif %}>Weekend/recreational use</option>
+                <option value="business" {% if vehicle_form.primary_usage.value == 'business' %}selected{% endif %}>Business/work vehicle</option>
+                <option value="family_trips" {% if vehicle_form.primary_usage.value == 'family_trips' %}selected{% endif %}>Family trips and errands</option>
+                <option value="delivery" {% if vehicle_form.primary_usage.value == 'delivery' %}selected{% endif %}>Delivery/commercial use</option>
+                <option value="emergency_only" {% if vehicle_form.primary_usage.value == 'emergency_only' %}selected{% endif %}>Emergency/backup vehicle</option>
+              </select>
+              {% if vehicle_form.primary_usage.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.primary_usage.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">This helps us recommend appropriate maintenance schedules</div>
+            </div>
+            
+            <div class="form-group required-field">
+              <label class="form-label" for="id_estimated_annual_mileage">Estimated Annual Mileage</label>
+              <select name="estimated_annual_mileage" id="id_estimated_annual_mileage" class="form-control" required>
+                <option value="">Select annual mileage</option>
+                <option value="under_5k" {% if vehicle_form.estimated_annual_mileage.value == 'under_5k' %}selected{% endif %}>Under 5,000 miles/year</option>
+                <option value="5k_10k" {% if vehicle_form.estimated_annual_mileage.value == '5k_10k' %}selected{% endif %}>5,000-10,000 miles/year</option>
+                <option value="10k_15k" {% if vehicle_form.estimated_annual_mileage.value == '10k_15k' %}selected{% endif %}>10,000-15,000 miles/year</option>
+                <option value="15k_20k" {% if vehicle_form.estimated_annual_mileage.value == '15k_20k' %}selected{% endif %}>15,000-20,000 miles/year</option>
+                <option value="20k_25k" {% if vehicle_form.estimated_annual_mileage.value == '20k_25k' %}selected{% endif %}>20,000-25,000 miles/year</option>
+                <option value="over_25k" {% if vehicle_form.estimated_annual_mileage.value == 'over_25k' %}selected{% endif %}>Over 25,000 miles/year</option>
+              </select>
+              {% if vehicle_form.estimated_annual_mileage.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.estimated_annual_mileage.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">This affects maintenance frequency recommendations</div>
+            </div>
+          </div>
+
+          <!-- Current Status -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field">
+              <label class="form-label" for="id_current_odometer">Current Odometer Reading (miles)</label>
+              <input type="number" name="current_odometer" id="id_current_odometer" class="form-control" min="0" placeholder="Current mileage" value="{{ vehicle_form.current_odometer.value|default:'' }}" required>
+              {% if vehicle_form.current_odometer.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.current_odometer.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">Current mileage reading from your odometer</div>
+            </div>
+            
+            <div class="form-group required-field">
+              <label class="form-label" for="id_current_condition">Current Vehicle Condition</label>
+              <select name="current_condition" id="id_current_condition" class="form-control" required>
+                <option value="">Select condition</option>
+                <option value="excellent" {% if vehicle_form.current_condition.value == 'excellent' %}selected{% endif %}>Excellent - Like new</option>
+                <option value="good" {% if vehicle_form.current_condition.value == 'good' %}selected{% endif %}>Good - Well maintained</option>
+                <option value="fair" {% if vehicle_form.current_condition.value == 'fair' %}selected{% endif %}>Fair - Some issues but runs well</option>
+                <option value="poor" {% if vehicle_form.current_condition.value == 'poor' %}selected{% endif %}>Poor - Frequent problems</option>
+                <option value="unknown" {% if vehicle_form.current_condition.value == 'unknown' %}selected{% endif %}>Unknown - Recently acquired</option>
+              </select>
+              {% if vehicle_form.current_condition.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.current_condition.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">Honest assessment helps us provide better recommendations</div>
+            </div>
+          </div>
+
+          <!-- Driving Conditions & Maintenance -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group required-field">
+              <label class="form-label" for="id_typical_driving_conditions">Typical Driving Conditions</label>
+              <select name="typical_driving_conditions" id="id_typical_driving_conditions" class="form-control" required>
+                <option value="">Select driving conditions</option>
+                <option value="city_mostly" {% if vehicle_form.typical_driving_conditions.value == 'city_mostly' %}selected{% endif %}>Mostly city/stop-and-go traffic</option>
+                <option value="highway_mostly" {% if vehicle_form.typical_driving_conditions.value == 'highway_mostly' %}selected{% endif %}>Mostly highway/long distance</option>
+                <option value="mixed" {% if vehicle_form.typical_driving_conditions.value == 'mixed' %}selected{% endif %}>Mixed city and highway</option>
+                <option value="rural" {% if vehicle_form.typical_driving_conditions.value == 'rural' %}selected{% endif %}>Rural/country roads</option>
+                <option value="harsh" {% if vehicle_form.typical_driving_conditions.value == 'harsh' %}selected{% endif %}>Harsh conditions (extreme weather, mountains, towing)</option>
+              </select>
+              {% if vehicle_form.typical_driving_conditions.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.typical_driving_conditions.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">Different conditions require different maintenance approaches</div>
+            </div>
+            
+            <div class="form-group required-field">
+              <label class="form-label" for="id_maintenance_preference">Maintenance Priority for This Vehicle</label>
+              <select name="maintenance_preference" id="id_maintenance_preference" class="form-control" required>
+                <option value="">Select maintenance priority</option>
+                <option value="cost_effective" {% if vehicle_form.maintenance_preference.value == 'cost_effective' %}selected{% endif %}>Most cost-effective options</option>
+                <option value="oem_parts" {% if vehicle_form.maintenance_preference.value == 'oem_parts' %}selected{% endif %}>OEM parts and dealer service</option>
+                <option value="performance" {% if vehicle_form.maintenance_preference.value == 'performance' %}selected{% endif %}>Performance and reliability focused</option>
+                <option value="eco_friendly" {% if vehicle_form.maintenance_preference.value == 'eco_friendly' %}selected{% endif %}>Environmentally conscious options</option>
+                <option value="quick_turnaround" {% if vehicle_form.maintenance_preference.value == 'quick_turnaround' %}selected{% endif %}>Fastest service possible</option>
+              </select>
+              {% if vehicle_form.maintenance_preference.errors %}
+                <div class="text-red-600 text-sm mt-1">{{ vehicle_form.maintenance_preference.errors|join:", " }}</div>
+              {% endif %}
+              <div class="help-text">What's most important for this specific vehicle</div>
+            </div>
+          </div>
+
+          <!-- Service History -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="form-label" for="id_last_oil_change">Last Oil Change Date</label>
+              <input type="date" name="last_oil_change" id="id_last_oil_change" class="form-control">
+              <div class="help-text">Leave blank if unknown</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_last_major_service">Last Major Service Date</label>
+              <input type="date" name="last_major_service" id="id_last_major_service" class="form-control">
+              <div class="help-text">Leave blank if unknown</div>
+            </div>
+          </div>
+
+          <!-- Warranty & Additional Info -->
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="form-group">
+              <label class="flex items-center">
+                <input type="checkbox" name="under_warranty" id="id_under_warranty" class="form-check-input">
+                <span class="form-label mb-0">Currently Under Manufacturer Warranty</span>
+              </label>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_warranty_expires">Warranty Expiration Date</label>
+              <input type="date" name="warranty_expires" id="id_warranty_expires" class="form-control">
+              <div class="help-text">Only fill if vehicle is under warranty</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="form-group">
+              <label class="form-label" for="id_vehicle_nickname">Vehicle Nickname</label>
+              <input type="text" name="vehicle_nickname" id="id_vehicle_nickname" class="form-control" placeholder="e.g., Work Truck, Family Car (optional)">
+              <div class="help-text">Helpful for households with multiple vehicles</div>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="id_current_problems">Current Problems or Concerns</label>
+              <textarea name="current_problems" id="id_current_problems" class="form-control" rows="3" placeholder="Describe any current issues or concerns..."></textarea>
+              <div class="help-text">Any issues you've noticed - helps prioritize maintenance</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Review & Submit -->
+        <div id="step-3" class="step hidden">
+          <h2 class="section-title">Step 3: Review & Submit</h2>
+          <div class="bg-gray-50 rounded-lg p-6 mb-6">
+            <p class="text-gray-700 mb-4">Please review your information before submitting. You can go back to make changes if needed.</p>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-3">Customer Information</h3>
+                <div class="space-y-2 text-sm">
+                  <div><strong>Customer Type:</strong> <span id="review-customer-type">-</span></div>
+                  <div><strong>Communication Preference:</strong> <span id="review-communication">-</span></div>
+                  <div><strong>Primary Goal:</strong> <span id="review-goal">-</span></div>
+                  <div><strong>Service Priority:</strong> <span id="review-priority">-</span></div>
+                  <div><strong>Monthly Budget:</strong> <span id="review-budget">-</span></div>
+                  <div><strong>Maintenance Knowledge:</strong> <span id="review-knowledge">-</span></div>
+                </div>
+              </div>
+              
+              <div>
+                <h3 class="font-semibold text-gray-900 mb-3">Vehicle Information</h3>
+                <div class="space-y-2 text-sm">
+                  <div><strong>VIN:</strong> <span id="review-vin">-</span></div>
+                  <div><strong>Vehicle:</strong> <span id="review-vehicle">-</span></div>
+                  <div><strong>Primary Usage:</strong> <span id="review-usage">-</span></div>
+                  <div><strong>Annual Mileage:</strong> <span id="review-mileage">-</span></div>
+                  <div><strong>Current Condition:</strong> <span id="review-condition">-</span></div>
+                  <div><strong>Maintenance Priority:</strong> <span id="review-maintenance-pref">-</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Submission Confirmation -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
+            <div class="flex items-start">
+              <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Ready to Submit?</h3>
+                <p class="text-blue-800 mb-3">
+                  By clicking "Submit Survey" below, you'll:
+                </p>
+                <ul class="text-blue-800 text-sm space-y-1 list-disc list-inside">
+                  <li>Save your preferences and vehicle information</li>
+                  <li>Be redirected to your personalized dashboard</li>
+                  <li>Start receiving maintenance recommendations</li>
+                  <li>Get access to all our services</li>
+                </ul>
+                <p class="text-blue-700 text-sm mt-3 font-medium">
+                  You can always update this information later in your account settings.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Customer Fields -->
+          <div class="mb-8">
+            <h3 class="section-title">Additional Information & Preferences</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+              <div class="form-group">
+                <label class="form-label" for="id_biggest_maintenance_challenge">What's your biggest challenge with vehicle maintenance?</label>
+                <textarea name="biggest_maintenance_challenge" id="id_biggest_maintenance_challenge" class="form-control" rows="3" placeholder="Describe your biggest challenge..."></textarea>
+                <div class="help-text">Optional - helps us understand your pain points</div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="id_auto_insurance_provider">Current auto insurance provider</label>
+                <input type="text" name="auto_insurance_provider" id="id_auto_insurance_provider" class="form-control" placeholder="e.g., State Farm, Geico">
+                <div class="help-text">Optional - may help with service coordination</div>
+              </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+              <div class="form-group">
+                <label class="flex items-center">
+                  <input type="checkbox" name="vehicle_under_warranty" id="id_vehicle_under_warranty" class="form-check-input">
+                  <span class="form-label mb-0">Is your vehicle still under manufacturer warranty?</span>
+                </label>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="id_extended_warranty_interest">Interest in extended warranty or service protection plans</label>
+                <select name="extended_warranty_interest" id="id_extended_warranty_interest" class="form-control">
+                  <option value="">Select interest level</option>
+                  <option value="very_interested">Very interested</option>
+                  <option value="somewhat_interested">Somewhat interested</option>
+                  <option value="not_interested">Not interested</option>
+                  <option value="already_have">Already have extended warranty/service protection</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="form-group">
+                <label class="form-label" for="id_how_heard_about_service">How did you hear about our service?</label>
+                <select name="how_heard_about_service" id="id_how_heard_about_service" class="form-control">
+                  <option value="">Select source</option>
+                  <option value="google_search">Google search</option>
+                  <option value="social_media">Social media</option>
+                  <option value="friend_family">Friend or family member</option>
+                  <option value="online_ad">Online advertisement</option>
+                  <option value="mechanic_referral">Mechanic referral</option>
+                  <option value="app_store">App store</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <div class="space-y-3">
+                  <label class="flex items-center">
+                    <input type="checkbox" name="potential_referrals" id="id_potential_referrals" class="form-check-input">
+                    <span class="form-label mb-0">Do you know others who might benefit from our services?</span>
+                  </label>
+                  
+                  <label class="flex items-center">
+                    <input type="checkbox" name="interested_in_referral_rewards" id="id_interested_in_referral_rewards" class="form-check-input">
+                    <span class="form-label mb-0">Would you be interested in earning referral rewards?</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-between items-center mt-8">
+          <button id="prev-btn" type="button" class="bg-gray-300 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors duration-200 hidden">
+            <span class="flex items-center">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+              </svg>
+              Previous
+            </span>
+          </button>
+          
+          <button id="next-btn" type="button" class="bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-200 shadow-lg">
+            <span class="flex items-center">
+              <span id="btn-text">Next</span>
+              <svg id="btn-arrow" class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const steps = document.querySelectorAll(".step");
+    const nextBtn = document.getElementById("next-btn");
+    const prevBtn = document.getElementById("prev-btn");
+    const indicators = [
+      document.getElementById("indicator-1"),
+      document.getElementById("indicator-2"),
+      document.getElementById("indicator-3")
+    ];
+    const lines = [
+      document.getElementById("line-1"),
+      document.getElementById("line-2")
+    ];
+    const progressBar = document.getElementById("progress-bar");
+    let currentStep = 0;
+
+    function updateIndicators(stepIndex) {
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle("bg-purple-600", index <= stepIndex);
+        indicator.classList.toggle("text-white", index <= stepIndex);
+        indicator.classList.toggle("bg-gray-300", index > stepIndex);
+        indicator.classList.toggle("text-gray-600", index > stepIndex);
+      });
+
+      lines.forEach((line, index) => {
+        line.classList.toggle("bg-purple-600", index < stepIndex);
+        line.classList.toggle("bg-gray-300", index >= stepIndex);
+      });
+    }
+
+    function updateProgressBar(stepIndex) {
+      const progressPercentage = ((stepIndex + 1) / steps.length) * 100;
+      progressBar.style.width = `${progressPercentage}%`;
+    }
+
+    function validateStep(stepIndex) {
+      const currentStepElement = steps[stepIndex];
+      const requiredFields = currentStepElement.querySelectorAll('[required]');
+      let isValid = true;
+      let firstInvalidField = null;
+      
+      requiredFields.forEach(field => {
+        let fieldValue = field.value;
+        
+        // For select elements, check if a valid option is selected
+        if (field.tagName === 'SELECT') {
+          fieldValue = field.value;
+        } else {
+          fieldValue = field.value.trim();
+        }
+        
+        if (!fieldValue || fieldValue === '') {
+          field.classList.add('border-red-500', 'border-2');
+          field.classList.remove('border-gray-300');
+          isValid = false;
+          
+          // Track the first invalid field for focus
+          if (!firstInvalidField) {
+            firstInvalidField = field;
+          }
+        } else {
+          field.classList.remove('border-red-500', 'border-2');
+          field.classList.add('border-gray-300');
+        }
+      });
+      
+      if (!isValid) {
+        // Create a more detailed error message
+        const invalidFieldNames = [];
+        requiredFields.forEach(field => {
+          let fieldValue = field.tagName === 'SELECT' ? field.value : field.value.trim();
+          if (!fieldValue || fieldValue === '') {
+            const label = field.closest('.form-group')?.querySelector('.form-label')?.textContent || field.name;
+            invalidFieldNames.push(label);
+          }
+        });
+        
+        alert(`Please fill in the following required fields:\n• ${invalidFieldNames.join('\n• ')}`);
+        
+        // Focus on the first invalid field
+        if (firstInvalidField) {
+          firstInvalidField.focus();
+          firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      return isValid;
+    }
+
+    function populateReview() {
+      // Customer Information
+      const customerType = document.getElementById('id_customer_type');
+      const communication = document.getElementById('id_preferred_communication');
+      const goal = document.getElementById('id_primary_goal');
+      const priority = document.getElementById('id_service_priority');
+      const budget = document.getElementById('id_monthly_maintenance_budget');
+      const knowledge = document.getElementById('id_maintenance_knowledge');
+      
+      document.getElementById('review-customer-type').textContent = 
+        customerType.options[customerType.selectedIndex]?.text || '-';
+      document.getElementById('review-communication').textContent = 
+        communication.options[communication.selectedIndex]?.text || '-';
+      document.getElementById('review-goal').textContent = 
+        goal.options[goal.selectedIndex]?.text || '-';
+      document.getElementById('review-priority').textContent = 
+        priority.options[priority.selectedIndex]?.text || '-';
+      document.getElementById('review-budget').textContent = 
+        budget.options[budget.selectedIndex]?.text || '-';
+      document.getElementById('review-knowledge').textContent = 
+        knowledge.options[knowledge.selectedIndex]?.text || '-';
+      
+      // Vehicle Information
+      const vin = document.getElementById('id_vin_number').value;
+      const make = document.getElementById('id_make').value;
+      const model = document.getElementById('id_model').value;
+      const year = document.getElementById('id_year').value;
+      const usage = document.getElementById('id_primary_usage');
+      const mileage = document.getElementById('id_estimated_annual_mileage');
+      const condition = document.getElementById('id_current_condition');
+      const maintenancePref = document.getElementById('id_maintenance_preference');
+      
+      document.getElementById('review-vin').textContent = vin || '-';
+      document.getElementById('review-vehicle').textContent = 
+        `${year} ${make} ${model}`.trim() || '-';
+      document.getElementById('review-usage').textContent = 
+        usage.options[usage.selectedIndex]?.text || '-';
+      document.getElementById('review-mileage').textContent = 
+        mileage.options[mileage.selectedIndex]?.text || '-';
+      document.getElementById('review-condition').textContent = 
+        condition.options[condition.selectedIndex]?.text || '-';
+      document.getElementById('review-maintenance-pref').textContent = 
+        maintenancePref.options[maintenancePref.selectedIndex]?.text || '-';
+    }
+
+    function showStep(index) {
+      steps.forEach((step, i) => {
+        step.classList.toggle("hidden", i !== index);
+      });
+      prevBtn.classList.toggle("hidden", index === 0);
+      
+      // Update button text and icon
+      const btnText = document.getElementById('btn-text');
+      const btnArrow = document.getElementById('btn-arrow');
+      
+      if (index === steps.length - 1) {
+        btnText.textContent = "Submit Survey";
+        btnArrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>';
+        nextBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        nextBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+      } else {
+        btnText.textContent = "Next";
+        btnArrow.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>';
+        nextBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+        nextBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+      }
+      
+      updateIndicators(index);
+      updateProgressBar(index);
+      
+      // Populate review data when showing step 3
+      if (index === 2) {
+        populateReview();
+      }
+    }
+
+    // VIN validation and auto-uppercase
+    document.getElementById('id_vin_number').addEventListener('input', function(e) {
+      e.target.value = e.target.value.toUpperCase();
+      
+      // Basic VIN validation
+      const vin = e.target.value;
+      if (vin.length === 17) {
+        // Check for invalid characters
+        const invalidChars = /[IOQ]/;
+        if (invalidChars.test(vin)) {
+          e.target.setCustomValidity('VIN cannot contain the letters I, O, or Q');
+        } else {
+          e.target.setCustomValidity('');
+        }
+      } else if (vin.length > 0) {
+        e.target.setCustomValidity('VIN must be exactly 17 characters');
+      } else {
+        e.target.setCustomValidity('');
+      }
+    });
+
+    // Warranty date logic
+    document.getElementById('id_under_warranty').addEventListener('change', function(e) {
+      const warrantyDateField = document.getElementById('id_warranty_expires');
+      if (e.target.checked) {
+        warrantyDateField.required = true;
+        warrantyDateField.parentElement.querySelector('.form-label').innerHTML = 
+          'Warranty Expiration Date *';
+      } else {
+        warrantyDateField.required = false;
+        warrantyDateField.value = '';
+        warrantyDateField.parentElement.querySelector('.form-label').innerHTML = 
+          'Warranty Expiration Date';
+      }
+    });
+
+    nextBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      
+      if (currentStep < steps.length - 1) {
+        if (validateStep(currentStep)) {
+          currentStep++;
+          showStep(currentStep);
+        }
+      } else {
+        // Final validation before submit
+        if (validateStep(currentStep)) {
+          // Show loading state
+          const btnText = document.getElementById('btn-text');
+          const btnArrow = document.getElementById('btn-arrow');
+          
+          btnText.textContent = 'Submitting...';
+          btnArrow.innerHTML = '<svg class="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+          nextBtn.disabled = true;
+          nextBtn.classList.add('opacity-75', 'cursor-not-allowed');
+          
+          // Submit the form
+          document.getElementById('multi-step-form').submit();
+        }
+      }
+    });
+
+    prevBtn.addEventListener("click", () => {
+      if (currentStep > 0) {
+        currentStep--;
+        showStep(currentStep);
+      }
+    });
+
+    // Initialize
+    showStep(currentStep);
+    
+    // Add smooth scrolling to top when changing steps
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    nextBtn.addEventListener("click", scrollToTop);
+    prevBtn.addEventListener("click", scrollToTop);
+  </script>
+</body>
+</html>
+{% endblock %}

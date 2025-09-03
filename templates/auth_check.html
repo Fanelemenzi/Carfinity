@@ -1,0 +1,9 @@
+{% if not show_content and redirect_url %}
+<script>
+    // Redirect unauthenticated users to index page
+    window.location.href = "{{ redirect_url }}";
+</script>
+<div style="display: none;">
+    <!-- Content hidden for unauthenticated users -->
+</div>
+{% endif %}

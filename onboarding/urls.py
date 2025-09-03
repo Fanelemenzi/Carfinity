@@ -3,6 +3,11 @@ from . import views
 from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm, VehicleImagesForm
 
 urlpatterns = [
+    # New customer & vehicle survey
+    path('survey/', views.customer_vehicle_survey, name='customer_vehicle_survey'),
+    path('survey/complete/', views.onboarding_complete_view, name='onboarding_complete_view'),
+    
+    # Existing vehicle onboarding (for admin/staff use)
     path('onboarding/client/', views.onboard_client, name='onboard_client'),
     path('onboarding/vehicle/', views.onboard_vehicle, name='onboard_vehicle'),
     path('onboarding/status/', views.onboard_status, name='onboard_status'),

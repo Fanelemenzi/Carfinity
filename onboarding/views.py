@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
-from .models import PendingVehicleOnboarding
-from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm, VehicleImagesForm
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import PendingVehicleOnboarding, CustomerOnboarding, VehicleOnboarding
+from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm, VehicleImagesForm, CustomerOnboardingForm, VehicleOnboardingForm
 import datetime
 from decimal import Decimal
 import cloudinary.uploader
@@ -126,3 +128,93 @@ def onboard_complete(request):
             del request.session[key]
     
     return render(request, 'onboarding/onboard_vehicle_done.html', {'data': data})
+
+
+# --- Customer & Vehicle Onboarding Survey ---
+@login_required
+def customer_vehicle_survey(request):
+    """Combined customer and vehicle onboarding survey"""
+    
+    # Check if user already completed onboarding
+    existing_customer_onboarding = None
+    existing_vehicle_onboarding = None
+    
+    try:
+        existing_customer_onboarding = CustomerOnboarding.objects.get(user=request.user)
+        existing_vehicle_onboarding = VehicleOnboarding.objects.filter(
+            customer_onboarding=existing_customer_onboarding
+        ).first()
+        
+        # If updating, show a message
+        if request.method == 'GET':
+            messages.info(request, "You can update your onboarding information below.")
+    except CustomerOnboarding.DoesNotExist:
+        pass
+    
+    if request.method == 'POST':
+        customer_form = CustomerOnboardingForm(request.POST)
+        vehicle_form = VehicleOnboardingForm(request.POST)
+        
+        # Debug: Print form data and errors
+        print("=== FORM SUBMISSION DEBUG ===")
+        print("Customer form valid:", customer_form.is_valid())
+        print("Vehicle form valid:", vehicle_form.is_valid())
+        
+        if not customer_form.is_valid():
+            print("Customer form errors:", customer_form.errors)
+        if not vehicle_form.is_valid():
+            print("Vehicle form errors:", vehicle_form.errors)
+        
+        if customer_form.is_valid() and vehicle_form.is_valid():
+            try:
+                # Save or update customer onboarding
+                if existing_customer_onboarding:
+                    # Update existing record
+                    for field, value in customer_form.cleaned_data.items():
+                        setattr(existing_customer_onboarding, field, value)
+                    existing_customer_onboarding.save()
+                    customer_onboarding = existing_customer_onboarding
+                    action_message = "updated"
+                else:
+                    # Create new record
+                    customer_onboarding = customer_form.save(commit=False)
+                    customer_onboarding.user = request.user
+                    customer_onboarding.save()
+                    action_message = "completed"
+                
+                # Save or update vehicle onboarding
+                if existing_vehicle_onboarding:
+                    # Update existing record
+                    for field, value in vehicle_form.cleaned_data.items():
+                        setattr(existing_vehicle_onboarding, field, value)
+                    existing_vehicle_onboarding.save()
+                else:
+                    # Create new record
+                    vehicle_onboarding = vehicle_form.save(commit=False)
+                    vehicle_onboarding.customer_onboarding = customer_onboarding
+                    vehicle_onboarding.save()
+                
+                messages.success(request, f"Thank you! Your onboarding information has been {action_message} successfully. Welcome to your dashboard!")
+                return redirect('dashboard')
+            except Exception as e:
+                print("Exception during save:", str(e))
+                messages.error(request, f"An error occurred while saving your information: {str(e)}")
+        else:
+            # If forms have errors, they will be displayed in the template
+            print("Form validation failed - showing errors to user")
+            messages.error(request, "Please correct the errors below and try again.")
+    else:
+        # Pre-populate forms with existing data if available
+        customer_form = CustomerOnboardingForm(instance=existing_customer_onboarding)
+        vehicle_form = VehicleOnboardingForm(instance=existing_vehicle_onboarding)
+    
+    return render(request, 'onboarding/survey.html', {
+        'customer_form': customer_form,
+        'vehicle_form': vehicle_form,
+    })
+
+
+@login_required
+def onboarding_complete_view(request):
+    """Simple completion page after survey"""
+    return render(request, 'onboarding/onboarding_complete.html')

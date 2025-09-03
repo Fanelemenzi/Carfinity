@@ -60,6 +60,10 @@ def dashboard(request):
     inspections = []
     selected_vehicle = None
     
+    # Initialize onboarding variables
+    onboarding_completed = False
+    user_onboarding = None
+    
     # Initialize dashboard metrics
     dashboard_metrics = {
         'total_vehicles': 0,
@@ -76,6 +80,15 @@ def dashboard(request):
     low_stock_parts = []
     
     if request.user.is_authenticated:
+        # Check if user has completed onboarding
+        from onboarding.models import CustomerOnboarding
+        try:
+            user_onboarding = CustomerOnboarding.objects.get(user=request.user)
+            onboarding_completed = True
+        except CustomerOnboarding.DoesNotExist:
+            user_onboarding = None
+            onboarding_completed = False
+        
         # Get user's vehicles
         owned_vehicles = VehicleOwnership.objects.filter(
             user=request.user, 
@@ -235,6 +248,10 @@ def dashboard(request):
                 ).order_by('-inspection_date')
             except Vehicle.DoesNotExist:
                 selected_vehicle = None
+    else:
+        # User is not authenticated - set default values
+        onboarding_completed = False
+        user_onboarding = None
     
     return render(request, 'dashboard/dashboard.html', {
         'owned_vehicles': owned_vehicles,
@@ -247,6 +264,8 @@ def dashboard(request):
         'recent_inspections': recent_inspections,
         'recent_maintenance': recent_maintenance,
         'low_stock_parts': low_stock_parts,
+        'onboarding_completed': onboarding_completed,
+        'user_onboarding': user_onboarding,
     })
 
 
@@ -298,8 +317,8 @@ def register_user(request):
             # Show success message
             messages.success(request, "Registration successful! Welcome to Carfinity.")
             
-            # Redirect to dashboard
-            return redirect('typeform_onboarding')
+            # Redirect to onboarding survey
+            return redirect('customer_vehicle_survey')
     else:
         form = SignUpForm()
     
@@ -426,3 +445,16 @@ def search_results(request):
 @login_required
 def typeform_redirect(request):
     return render(request, 'public/typeform_embed.html')
+
+@login_required
+def check_onboarding_status(request):
+    """Check if user has completed onboarding and redirect accordingly"""
+    from onboarding.models import CustomerOnboarding
+    
+    try:
+        CustomerOnboarding.objects.get(user=request.user)
+        # User has completed onboarding, redirect to dashboard
+        return redirect('dashboard')
+    except CustomerOnboarding.DoesNotExist:
+        # User hasn't completed onboarding, redirect to survey
+        return redirect('customer_vehicle_survey')
