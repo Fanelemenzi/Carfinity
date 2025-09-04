@@ -75,6 +75,9 @@ urlpatterns = [
     path('initial-inspections/<int:pk>/update/', 
          views.UpdateInitialInspectionView.as_view(), 
          name='update_initial_inspection'),
+    path('initial-inspection/ajax/<int:pk>/', 
+         views.InitialInspectionAjaxView.as_view(), 
+         name='initial_inspection_ajax'),
     
     # API endpoint for scheduled maintenance
     path('api/scheduled-maintenance/', 

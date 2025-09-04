@@ -1,0 +1,348 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car History Check - Carfinity</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'heading': ['Playfair Display', 'serif'],
+                        'body': ['Poppins', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-white font-body">
+    <div class="min-h-screen bg-white py-16">
+        <div class="max-w-4xl mx-auto px-6">
+            <!-- Main Heading -->
+            <div class="text-center mb-12">
+                <h1 class="text-6xl sm:text-7xl md:text-8xl font-heading font-semibold mb-12">
+                    Trust data, not words. Check<br>
+                    any car's history in seconds
+                </h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Buying used? We scan 900+ global databases to help you<br>
+                    avoid bad deals & decide if the car is truly right for you.
+                </p>
+            </div>
+
+            <!-- VIN Input Section -->
+            <div class="max-w-lg mx-auto mb-8">
+                <form method="GET" action="{% url 'search_results' %}">
+                    <div class="bg-gray-50 rounded-xl p-6 shadow-sm">
+                        <div class="flex items-center gap-3 mb-4">
+                            <input 
+                                type="text" 
+                                name="vin"
+                                placeholder="Enter VIN" 
+                                title="Please enter a valid 17-character VIN number"
+                                class="flex-1 px-4 py-3 bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                                required
+                            />
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center cursor-help" title="VIN (Vehicle Identification Number) is a unique 17-character code that identifies your vehicle">
+                                <span class="text-gray-500 text-sm">?</span>
+                            </div>
+                            <button type="submit" class="px-6 py-3 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold rounded-lg transition-colors">
+                                Get report
+                            </button>
+                        </div>
+                        <button type="button" class="w-full py-3 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors" onclick="showVinHelp()">
+                            I don't have a VIN →
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Vehicle Icons -->
+            <div class="flex justify-center items-center gap-8 mb-12">
+                <p class="text-gray-700 font-medium">We check:</p>
+                <!-- Car Icon -->
+                <div class="w-8 h-8">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
+                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9L18 10.5c-.4-1.7-1.9-2.5-3.5-2.5h-5c-1.6 0-3.1.8-3.5 2.5L3.5 11.1C2.7 11.3 2 12.1 2 13v3c0 .6.4 1 1 1h2"/>
+                        <circle cx="7" cy="17" r="2"/>
+                        <circle cx="17" cy="17" r="2"/>
+                    </svg>
+                </div>
+                <!-- Motorcycle Icon -->
+                <div class="w-8 h-8">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
+                        <circle cx="5" cy="18" r="3"/>
+                        <circle cx="19" cy="18" r="3"/>
+                        <path d="m15 9-9 9"/>
+                        <path d="m10 9 5-5 2 2"/>
+                        <path d="m10 9v6"/>
+                    </svg>
+                </div>
+                <!-- Truck Icon -->
+                <div class="w-8 h-8">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
+                        <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                        <path d="M15 18H9"/>
+                        <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/>
+                        <circle cx="17" cy="18" r="2"/>
+                        <circle cx="7" cy="18" r="2"/>
+                    </svg>
+                </div>
+                <!-- RV Icon -->
+                <div class="w-8 h-8">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-600">
+                        <rect width="20" height="12" x="2" y="6" rx="2"/>
+                        <circle cx="7" cy="18" r="2"/>
+                        <path d="M15 18H9"/>
+                        <circle cx="17" cy="18" r="2"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Report Features -->
+            <div class="text-center mb-16">
+                <p class="text-lg font-medium text-gray-800 mb-8 font-body">A carVertical report can uncover:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Damage</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Mileage rollbacks</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Specs & equipment</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Market value</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Title check</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Safety ratings</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">Natural disaster exposure</span>
+                    </div>
+                    
+                    <div class="flex items-center gap-3">
+                        <div class="w-5 h-5 text-green-600">
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                        <span class="text-gray-700">and more...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Report Preview Images -->
+            <div class="relative flex justify-center items-center">
+                <div class="relative">
+                    <!-- Main report image -->
+                    <div class="bg-white rounded-xl shadow-xl p-6 w-80 h-96 border transform rotate-3">
+                        <div class="flex items-center gap-2 mb-4">
+                            <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                                <span class="text-xs font-bold">!</span>
+                            </div>
+                            <span class="text-sm text-gray-600">This car may have a fake mileage</span>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-bold">!</span>
+                                </div>
+                                <span class="text-sm text-gray-600">The first shown mileage is 157,200 mi</span>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white">
+                                    <span class="text-xs font-bold">i</span>
+                                </div>
+                                <span class="text-sm text-gray-600">5 mileage records found</span>
+                            </div>
+                            
+                            <!-- Simple mileage graph -->
+                            <div class="mt-8 h-32 bg-gray-50 rounded p-4">
+                                <div class="text-xs text-gray-500 mb-2">Last 3 years</div>
+                                <div class="relative h-20">
+                                    <svg viewBox="0 0 200 80" class="w-full h-full">
+                                        <path d="M10 60 L50 40 L90 20 L130 50 L170 10" stroke="#3B82F6" stroke-width="2" fill="none"/>
+                                        <circle cx="130" cy="50" r="4" fill="#EF4444"/>
+                                        <circle cx="170" cy="10" r="4" fill="#3B82F6"/>
+                                    </svg>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-2">157,200 mi</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Secondary report behind -->
+                    <div class="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg p-4 w-72 h-80 border -z-10 transform -rotate-6">
+                        <div class="space-y-3">
+                            <div class="h-3 bg-gray-200 rounded w-3/4"></div>
+                            <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                            <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+                            
+                            <div class="mt-6 space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-yellow-400 rounded"></div>
+                                    <div class="h-2 bg-gray-200 rounded flex-1"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-red-400 rounded"></div>
+                                    <div class="h-2 bg-gray-200 rounded flex-1"></div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <div class="w-4 h-4 bg-green-400 rounded"></div>
+                                    <div class="h-2 bg-gray-200 rounded flex-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIN Help Modal -->
+    <div id="vinHelpModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-8 max-w-md mx-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Where to find your VIN</h3>
+                <button onclick="hideVinHelp()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="space-y-4 text-sm text-gray-600">
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p><strong>Dashboard:</strong> Look through the windshield on the driver's side</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p><strong>Driver's door:</strong> Check the door frame or pillar</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p><strong>Documents:</strong> Vehicle registration, insurance, or title</p>
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                    <p><strong>Engine bay:</strong> Sometimes on a metal plate</p>
+                </div>
+            </div>
+            <div class="mt-6 p-3 bg-yellow-50 rounded-lg">
+                <p class="text-sm text-yellow-800">
+                    <strong>Note:</strong> VIN is always exactly 17 characters (letters and numbers, no spaces)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showVinHelp() {
+            document.getElementById('vinHelpModal').classList.remove('hidden');
+        }
+
+        function hideVinHelp() {
+            document.getElementById('vinHelpModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('vinHelpModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                hideVinHelp();
+            }
+        });
+
+        // VIN input validation and formatting
+        document.querySelector('input[name="vin"]').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (value.length > 17) {
+                value = value.substring(0, 17);
+            }
+            e.target.value = value;
+            
+            // Visual feedback for VIN length
+            const submitBtn = document.querySelector('button[type="submit"]');
+            if (value.length === 17) {
+                submitBtn.classList.remove('bg-yellow-400', 'hover:bg-yellow-500');
+                submitBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+                submitBtn.textContent = 'Get report ✓';
+            } else {
+                submitBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                submitBtn.classList.add('bg-yellow-400', 'hover:bg-yellow-500');
+                submitBtn.textContent = 'Get report';
+            }
+        });
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const vinInput = document.querySelector('input[name="vin"]');
+            const vin = vinInput.value.trim();
+            
+            if (vin.length !== 17) {
+                e.preventDefault();
+                alert('Please enter a valid 17-character VIN number.');
+                vinInput.focus();
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

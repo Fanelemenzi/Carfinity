@@ -1164,3 +1164,313 @@ class UpdateInitialInspectionView(LoginRequiredMixin, UpdateView):
         ]
         
         return context
+
+
+class InitialInspectionAjaxView(LoginRequiredMixin, View):
+    """AJAX view for initial inspection details modal"""
+    
+    def get(self, request, pk):
+        """Return initial inspection details as JSON for modal display"""
+        try:
+            initial_inspection = get_object_or_404(InitialInspection, pk=pk)
+            
+            # Generate HTML content for the modal
+            html_content = self._generate_initial_inspection_html(initial_inspection)
+            
+            return JsonResponse({
+                'success': True,
+                'html': html_content
+            })
+            
+        except Exception as e:
+            logger.error(f"Error loading initial inspection details: {str(e)}", exc_info=True)
+            return JsonResponse({
+                'success': False,
+                'error': 'Failed to load initial inspection details'
+            })
+    
+    def _generate_initial_inspection_html(self, initial_inspection):
+        """Generate HTML content for initial inspection modal"""
+        
+        # Get technician display name
+        technician_name = self._get_technician_display_name(initial_inspection.technician)
+        
+        html = f"""
+        <div class="space-y-6">
+          <!-- Inspection Header -->
+          <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <h4 class="text-lg font-semibold text-amber-800">{initial_inspection.inspection_number}</h4>
+                <p class="text-sm text-amber-700">160-Point Pre-Purchase Inspection</p>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-amber-600">
+                  <i class="fas fa-calendar mr-1"></i>
+                  {initial_inspection.inspection_date.strftime('%B %d, %Y at %I:%M %p')}
+                </div>
+                <div class="text-sm text-amber-600">
+                  <i class="fas fa-tachometer-alt mr-1"></i>
+                  {initial_inspection.mileage_at_inspection:,} miles
+                </div>
+              </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-amber-600 mb-1">Vehicle</p>
+                <p class="font-medium text-amber-800">{initial_inspection.vehicle.make} {initial_inspection.vehicle.model}</p>
+                <p class="text-xs text-amber-600">VIN: {initial_inspection.vehicle.vin}</p>
+              </div>
+              <div>
+                <p class="text-xs text-amber-600 mb-1">Technician</p>
+                <p class="font-medium text-amber-800">{technician_name}</p>
+              </div>
+            </div>
+            
+            <div class="mt-3 pt-3 border-t border-amber-200">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <span class="text-sm text-amber-700">Completion Status:</span>
+                  <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {'bg-green-100 text-green-800' if initial_inspection.is_completed else 'bg-yellow-100 text-yellow-800'}">
+                    <i class="fas fa-{'check' if initial_inspection.is_completed else 'clock'} mr-1"></i>
+                    {'Completed' if initial_inspection.is_completed else 'In Progress'}
+                  </span>
+                </div>
+                <div class="text-right">
+                  <div class="text-lg font-semibold text-amber-800">{initial_inspection.completion_percentage}%</div>
+                  <div class="text-xs text-amber-600">Progress</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        """
+        
+        # Add inspection sections
+        sections = [
+            {
+                'title': 'Road Test Performance',
+                'icon': 'fas fa-road',
+                'color': 'blue',
+                'fields': [
+                    ('cold_engine_operation', 'Cold Engine Operation'),
+                    ('throttle_operation', 'Throttle Operation'),
+                    ('warmup_operation', 'Warm-up Operation'),
+                    ('operating_temp_performance', 'Operating Temperature Performance'),
+                    ('normal_operating_temp', 'Normal Operating Temperature'),
+                    ('brake_vibrations', 'Brake Vibrations'),
+                    ('engine_fan_operation', 'Engine Fan Operation'),
+                    ('brake_pedal_specs', 'Brake Pedal Specifications'),
+                    ('abs_operation', 'ABS Operation'),
+                    ('parking_brake_operation', 'Parking Brake Operation'),
+                    ('seat_belt_condition', 'Seat Belt Condition'),
+                    ('seat_belt_operation', 'Seat Belt Operation'),
+                    ('transmission_operation', 'Transmission Operation'),
+                    ('auto_trans_cold', 'Auto Transmission (Cold)'),
+                    ('auto_trans_operating', 'Auto Transmission (Operating)'),
+                    ('steering_feel', 'Steering Feel'),
+                    ('steering_centered', 'Steering Centered'),
+                    ('vehicle_tracking', 'Vehicle Tracking'),
+                    ('tilt_telescopic_steering', 'Tilt & Telescopic Steering'),
+                    ('washer_fluid_spray', 'Washer Fluid Spray'),
+                    ('front_wipers', 'Front Wipers'),
+                    ('rear_wipers', 'Rear Wipers'),
+                    ('wiper_rest_position', 'Wiper Rest Position'),
+                    ('wiper_blade_replacement', 'Wiper Blade Replacement'),
+                    ('speedometer_function', 'Speedometer Function'),
+                    ('odometer_function', 'Odometer Function'),
+                    ('cruise_control', 'Cruise Control'),
+                    ('heater_operation', 'Heater Operation'),
+                    ('ac_operation', 'A/C Operation'),
+                    ('engine_noise', 'Engine Noise'),
+                    ('interior_noise', 'Interior Noise'),
+                    ('wind_road_noise', 'Wind/Road Noise'),
+                    ('tire_vibration', 'Tire Vibration'),
+                ]
+            },
+            {
+                'title': 'Frame, Structure & Underbody',
+                'icon': 'fas fa-car',
+                'color': 'green',
+                'fields': [
+                    ('frame_unibody_condition', 'Frame/Unibody Condition'),
+                    ('panel_alignment', 'Panel Alignment'),
+                    ('underbody_condition', 'Underbody Condition'),
+                    ('suspension_leaks_wear', 'Suspension Leaks/Wear'),
+                    ('struts_shocks_condition', 'Struts/Shocks Condition'),
+                    ('power_steering_leaks', 'Power Steering Leaks'),
+                    ('wheel_covers', 'Wheel Covers'),
+                    ('tire_condition', 'Tire Condition'),
+                    ('tread_depth', 'Tread Depth'),
+                    ('tire_specifications', 'Tire Specifications'),
+                    ('brake_calipers_lines', 'Brake Calipers & Lines'),
+                    ('brake_system_equipment', 'Brake System Equipment'),
+                    ('brake_pad_life', 'Brake Pad Life'),
+                    ('brake_rotors_drums', 'Brake Rotors/Drums'),
+                    ('exhaust_system', 'Exhaust System'),
+                    ('engine_trans_mounts', 'Engine/Trans Mounts'),
+                    ('drive_axle_shafts', 'Drive/Axle Shafts'),
+                    ('cv_joints_boots', 'CV Joints/Boots'),
+                    ('engine_fluid_leaks', 'Engine Fluid Leaks'),
+                    ('transmission_leaks', 'Transmission Leaks'),
+                    ('differential_fluid', 'Differential Fluid'),
+                ]
+            },
+            {
+                'title': 'Under Hood Components',
+                'icon': 'fas fa-cogs',
+                'color': 'purple',
+                'fields': [
+                    ('drive_belts_hoses', 'Drive Belts & Hoses'),
+                    ('underhood_labels', 'Under-hood Labels'),
+                    ('air_filter_condition', 'Air Filter Condition'),
+                    ('battery_damage', 'Battery Damage'),
+                    ('battery_test', 'Battery Test'),
+                    ('battery_posts_cables', 'Battery Posts & Cables'),
+                    ('battery_secured', 'Battery Secured'),
+                    ('charging_system', 'Charging System'),
+                    ('coolant_level', 'Coolant Level'),
+                    ('coolant_protection', 'Coolant Protection'),
+                ]
+            }
+        ]
+        
+        for section in sections:
+            html += f"""
+            <div class="bg-white border border-gray-200 rounded-lg p-4">
+              <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <i class="{section['icon']} text-{section['color']}-600 mr-2"></i>
+                {section['title']}
+              </h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            """
+            
+            for field_name, field_label in section['fields']:
+                field_value = getattr(initial_inspection, field_name, '')
+                status_class = self._get_status_class(field_value)
+                status_icon = self._get_status_icon(field_value)
+                status_text = self._get_status_text(field_value)
+                
+                html += f"""
+                <div class="flex items-center justify-between p-2 bg-gray-50 rounded border">
+                  <span class="text-sm text-gray-700">{field_label}</span>
+                  <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {status_class}">
+                    <i class="{status_icon} mr-1"></i>
+                    {status_text}
+                  </span>
+                </div>
+                """
+            
+            html += "</div></div>"
+        
+        # Add summary section if inspection is completed
+        if initial_inspection.is_completed:
+            failed_points = initial_inspection.failed_points
+            if failed_points:
+                html += f"""
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 class="text-lg font-semibold text-red-800 mb-4 flex items-center">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2"></i>
+                    Issues Found ({len(failed_points)} items)
+                  </h4>
+                  <div class="space-y-2">
+                """
+                
+                for issue in failed_points:
+                    html += f"""
+                    <div class="flex items-center p-2 bg-white rounded border border-red-200">
+                      <i class="fas fa-times-circle text-red-500 mr-2"></i>
+                      <span class="text-sm text-gray-700">{issue}</span>
+                    </div>
+                    """
+                
+                html += "</div></div>"
+            else:
+                html += """
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <h4 class="text-lg font-semibold text-green-800 mb-2 flex items-center">
+                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                    Inspection Passed
+                  </h4>
+                  <p class="text-sm text-green-700">No major issues found during the inspection.</p>
+                </div>
+                """
+        
+        # Add notes sections if they exist
+        notes_sections = [
+            ('road_test_notes', 'Road Test Notes'),
+            ('frame_structure_notes', 'Frame & Structure Notes'),
+            ('underhood_notes', 'Under Hood Notes'),
+            ('overall_notes', 'Overall Notes'),
+            ('recommendations', 'Recommendations'),
+        ]
+        
+        for field_name, section_title in notes_sections:
+            notes = getattr(initial_inspection, field_name, '')
+            if notes:
+                html += f"""
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <h4 class="text-lg font-semibold text-gray-800 mb-2 flex items-center">
+                    <i class="fas fa-sticky-note text-blue-600 mr-2"></i>
+                    {section_title}
+                  </h4>
+                  <p class="text-sm text-gray-600 bg-white p-3 rounded border">{notes}</p>
+                </div>
+                """
+        
+        html += "</div>"
+        
+        return html
+    
+    def _get_status_class(self, status):
+        """Get CSS class for status display"""
+        status_classes = {
+            'pass': 'bg-green-100 text-green-800',
+            'fail': 'bg-red-100 text-red-800',
+            'minor': 'bg-yellow-100 text-yellow-800',
+            'major': 'bg-red-100 text-red-800',
+            'na': 'bg-gray-100 text-gray-800',
+            'needs_attention': 'bg-orange-100 text-orange-800',
+        }
+        return status_classes.get(status, 'bg-gray-100 text-gray-800')
+    
+    def _get_status_icon(self, status):
+        """Get icon for status display"""
+        status_icons = {
+            'pass': 'fas fa-check-circle',
+            'fail': 'fas fa-times-circle',
+            'minor': 'fas fa-exclamation-triangle',
+            'major': 'fas fa-exclamation-circle',
+            'na': 'fas fa-minus-circle',
+            'needs_attention': 'fas fa-exclamation-triangle',
+        }
+        return status_icons.get(status, 'fas fa-question-circle')
+    
+    def _get_status_text(self, status):
+        """Get display text for status"""
+        status_text = {
+            'pass': 'Pass',
+            'fail': 'Fail',
+            'minor': 'Minor Issue',
+            'major': 'Major Issue',
+            'na': 'N/A',
+            'needs_attention': 'Needs Attention',
+        }
+        return status_text.get(status, 'Not Checked')
+    
+    def _get_technician_display_name(self, technician):
+        """Get a proper display name for the technician"""
+        if not technician:
+            return "Not Assigned"
+        
+        first_name = (technician.first_name or "").strip()
+        last_name = (technician.last_name or "").strip()
+        
+        if first_name and last_name:
+            return f"{first_name} {last_name}"
+        elif first_name:
+            return first_name
+        elif last_name:
+            return last_name
+        else:
+            return technician.username or f"User {technician.id}"
