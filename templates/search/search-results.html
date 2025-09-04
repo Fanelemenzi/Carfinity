@@ -1268,89 +1268,101 @@
     function openInitialInspectionModal(inspectionId, inspectionNumber) {
       // Create modal HTML
       const modalHTML = `
-        <div id="initialInspectionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900 flex items-center">
-                  <i class="fas fa-search-plus text-amber-600 mr-2"></i>
-                  Initial Inspection Details - ${inspectionNumber}
-                </h3>
-                <button onclick="closeInitialInspectionModal()" class="text-gray-400 hover:text-gray-600">
-                  <i class="fas fa-times text-xl"></i>
-                </button>
-              </div>
-              <div id="initialInspectionModalContent" class="text-center">
-                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-                <p class="text-gray-600">Loading initial inspection details...</p>
+        <div id="initialInspectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 class="text-xl font-semibold text-gray-800">
+                <i class="fas fa-search-plus text-amber-600 mr-2"></i>
+                Initial Inspection Details - ${inspectionNumber}
+              </h3>
+              <button onclick="closeInitialInspectionModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+              </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div class="flex items-center justify-center py-8">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+                <span class="ml-3 text-gray-600">Loading initial inspection details...</span>
               </div>
             </div>
           </div>
         </div>
       `;
 
-      // Add modal to body
+      // Add modal to page
       document.body.insertAdjacentHTML('beforeend', modalHTML);
+      document.body.style.overflow = 'hidden';
 
-      // Fetch inspection details (placeholder - would need actual endpoint)
-      setTimeout(() => {
-        const content = document.getElementById('initialInspectionModalContent');
-        if (content) {
-          content.innerHTML = `
-            <div class="text-left">
-              <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                <h4 class="font-semibold text-amber-800 mb-2">160-Point Initial Inspection</h4>
-                <p class="text-sm text-amber-700">
-                  This comprehensive pre-purchase inspection covers all major vehicle systems including engine performance, 
-                  transmission, brakes, suspension, electrical systems, and structural integrity.
-                </p>
+      // Load initial inspection details via AJAX
+      console.log('Loading initial inspection details for ID:', inspectionId);
+      fetch(`/initial-inspection/ajax/${inspectionId}/`)
+        .then(response => {
+          console.log('Response status:', response.status);
+          
+          // Check if response is ok and content-type is JSON
+          const contentType = response.headers.get('content-type');
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
+          if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Server returned HTML instead of JSON. The endpoint may not exist.');
+          }
+          
+          return response.json();
+        })
+        .then(data => {
+          console.log('Response data:', data);
+          if (data.success) {
+            updateInitialInspectionModalContent(data.html);
+          } else {
+            updateInitialInspectionModalContent(`
+              <div class="text-center py-8">
+                <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+                <p class="text-gray-600">Error loading initial inspection details.</p>
+                <p class="text-sm text-gray-500 mt-2">${data.error || 'Please try again later.'}</p>
               </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div class="bg-gray-50 rounded-lg p-3">
-                  <h5 class="font-medium text-gray-800 mb-2">Inspection Coverage</h5>
-                  <ul class="text-sm text-gray-600 space-y-1">
-                    <li><i class="fas fa-check text-green-600 mr-2"></i>Road Test (33 points)</li>
-                    <li><i class="fas fa-check text-green-600 mr-2"></i>Frame & Structure (21 points)</li>
-                    <li><i class="fas fa-check text-green-600 mr-2"></i>Engine & Powertrain (40 points)</li>
-                    <li><i class="fas fa-check text-green-600 mr-2"></i>Safety Systems (30 points)</li>
-                    <li><i class="fas fa-check text-green-600 mr-2"></i>Electrical & Electronics (36 points)</li>
-                  </ul>
-                </div>
-                
-                <div class="bg-gray-50 rounded-lg p-3">
-                  <h5 class="font-medium text-gray-800 mb-2">Inspection Benefits</h5>
-                  <ul class="text-sm text-gray-600 space-y-1">
-                    <li><i class="fas fa-shield-alt text-blue-600 mr-2"></i>Identify hidden issues</li>
-                    <li><i class="fas fa-dollar-sign text-green-600 mr-2"></i>Estimate repair costs</li>
-                    <li><i class="fas fa-handshake text-purple-600 mr-2"></i>Negotiate purchase price</li>
-                    <li><i class="fas fa-clipboard-check text-orange-600 mr-2"></i>Purchase recommendation</li>
-                  </ul>
-                </div>
-              </div>
-              
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex items-center mb-2">
-                  <i class="fas fa-info-circle text-blue-600 mr-2"></i>
-                  <span class="font-medium text-blue-800">Need Detailed Results?</span>
-                </div>
-                <p class="text-sm text-blue-700 mb-3">
-                  For complete inspection results, technical findings, and purchase recommendations, 
-                  please contact our service team or access the full report through your account dashboard.
-                </p>
-                <div class="flex space-x-2">
-                  <button class="px-4 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors">
-                    <i class="fas fa-phone mr-1"></i>Contact Service
-                  </button>
-                  <button class="px-4 py-2 bg-gray-600 text-white rounded text-sm hover:bg-gray-700 transition-colors">
-                    <i class="fas fa-user mr-1"></i>Account Dashboard
-                  </button>
-                </div>
-              </div>
+            `);
+          }
+        })
+        .catch(error => {
+          console.error('Network error:', error);
+          
+          // Show appropriate error message based on error type
+          let errorMessage = 'Network error occurred.';
+          let errorDetail = 'Please check your connection and try again.';
+          
+          if (error.message.includes('HTML instead of JSON')) {
+            errorMessage = 'Feature not yet implemented.';
+            errorDetail = 'The initial inspection details endpoint is not available yet.';
+          } else if (error.message.includes('HTTP 404')) {
+            errorMessage = 'Endpoint not found.';
+            errorDetail = 'The initial inspection details service is not configured.';
+          } else if (error.message.includes('HTTP 500')) {
+            errorMessage = 'Server error occurred.';
+            errorDetail = 'Please try again later or contact support.';
+          }
+          
+          updateInitialInspectionModalContent(`
+            <div class="text-center py-8">
+              <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-4"></i>
+              <p class="text-gray-600">${errorMessage}</p>
+              <p class="text-sm text-gray-500 mt-2">${errorDetail}</p>
+              <p class="text-xs text-gray-400 mt-2">Error: ${error.message}</p>
             </div>
-          `;
+          `);
+        });
+    }
+
+    // Update initial inspection modal content
+    function updateInitialInspectionModalContent(html) {
+      const modal = document.getElementById('initialInspectionModal');
+      if (modal) {
+        const contentDiv = modal.querySelector('.overflow-y-auto');
+        if (contentDiv) {
+          contentDiv.innerHTML = html;
         }
-      }, 1000);
+      }
     }
 
     // Close initial inspection modal
@@ -1358,14 +1370,24 @@
       const modal = document.getElementById('initialInspectionModal');
       if (modal) {
         modal.remove();
+        document.body.style.overflow = 'auto';
       }
     }
 
     // Close modal when clicking outside
-    document.addEventListener('click', function(event) {
-      const modal = document.getElementById('initialInspectionModal');
-      if (modal && event.target === modal) {
+    document.addEventListener('click', function (e) {
+      if (e.target && e.target.id === 'initialInspectionModal') {
         closeInitialInspectionModal();
+      }
+    });
+
+    // Close modal with Escape key for initial inspection
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('initialInspectionModal');
+        if (modal) {
+          closeInitialInspectionModal();
+        }
       }
     });
   </script>

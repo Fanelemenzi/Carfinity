@@ -126,6 +126,16 @@
                                     </div>
                                 </a>
                                 
+                                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+                                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-car-side text-indigo-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">Vehicle Onboarding</p>
+                                        <p class="text-xs text-gray-500">Add new vehicle</p>
+                                    </div>
+                                </a>
+                                
                                 <a href="{% url 'maintenance_history:create_record' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-wrench text-purple-600 text-sm"></i>
@@ -318,6 +328,10 @@
                                 <i class="fas fa-search-plus mr-3 w-5 text-blue-600"></i>Initial Inspection
                                 <span class="ml-auto text-xs text-gray-500">160-point</span>
                             </a>
+                            <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                                <i class="fas fa-car-side mr-3 w-5 text-indigo-600"></i>Vehicle Onboarding
+                                <span class="ml-auto text-xs text-gray-500">Add vehicle</span>
+                            </a>
                             <a href="{% url 'maintenance_history:create_record' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-wrench mr-3 w-5 text-purple-600"></i>Maintenance Record
                             </a>
@@ -464,7 +478,7 @@
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
                 <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -489,6 +503,20 @@
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-900">Initial Inspection</p>
                             <p class="text-xs text-gray-500">160-point pre-purchase</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-car-side text-blue-500 group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Vehicle Onboarding</p>
+                            <p class="text-xs text-gray-500">Add new vehicle</p>
                         </div>
                     </div>
                 </a>

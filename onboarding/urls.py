@@ -7,6 +7,9 @@ urlpatterns = [
     path('survey/', views.customer_vehicle_survey, name='customer_vehicle_survey'),
     path('survey/complete/', views.onboarding_complete_view, name='onboarding_complete_view'),
     
+    # Technician vehicle onboarding
+    path('technician/vehicle/', views.technician_vehicle_onboarding, name='technician_vehicle_onboarding'),
+    
     # Existing vehicle onboarding (for admin/staff use)
     path('onboarding/client/', views.onboard_client, name='onboard_client'),
     path('onboarding/vehicle/', views.onboard_vehicle, name='onboard_vehicle'),

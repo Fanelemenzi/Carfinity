@@ -1,0 +1,387 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Vehicle Onboarding - Technician Dashboard{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Onboarding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation Header -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="{% url 'maintenance_history:technician_dashboard' %}" class="flex items-center text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        <span class="text-sm font-medium">Back to Dashboard</span>
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <h1 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-car-side text-primary mr-2"></i>
+                        Vehicle Onboarding
+                    </h1>
+                </div>
+                <div class="w-24"></div> <!-- Spacer for centering -->
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-car-side text-primary text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-900">Add New Vehicle</h2>
+                        <p class="text-sm text-gray-600 mt-1">Complete vehicle information for onboarding</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Vehicle Identification Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-id-card text-blue-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Vehicle Identification</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.vin_number.label }}</label>
+                        {{ form.vin_number }}
+                        {% if form.vin_number.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.vin_number.help_text }}</p>
+                        {% endif %}
+                        {% if form.vin_number.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.vin_number.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.vehicle_nickname.label }}</label>
+                        {{ form.vehicle_nickname }}
+                        {% if form.vehicle_nickname.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.vehicle_nickname.help_text }}</p>
+                        {% endif %}
+                        {% if form.vehicle_nickname.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.vehicle_nickname.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Details Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-car text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Vehicle Details</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.make.label }}</label>
+                        {{ form.make }}
+                        {% if form.make.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.make.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.model.label }}</label>
+                        {{ form.model }}
+                        {% if form.model.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.model.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.year.label }}</label>
+                        {{ form.year }}
+                        {% if form.year.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.year.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Information Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-road text-purple-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Usage Information</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.primary_usage.label }}</label>
+                        {{ form.primary_usage }}
+                        {% if form.primary_usage.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.primary_usage.help_text }}</p>
+                        {% endif %}
+                        {% if form.primary_usage.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.primary_usage.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.estimated_annual_mileage.label }}</label>
+                        {{ form.estimated_annual_mileage }}
+                        {% if form.estimated_annual_mileage.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.estimated_annual_mileage.help_text }}</p>
+                        {% endif %}
+                        {% if form.estimated_annual_mileage.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.estimated_annual_mileage.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.current_odometer.label }}</label>
+                        {{ form.current_odometer }}
+                        {% if form.current_odometer.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.current_odometer.help_text }}</p>
+                        {% endif %}
+                        {% if form.current_odometer.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.current_odometer.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.typical_driving_conditions.label }}</label>
+                        {{ form.typical_driving_conditions }}
+                        {% if form.typical_driving_conditions.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.typical_driving_conditions.help_text }}</p>
+                        {% endif %}
+                        {% if form.typical_driving_conditions.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.typical_driving_conditions.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Condition Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-clipboard-check text-yellow-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Vehicle Condition & History</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.current_condition.label }}</label>
+                        {{ form.current_condition }}
+                        {% if form.current_condition.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.current_condition.help_text }}</p>
+                        {% endif %}
+                        {% if form.current_condition.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.current_condition.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.maintenance_preference.label }}</label>
+                        {{ form.maintenance_preference }}
+                        {% if form.maintenance_preference.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.maintenance_preference.help_text }}</p>
+                        {% endif %}
+                        {% if form.maintenance_preference.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.maintenance_preference.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.last_oil_change.label }}</label>
+                        {{ form.last_oil_change }}
+                        {% if form.last_oil_change.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.last_oil_change.help_text }}</p>
+                        {% endif %}
+                        {% if form.last_oil_change.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.last_oil_change.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.last_major_service.label }}</label>
+                        {{ form.last_major_service }}
+                        {% if form.last_major_service.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.last_major_service.help_text }}</p>
+                        {% endif %}
+                        {% if form.last_major_service.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.last_major_service.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.current_problems.label }}</label>
+                        {{ form.current_problems }}
+                        {% if form.current_problems.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.current_problems.help_text }}</p>
+                        {% endif %}
+                        {% if form.current_problems.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.current_problems.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warranty Information Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-shield-alt text-indigo-600"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-900">Warranty Information</h3>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="form-group">
+                        <div class="flex items-center">
+                            {{ form.under_warranty }}
+                            <label class="ml-2 text-sm font-medium text-gray-700">{{ form.under_warranty.label }}</label>
+                        </div>
+                        {% if form.under_warranty.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.under_warranty.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.warranty_expires.label }}</label>
+                        {{ form.warranty_expires }}
+                        {% if form.warranty_expires.help_text %}
+                            <p class="text-xs text-gray-500 mt-1">{{ form.warranty_expires.help_text }}</p>
+                        {% endif %}
+                        {% if form.warranty_expires.errors %}
+                            <div class="text-red-500 text-sm mt-1">{{ form.warranty_expires.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-6 border-t border-gray-200">
+                <a href="{% url 'maintenance_history:technician_dashboard' %}"
+                    class="inline-flex items-center px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200 border border-gray-300">
+                    <i class="fas fa-times mr-2"></i>
+                    Cancel
+                </a>
+                
+                <button type="submit"
+                    class="inline-flex items-center px-8 py-3 bg-primary text-white font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm">
+                    <i class="fas fa-save mr-2"></i>
+                    Save Vehicle
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+
+<style>
+/* Custom styles for form elements */
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background-color: #fafafa;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    background-color: #ffffff;
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: #9ca3af;
+    background-color: #ffffff;
+}
+
+.form-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.form-group input[type="date"] {
+    color: #6b7280;
+}
+
+.form-group input[type="date"]:focus {
+    color: #111827;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+</style>
+
+{% else %}
+<div class="max-w-md mx-auto mt-20 p-6 bg-white rounded-lg shadow-md">
+    <div class="text-center">
+        <i class="fas fa-lock text-4xl text-gray-400 mb-4"></i>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">Authentication Required</h2>
+        <p class="text-gray-600 mb-4">Please log in to access the vehicle onboarding form.</p>
+        <a href="{% url 'login' %}" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <i class="fas fa-sign-in-alt mr-2"></i>
+            Log In
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

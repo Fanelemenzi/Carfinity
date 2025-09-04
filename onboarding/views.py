@@ -218,3 +218,43 @@ def customer_vehicle_survey(request):
 def onboarding_complete_view(request):
     """Simple completion page after survey"""
     return render(request, 'onboarding/onboarding_complete.html')
+
+
+@login_required
+def technician_vehicle_onboarding(request):
+    """Vehicle onboarding form for technicians"""
+    if request.method == 'POST':
+        form = VehicleOnboardingForm(request.POST)
+        if form.is_valid():
+            # Create a customer onboarding record if it doesn't exist
+            customer_onboarding, created = CustomerOnboarding.objects.get_or_create(
+                user=request.user,
+                defaults={
+                    'customer_type': 'individual',
+                    'preferred_communication': 'email',
+                    'reminder_frequency': 'monthly',
+                    'service_radius': '15',
+                    'monthly_maintenance_budget': 'pay_as_needed',
+                    'maintenance_knowledge': 'intermediate',
+                    'primary_goal': 'avoid_breakdowns',
+                    'service_priority': 'service_quality',
+                    'preferred_payment_model': 'pay_per_service',
+                    'parts_preference': 'quality_aftermarket',
+                    'extended_warranty_interest': 'not_interested',
+                    'how_heard_about_service': 'mechanic_referral',
+                }
+            )
+            
+            # Save the vehicle onboarding
+            vehicle_onboarding = form.save(commit=False)
+            vehicle_onboarding.customer_onboarding = customer_onboarding
+            vehicle_onboarding.save()
+            
+            messages.success(request, f"Vehicle onboarding completed successfully for {vehicle_onboarding.year} {vehicle_onboarding.make} {vehicle_onboarding.model}!")
+            return redirect('maintenance_history:technician_dashboard')
+    else:
+        form = VehicleOnboardingForm()
+    
+    return render(request, 'onboarding/technician_vehicle_onboarding.html', {
+        'form': form,
+    })
