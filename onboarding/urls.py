@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentForm, VehicleImagesForm
 
+app_name = 'onboarding'
+
 urlpatterns = [
     # New customer & vehicle survey
     path('survey/', views.customer_vehicle_survey, name='customer_vehicle_survey'),

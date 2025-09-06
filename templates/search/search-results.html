@@ -406,7 +406,6 @@
                     </div>
                   </div>
 
-                  {% if initial_inspection.is_completed %}
                   <!-- Vehicle Health Index and Results -->
                   <div class="bg-gray-50 rounded-lg p-3 mb-3">
                     <div class="grid grid-cols-2 gap-3 text-xs">
@@ -414,30 +413,34 @@
                         <span class="text-gray-500">Health Index:</span>
                         <div class="mt-1">
                           {% with health_index=initial_inspection.vehicle_health_index %}
-                          {% if "Excellent" in health_index %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-heart text-green-600 mr-1"></i>{{ health_index }}
-                          </span>
+                          {% if health_index == "Not Calculated" %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-clock text-gray-600 mr-1"></i>Not Calculated
+                            </span>
+                          {% elif "Excellent" in health_index %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <i class="fas fa-heart text-green-600 mr-1"></i>{{ health_index }}
+                            </span>
                           {% elif "Good" in health_index %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <i class="fas fa-heart text-blue-600 mr-1"></i>{{ health_index }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <i class="fas fa-heart text-blue-600 mr-1"></i>{{ health_index }}
+                            </span>
                           {% elif "Fair" in health_index %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-heart text-yellow-600 mr-1"></i>{{ health_index }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <i class="fas fa-heart text-yellow-600 mr-1"></i>{{ health_index }}
+                            </span>
                           {% elif "Poor" in health_index %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                            <i class="fas fa-heart text-orange-600 mr-1"></i>{{ health_index }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              <i class="fas fa-heart text-orange-600 mr-1"></i>{{ health_index }}
+                            </span>
                           {% elif "Critical" in health_index %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-heart text-red-600 mr-1"></i>{{ health_index }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <i class="fas fa-heart text-red-600 mr-1"></i>{{ health_index }}
+                            </span>
                           {% else %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            <i class="fas fa-question text-gray-600 mr-1"></i>{{ health_index }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-question text-gray-600 mr-1"></i>{{ health_index|default:"Unknown" }}
+                            </span>
                           {% endif %}
                           {% endwith %}
                         </div>
@@ -446,34 +449,38 @@
                         <span class="text-gray-500">Result:</span>
                         <div class="mt-1">
                           {% with result=initial_inspection.inspection_result %}
-                          {% if result == "PAS" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check-circle mr-1"></i>Passed
-                          </span>
+                          {% if result == "Pending" %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-clock mr-1"></i>Pending
+                            </span>
+                          {% elif result == "PAS" %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <i class="fas fa-check-circle mr-1"></i>Passed
+                            </span>
                           {% elif result == "PMD" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            <i class="fas fa-info-circle mr-1"></i>Pass (Minor)
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <i class="fas fa-info-circle mr-1"></i>Pass (Minor)
+                            </span>
                           {% elif result == "PJD" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-exclamation-circle mr-1"></i>Pass (Major)
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                              <i class="fas fa-exclamation-circle mr-1"></i>Pass (Major)
+                            </span>
                           {% elif result == "FMD" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                            <i class="fas fa-times-circle mr-1"></i>Failed (Minor)
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              <i class="fas fa-times-circle mr-1"></i>Failed (Minor)
+                            </span>
                           {% elif result == "FJD" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-times-circle mr-1"></i>Failed (Major)
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <i class="fas fa-times-circle mr-1"></i>Failed (Major)
+                            </span>
                           {% elif result == "FAI" %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-ban mr-1"></i>Failed
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <i class="fas fa-ban mr-1"></i>Failed
+                            </span>
                           {% else %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            <i class="fas fa-clock mr-1"></i>{{ result }}
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-question mr-1"></i>{{ result|default:"Unknown" }}
+                            </span>
                           {% endif %}
                           {% endwith %}
                         </div>
@@ -485,14 +492,20 @@
                         <span class="text-gray-500">Failed Points:</span>
                         <div class="mt-1">
                           {% with failed_count=initial_inspection.failed_points|length %}
-                          {% if failed_count > 0 %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ failed_count }} Issue{{ failed_count|pluralize }}
-                          </span>
+                          {% if failed_count is not None %}
+                            {% if failed_count > 0 %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <i class="fas fa-exclamation-triangle mr-1"></i>{{ failed_count }} Issue{{ failed_count|pluralize }}
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <i class="fas fa-check mr-1"></i>No Issues
+                            </span>
+                            {% endif %}
                           {% else %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-check mr-1"></i>No Issues
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-clock mr-1"></i>Not Available
+                            </span>
                           {% endif %}
                           {% endwith %}
                         </div>
@@ -501,21 +514,26 @@
                         <span class="text-gray-500">Critical Issues:</span>
                         <div class="mt-1">
                           {% with critical_count=initial_inspection.safety_critical_issues|length %}
-                          {% if critical_count > 0 %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <i class="fas fa-shield-alt mr-1"></i>{{ critical_count }} Critical
-                          </span>
+                          {% if critical_count is not None %}
+                            {% if critical_count > 0 %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                              <i class="fas fa-shield-alt mr-1"></i>{{ critical_count }} Critical
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              <i class="fas fa-shield-alt mr-1"></i>None
+                            </span>
+                            {% endif %}
                           {% else %}
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <i class="fas fa-shield-alt mr-1"></i>None
-                          </span>
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                              <i class="fas fa-clock mr-1"></i>Not Available
+                            </span>
                           {% endif %}
                           {% endwith %}
                         </div>
                       </div>
                     </div>
                   </div>
-                  {% endif %}
 
                   {% if initial_inspection.has_major_issues %}
                   <div class="bg-red-50 border border-red-200 rounded p-2 mb-3">

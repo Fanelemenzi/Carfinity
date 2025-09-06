@@ -266,211 +266,216 @@ def generate_inspection_summary(inspection_form: Inspections) -> Dict[str, any]:
 def get_initial_inspection_field_weights():
     """
     Return categorized field weights for 160-point initial inspection.
+    Enhanced weighting system with improved categorization and scoring.
     
     Returns:
         Dict containing field weights organized by criticality level
     """
     
-    # Critical Safety Systems (Weight: 10-12 points each)
+    # Critical Safety Systems (Weight: 15-20 points each) - Highest priority
     critical_systems = {
-        'brake_vibrations': 12,
-        'brake_pedal_specs': 12,
-        'abs_operation': 11,
-        'parking_brake_operation': 11,
-        'seat_belt_condition': 10,
-        'seat_belt_operation': 10,
-        'steering_feel': 12,
-        'steering_centered': 11,
-        'vehicle_tracking': 12,
-        'tire_condition': 11,
-        'tread_depth': 12,
-        'tire_specifications': 10,
-        'brake_calipers_lines': 11,
-        'brake_pad_life': 12,
-        'brake_rotors_drums': 11,
-        'headlight_alignment': 10,
-        'brake_lights': 10,
-        'turn_signals': 10,
-        'airbags_present': 11,
+        'brake_vibrations': 20,
+        'brake_pedal_specs': 18,
+        'abs_operation': 17,
+        'parking_brake_operation': 16,
+        'seat_belt_condition': 18,
+        'seat_belt_operation': 18,
+        'steering_feel': 20,
+        'steering_centered': 17,
+        'vehicle_tracking': 19,
+        'tire_condition': 18,
+        'tread_depth': 20,
+        'tire_specifications': 15,
+        'brake_calipers_lines': 19,
+        'brake_pad_life': 20,
+        'brake_rotors_drums': 18,
+        'headlight_alignment': 16,
+        'brake_lights': 17,
+        'turn_signals': 17,
+        'airbags_present': 19,
+        'frame_unibody_condition': 18,  # Added - structural integrity is critical
+        'engine_fluid_leaks': 15,  # Moved from important - safety concern
+        'transmission_leaks': 14,  # Moved from important - can cause failures
     }
     
-    # Important Mechanical Systems (Weight: 6-9 points each)
+    # Important Mechanical Systems (Weight: 10-14 points each) - High priority
     important_systems = {
-        'cold_engine_operation': 8,
-        'throttle_operation': 7,
-        'operating_temp_performance': 8,
-        'normal_operating_temp': 7,
-        'engine_fan_operation': 6,
-        'transmission_operation': 9,
-        'auto_trans_cold': 8,
-        'auto_trans_operating': 8,
-        'frame_unibody_condition': 9,
-        'panel_alignment': 7,
-        'underbody_condition': 8,
-        'suspension_leaks_wear': 8,
-        'struts_shocks_condition': 8,
-        'power_steering_leaks': 7,
-        'exhaust_system': 7,
-        'engine_trans_mounts': 7,
-        'drive_axle_shafts': 8,
-        'cv_joints_boots': 7,
-        'engine_fluid_leaks': 8,
-        'transmission_leaks': 7,
-        'differential_fluid': 6,
-        'battery_test': 8,
-        'charging_system': 8,
-        'coolant_level': 7,
-        'coolant_protection': 6,
-        'oil_filter_change': 7,
-        'fluid_levels': 7,
-        'fluid_contamination': 6,
+        'cold_engine_operation': 12,
+        'throttle_operation': 11,
+        'operating_temp_performance': 13,
+        'normal_operating_temp': 12,
+        'engine_fan_operation': 10,
+        'transmission_operation': 14,
+        'auto_trans_cold': 12,
+        'auto_trans_operating': 13,
+        'panel_alignment': 8,  # Reduced - more cosmetic
+        'underbody_condition': 12,
+        'suspension_leaks_wear': 13,
+        'struts_shocks_condition': 12,
+        'power_steering_leaks': 11,
+        'exhaust_system': 10,
+        'engine_trans_mounts': 11,
+        'drive_axle_shafts': 12,
+        'cv_joints_boots': 10,
+        'differential_fluid': 9,
+        'battery_test': 12,
+        'charging_system': 13,
+        'coolant_level': 11,
+        'coolant_protection': 10,
+        'oil_filter_change': 11,
+        'fluid_levels': 10,
+        'fluid_contamination': 12,  # Increased - indicates serious issues
+        'oil_sludge_check': 11,  # Moved from standard - engine health critical
+        'battery_damage': 10,  # Moved from standard - safety concern
+        'battery_posts_cables': 9,  # Moved from standard
+        'charging_system': 13,  # Duplicate removed, kept higher weight
     }
     
-    # Standard Systems (Weight: 3-5 points each)
+    # Standard Systems (Weight: 6-9 points each) - Medium priority
     standard_systems = {
-        'warmup_operation': 5,
-        'speedometer_function': 4,
-        'odometer_function': 4,
-        'cruise_control': 3,
-        'heater_operation': 5,
-        'ac_operation': 5,
-        'engine_noise': 4,
-        'interior_noise': 3,
-        'wind_road_noise': 3,
-        'tire_vibration': 4,
-        'wheel_covers': 3,
-        'brake_system_equipment': 4,
-        'drive_belts_hoses': 5,
-        'air_filter_condition': 4,
-        'battery_damage': 4,
-        'battery_posts_cables': 4,
-        'battery_secured': 3,
-        'oil_sludge_check': 4,
-        'owners_manual': 3,
-        'fuel_gauge': 4,
-        'battery_voltage_gauge': 3,
-        'temp_gauge': 4,
-        'horn_function': 4,
-        'emissions_test': 5,
-        'tail_lights': 4,
-        'side_marker_lights': 3,
-        'backup_lights': 4,
-        'license_plate_lights': 3,
-        'exterior_lights_condition': 4,
+        'warmup_operation': 7,
+        'speedometer_function': 8,  # Increased - legal requirement
+        'odometer_function': 7,
+        'cruise_control': 6,
+        'heater_operation': 8,  # Increased - safety in cold weather
+        'ac_operation': 7,
+        'engine_noise': 8,  # Increased - indicates mechanical issues
+        'interior_noise': 6,
+        'wind_road_noise': 6,
+        'tire_vibration': 9,  # Increased - safety concern
+        'wheel_covers': 6,
+        'brake_system_equipment': 9,  # Increased - brake safety
+        'drive_belts_hoses': 8,  # Increased - can cause breakdowns
+        'air_filter_condition': 7,
+        'battery_secured': 7,  # Increased - safety concern
+        'owners_manual': 6,
+        'fuel_gauge': 8,  # Increased - prevents running out of fuel
+        'battery_voltage_gauge': 6,
+        'temp_gauge': 8,  # Increased - prevents overheating
+        'horn_function': 7,  # Increased - safety device
+        'emissions_test': 8,  # Increased - legal requirement
+        'tail_lights': 8,  # Increased - safety critical
+        'side_marker_lights': 6,
+        'backup_lights': 7,
+        'license_plate_lights': 6,
+        'exterior_lights_condition': 7,
+        'tire_pressure': 9,  # Added - critical for safety and efficiency
+        'tire_wear_patterns': 8,  # Added - indicates alignment/suspension issues
+        'wheels_rims': 7,  # Added - structural integrity
     }
     
-    # Interior and Convenience Systems (Weight: 2-4 points each)
+    # Interior and Convenience Systems (Weight: 4-7 points each) - Medium-low priority
     interior_systems = {
-        'instrument_panel': 4,
-        'hvac_panel': 3,
-        'instrument_dimmer': 2,
-        'hazard_flashers': 3,
-        'rearview_mirror': 3,
-        'exterior_mirrors': 3,
-        'remote_mirror_control': 2,
-        'glass_condition': 4,
-        'window_tint': 2,
-        'dome_courtesy_lights': 2,
-        'power_windows': 3,
-        'window_locks': 2,
-        'audio_system': 3,
-        'audio_speakers': 2,
-        'antenna': 2,
-        'clock_operation': 1,
-        'power_outlet': 2,
-        'doors_operation': 4,
-        'door_locks': 3,
-        'keyless_entry': 2,
-        'master_keys': 3,
-        'theft_deterrent': 2,
-        'seat_adjustments': 3,
-        'seat_heaters': 2,
-        'memory_seat': 2,
-        'headrests': 3,
-        'rear_defogger': 3,
-        'defogger_indicator': 2,
-        'luggage_light': 2,
-        'hood_trunk_latches': 3,
-        'emergency_trunk_release': 3,
-        'fuel_door_release': 2,
+        'instrument_panel': 7,  # Increased - safety information display
+        'hvac_panel': 5,
+        'instrument_dimmer': 4,
+        'hazard_flashers': 6,  # Increased - emergency safety device
+        'rearview_mirror': 6,  # Increased - visibility safety
+        'exterior_mirrors': 6,  # Increased - visibility safety
+        'remote_mirror_control': 4,
+        'glass_condition': 7,  # Increased - visibility safety
+        'window_tint': 5,  # Increased - legal compliance
+        'dome_courtesy_lights': 4,
+        'power_windows': 5,
+        'window_locks': 4,
+        'audio_system': 4,
+        'audio_speakers': 4,
+        'antenna': 4,
+        'clock_operation': 4,
+        'power_outlet': 4,
+        'doors_operation': 6,  # Increased - safety and security
+        'door_locks': 6,  # Increased - security
+        'keyless_entry': 4,
+        'master_keys': 6,  # Increased - security and convenience
+        'theft_deterrent': 5,  # Increased - security
+        'seat_adjustments': 5,  # Increased - driver safety positioning
+        'seat_heaters': 4,
+        'memory_seat': 4,
+        'headrests': 6,  # Increased - safety in accidents
+        'rear_defogger': 6,  # Increased - visibility safety
+        'defogger_indicator': 4,
+        'luggage_light': 4,
+        'hood_trunk_latches': 5,
+        'emergency_trunk_release': 6,  # Increased - safety feature
+        'fuel_door_release': 4,
+        'front_wipers': 7,  # Added - critical for visibility
+        'rear_wipers': 5,  # Added - visibility
+        'wiper_rest_position': 5,  # Added
+        'washer_fluid_spray': 6,  # Added - visibility safety
     }
     
-    # Appearance and Minor Systems (Weight: 1-3 points each)
+    # Appearance and Minor Systems (Weight: 2-5 points each) - Lower priority
     minor_systems = {
-        'tilt_telescopic_steering': 2,
-        'washer_fluid_spray': 3,
-        'front_wipers': 3,
-        'rear_wipers': 2,
-        'wiper_rest_position': 2,
-        'wiper_blade_replacement': 2,
-        'underhood_labels': 1,
-        'ashtrays': 1,
-        'headliner_trim': 2,
-        'floor_mats': 2,
-        'luggage_cleanliness': 2,
-        'spare_tire_cover': 2,
-        'spare_tire_present': 3,
-        'spare_tire_tread': 3,
-        'spare_tire_pressure': 3,
-        'spare_tire_damage': 2,
-        'spare_tire_secured': 2,
-        'jack_tools': 2,
-        'acceptable_aftermarket': 1,
-        'unacceptable_removal': 1,
-        'body_surface': 3,
-        'exterior_cleanliness': 2,
-        'paint_finish': 2,
-        'paint_scratches': 2,
-        'wheels_cleanliness': 2,
-        'wheel_wells': 1,
-        'tires_dressed': 1,
-        'engine_compartment_clean': 2,
-        'insulation_pad': 1,
-        'engine_dressed': 1,
-        'door_jambs': 1,
-        'glove_console': 1,
-        'cabin_air_filter': 2,
-        'seats_carpets': 2,
-        'vehicle_odors': 2,
-        'glass_cleanliness': 1,
-        'interior_debris': 1,
-        'dash_vents': 1,
-        'crevices_clean': 1,
-        'upholstery_panels': 2,
-        'paint_repairs': 2,
-        'glass_repairs': 2,
-        'bumpers_condition': 2,
-        'interior_surfaces': 2,
-        'sunroof_convertible': 2,
-        'seat_heaters_optional': 2,
-        'navigation_system': 2,
-        'head_unit_software': 1,
-        'transfer_case': 3,
-        'truck_bed_condition': 2,
-        'truck_bed_liner': 1,
-        'backup_camera': 2,
+        'tilt_telescopic_steering': 4,  # Increased - driver comfort and safety
+        'wiper_blade_replacement': 5,  # Increased - visibility safety
+        'underhood_labels': 2,
+        'ashtrays': 2,
+        'headliner_trim': 3,
+        'floor_mats': 3,
+        'luggage_cleanliness': 3,
+        'spare_tire_cover': 3,
+        'spare_tire_present': 5,  # Increased - emergency preparedness
+        'spare_tire_tread': 5,  # Increased - emergency safety
+        'spare_tire_pressure': 5,  # Increased - emergency readiness
+        'spare_tire_damage': 4,  # Increased
+        'spare_tire_secured': 4,  # Increased - safety during transport
+        'jack_tools': 4,  # Increased - emergency preparedness
+        'acceptable_aftermarket': 3,
+        'unacceptable_removal': 2,
+        'body_surface': 4,
+        'exterior_cleanliness': 3,
+        'paint_finish': 3,
+        'paint_scratches': 3,
+        'wheels_cleanliness': 3,
+        'wheel_wells': 2,
+        'tires_dressed': 2,
+        'engine_compartment_clean': 3,
+        'insulation_pad': 2,
+        'engine_dressed': 2,
+        'door_jambs': 2,
+        'glove_console': 2,
+        'cabin_air_filter': 4,  # Increased - air quality and HVAC efficiency
+        'seats_carpets': 3,
+        'vehicle_odors': 4,  # Increased - indicates potential issues
+        'glass_cleanliness': 3,  # Increased - visibility
+        'interior_debris': 2,
+        'dash_vents': 2,
+        'crevices_clean': 2,
+        'upholstery_panels': 3,
+        'paint_repairs': 4,  # Increased - indicates accident history
+        'glass_repairs': 4,  # Increased - safety and indicates damage
+        'bumpers_condition': 4,  # Increased - safety equipment
+        'interior_surfaces': 3,
+        'sunroof_convertible': 3,
+        'seat_heaters_optional': 3,
+        'navigation_system': 3,
+        'head_unit_software': 2,
+        'transfer_case': 5,  # Increased - important for 4WD vehicles
+        'truck_bed_condition': 4,  # Increased - structural integrity
+        'truck_bed_liner': 3,
+        'backup_camera': 4,  # Increased - safety feature
     }
     
-    # Advanced and Hybrid Systems (Weight: 2-4 points each)
+    # Advanced and Hybrid Systems (Weight: 4-8 points each) - Variable priority
     advanced_systems = {
-        'sos_indicator': 2,
-        'lane_keep_assist': 3,
-        'adaptive_cruise': 3,
-        'parking_assist': 2,
-        'hybrid_battery': 4,
-        'battery_control_module': 4,
-        'hybrid_power_mgmt': 4,
-        'electric_motor': 4,
-        'ecvt_operation': 3,
-        'power_inverter': 3,
-        'inverter_coolant': 3,
-        'ev_modes': 2,
-        'hybrid_park_mechanism': 3,
-        'multi_info_display': 2,
-        'touch_tracer_display': 2,
-        'hill_start_assist': 3,
-        'remote_ac': 2,
-        'solar_ventilation': 2,
+        'sos_indicator': 5,  # Increased - emergency safety system
+        'lane_keep_assist': 6,  # Increased - active safety system
+        'adaptive_cruise': 6,  # Increased - safety and convenience
+        'parking_assist': 5,  # Increased - accident prevention
+        'hybrid_battery': 8,  # Increased - critical for hybrid operation
+        'battery_control_module': 7,  # Increased - critical system
+        'hybrid_power_mgmt': 7,  # Increased - critical system
+        'electric_motor': 7,  # Increased - critical for hybrid/EV
+        'ecvt_operation': 6,  # Increased - transmission critical
+        'power_inverter': 6,  # Increased - critical component
+        'inverter_coolant': 5,  # Increased - prevents overheating
+        'ev_modes': 4,
+        'hybrid_park_mechanism': 6,  # Increased - safety system
+        'multi_info_display': 4,
+        'touch_tracer_display': 4,
+        'hill_start_assist': 6,  # Increased - safety feature
+        'remote_ac': 4,
+        'solar_ventilation': 4,
     }
     
     return {
@@ -485,7 +490,13 @@ def get_initial_inspection_field_weights():
 
 def calculate_initial_inspection_health_index(inspection) -> Tuple[str, str]:
     """
-    Calculate vehicle health index based on 160-point initial inspection results.
+    Enhanced vehicle health index calculation for 160-point initial inspection.
+    
+    This redesigned algorithm provides:
+    - Dynamic weighting based on vehicle age and mileage
+    - Improved severity scoring with more granular penalties
+    - System-specific multipliers for critical safety components
+    - Comprehensive failure analysis with contextual adjustments
     
     Args:
         inspection: InitialInspection model instance with completed form data
@@ -496,71 +507,288 @@ def calculate_initial_inspection_health_index(inspection) -> Tuple[str, str]:
         - inspection_result: One of the RESULT_CHOICES from Inspection model
     """
     
-    # Get field weights
+    # Get enhanced field weights
     field_weights = get_initial_inspection_field_weights()
     
-    # Combine all systems
-    all_systems = {}
-    for category in field_weights.values():
-        all_systems.update(category)
+    # Get vehicle context for dynamic adjustments
+    vehicle = inspection.vehicle
+    vehicle_age = _calculate_vehicle_age(vehicle)
+    mileage = inspection.mileage_at_inspection or 0
     
-    # Calculate scores
+    # Calculate age and mileage factors
+    age_factor = _calculate_age_factor(vehicle_age)
+    mileage_factor = _calculate_mileage_factor(mileage)
+    
+    # Initialize scoring variables
     total_possible_score = 0
     actual_score = 0
+    weighted_failures = 0
+    critical_failures = 0
     major_failures = 0
     minor_failures = 0
-    critical_failures = 0
+    safety_critical_count = 0
     
-    for field_name, weight in all_systems.items():
-        field_value = getattr(inspection, field_name, None)
+    # System-specific failure tracking
+    system_failures = {
+        'critical': [],
+        'important': [],
+        'standard': [],
+        'interior': [],
+        'minor': [],
+        'advanced': []
+    }
+    
+    # Process each system category
+    for category_name, category_fields in field_weights.items():
+        category_multiplier = _get_category_multiplier(category_name)
         
-        if field_value:  # Only count if field was actually inspected
-            total_possible_score += weight
+        for field_name, base_weight in category_fields.items():
+            field_value = getattr(inspection, field_name, None)
             
-            if field_value == 'pass':
-                actual_score += weight
-            elif field_value == 'minor' or field_value == 'needs_attention':
-                actual_score += weight * 0.7  # 70% score for minor issues
-                minor_failures += 1
-            elif field_value == 'major':
-                actual_score += weight * 0.3  # 30% score for major issues
-                major_failures += 1
-                # Check if this is a critical system
-                if field_name in field_weights['critical']:
-                    critical_failures += 1
-            elif field_value == 'fail':
-                # 0% score for complete failures
-                if field_name in field_weights['critical']:
-                    critical_failures += 1
-                else:
-                    major_failures += 1
-            # 'na' (Not Applicable) doesn't affect the score
+            if field_value and field_value != 'na':  # Only count inspected fields
+                # Apply dynamic weight adjustments
+                adjusted_weight = _calculate_adjusted_weight(
+                    base_weight, category_name, field_name, age_factor, mileage_factor
+                )
+                
+                total_possible_score += adjusted_weight
+                
+                # Calculate score based on field value with enhanced penalties
+                field_score, failure_severity = _calculate_field_score(
+                    field_value, adjusted_weight, category_name, field_name
+                )
+                
+                actual_score += field_score
+                
+                # Track failures by category and severity
+                if failure_severity > 0:
+                    system_failures[category_name].append({
+                        'field': field_name,
+                        'severity': field_value,
+                        'weight': adjusted_weight,
+                        'score_impact': adjusted_weight - field_score
+                    })
+                    
+                    # Count failures by type
+                    if field_value == 'fail':
+                        if category_name == 'critical':
+                            critical_failures += 1
+                            safety_critical_count += 1
+                        else:
+                            major_failures += 1
+                    elif field_value == 'major':
+                        major_failures += 1
+                        if category_name == 'critical':
+                            safety_critical_count += 1
+                    elif field_value in ['minor', 'needs_attention']:
+                        minor_failures += 1
+                    
+                    weighted_failures += failure_severity * category_multiplier
     
-    # Calculate health index percentage
+    # Calculate base health percentage
     if total_possible_score > 0:
-        health_percentage = (actual_score / total_possible_score) * 100
+        base_health_percentage = (actual_score / total_possible_score) * 100
     else:
-        health_percentage = 0
+        base_health_percentage = 0
     
-    # Determine health index category
-    if health_percentage >= 90:
-        health_index = "Excellent (90-100%)"
-    elif health_percentage >= 80:
-        health_index = "Good (80-89%)"
-    elif health_percentage >= 70:
-        health_index = "Fair (70-79%)"
-    elif health_percentage >= 60:
-        health_index = "Poor (60-69%)"
-    else:
-        health_index = "Critical (<60%)"
+    # Apply contextual adjustments
+    adjusted_health_percentage = _apply_contextual_adjustments(
+        base_health_percentage, 
+        critical_failures, 
+        safety_critical_count,
+        weighted_failures,
+        system_failures,
+        vehicle_age,
+        mileage
+    )
     
-    # Determine inspection result based on failures and health score
-    inspection_result = _determine_initial_inspection_result(
-        health_percentage, critical_failures, major_failures, minor_failures, inspection
+    # Determine health index category with enhanced thresholds
+    health_index = _determine_health_index_category(
+        adjusted_health_percentage, 
+        critical_failures, 
+        safety_critical_count
+    )
+    
+    # Determine inspection result with enhanced logic
+    inspection_result = _determine_enhanced_inspection_result(
+        adjusted_health_percentage, 
+        critical_failures, 
+        major_failures, 
+        minor_failures,
+        safety_critical_count,
+        system_failures
     )
     
     return health_index, inspection_result
 
+
+# Enhanced helper functions for the redesigned health index calculation
+
+def _calculate_vehicle_age(vehicle):
+    """Calculate vehicle age in years from manufacture year."""
+    from datetime import datetime
+    try:
+        current_year = datetime.now().year
+        return max(0, current_year - vehicle.manufacture_year)
+    except:
+        return 0
+
+def _calculate_age_factor(age_years):
+    """Calculate age adjustment factor (1.0 = no adjustment, >1.0 = more lenient)."""
+    if age_years <= 3:
+        return 1.0  # New vehicles - standard expectations
+    elif age_years <= 7:
+        return 1.05  # Slightly more lenient for mid-age vehicles
+    elif age_years <= 12:
+        return 1.1  # More lenient for older vehicles
+    elif age_years <= 20:
+        return 1.15  # Even more lenient for very old vehicles
+    else:
+        return 1.2  # Most lenient for classic/vintage vehicles
+
+def _calculate_mileage_factor(mileage):
+    """Calculate mileage adjustment factor based on vehicle usage."""
+    if mileage <= 30000:
+        return 1.0  # Low mileage - standard expectations
+    elif mileage <= 75000:
+        return 1.02  # Moderate mileage
+    elif mileage <= 125000:
+        return 1.05  # High mileage
+    elif mileage <= 200000:
+        return 1.08  # Very high mileage
+    else:
+        return 1.1  # Extremely high mileage
+
+def _get_category_multiplier(category_name):
+    """Get severity multiplier for different system categories."""
+    multipliers = {
+        'critical': 3.0,    # Critical safety systems have highest impact
+        'important': 2.0,   # Important mechanical systems
+        'standard': 1.5,    # Standard operational systems
+        'interior': 1.2,    # Interior and convenience systems
+        'minor': 1.0,       # Appearance and minor systems
+        'advanced': 1.8,    # Advanced and hybrid systems
+    }
+    return multipliers.get(category_name, 1.0)
+
+def _calculate_adjusted_weight(base_weight, category, field_name, age_factor, mileage_factor):
+    """Calculate dynamically adjusted weight for a field."""
+    # Base adjustment for age and mileage
+    adjusted_weight = base_weight * age_factor * mileage_factor
+    
+    # Special adjustments for specific fields
+    high_wear_items = [
+        'brake_pad_life', 'tread_depth', 'tire_condition', 'brake_rotors_drums',
+        'wiper_blade_replacement', 'cabin_air_filter', 'air_filter_condition'
+    ]
+    
+    if field_name in high_wear_items:
+        # These items are expected to wear with age/mileage
+        adjusted_weight *= 1.1
+    
+    return round(adjusted_weight, 2)
+
+def _calculate_field_score(field_value, weight, category, field_name):
+    """Calculate score and failure severity for a field."""
+    if field_value == 'pass':
+        return weight, 0
+    elif field_value == 'minor' or field_value == 'needs_attention':
+        # Minor issues: 75% score for critical, 80% for others
+        multiplier = 0.75 if category == 'critical' else 0.80
+        return weight * multiplier, 1
+    elif field_value == 'major':
+        # Major issues: 40% score for critical, 50% for others
+        multiplier = 0.40 if category == 'critical' else 0.50
+        return weight * multiplier, 2
+    elif field_value == 'fail':
+        # Complete failures: 0% score, but critical failures are worse
+        return 0, 4 if category == 'critical' else 3
+    else:
+        return weight, 0  # Default for 'na' or unknown values
+
+def _apply_contextual_adjustments(base_percentage, critical_failures, safety_critical_count, 
+                                weighted_failures, system_failures, vehicle_age, mileage):
+    """Apply contextual adjustments to the base health percentage."""
+    adjusted_percentage = base_percentage
+    
+    # Severe penalty for multiple critical system failures
+    if critical_failures >= 3:
+        adjusted_percentage *= 0.7  # 30% penalty
+    elif critical_failures >= 2:
+        adjusted_percentage *= 0.8  # 20% penalty
+    elif critical_failures >= 1:
+        adjusted_percentage *= 0.9  # 10% penalty
+    
+    # Additional penalty for safety-critical issues
+    if safety_critical_count >= 5:
+        adjusted_percentage *= 0.85
+    elif safety_critical_count >= 3:
+        adjusted_percentage *= 0.9
+    
+    # Penalty for widespread system failures
+    failed_systems = sum(1 for failures in system_failures.values() if failures)
+    if failed_systems >= 5:
+        adjusted_percentage *= 0.9
+    elif failed_systems >= 4:
+        adjusted_percentage *= 0.95
+    
+    # Bonus for well-maintained older vehicles
+    if vehicle_age > 10 and base_percentage > 85:
+        adjusted_percentage = min(100, adjusted_percentage * 1.02)
+    
+    return max(0, min(100, adjusted_percentage))
+
+def _determine_health_index_category(percentage, critical_failures, safety_critical_count):
+    """Determine health index category with enhanced logic."""
+    # Override for critical safety failures
+    if critical_failures >= 3 or safety_critical_count >= 5:
+        return "Critical - Unsafe (<40%)"
+    elif critical_failures >= 2 or safety_critical_count >= 3:
+        return "Poor - Safety Concerns (40-59%)"
+    
+    # Standard percentage-based categories with safety considerations
+    if percentage >= 95:
+        return "Excellent - Like New (95-100%)"
+    elif percentage >= 90:
+        return "Excellent - Very Good Condition (90-94%)"
+    elif percentage >= 85:
+        return "Good - Well Maintained (85-89%)"
+    elif percentage >= 80:
+        return "Good - Minor Issues (80-84%)"
+    elif percentage >= 75:
+        return "Fair - Moderate Issues (75-79%)"
+    elif percentage >= 70:
+        return "Fair - Multiple Issues (70-74%)"
+    elif percentage >= 60:
+        return "Poor - Significant Issues (60-69%)"
+    elif percentage >= 40:
+        return "Poor - Major Repairs Needed (40-59%)"
+    else:
+        return "Critical - Extensive Repairs Required (<40%)"
+
+def _determine_enhanced_inspection_result(percentage, critical_failures, major_failures, 
+                                        minor_failures, safety_critical_count, system_failures):
+    """Enhanced inspection result determination with comprehensive failure analysis."""
+    
+    # Immediate failure conditions
+    if critical_failures >= 3 or safety_critical_count >= 5 or percentage < 35:
+        return "FAI"  # Failed - Unsafe
+    
+    # Major failure conditions
+    if critical_failures >= 2 or safety_critical_count >= 3 or percentage < 50:
+        return "FJD"  # Failed due to major Defects
+    
+    # Minor failure conditions
+    if critical_failures >= 1 or major_failures > 10 or percentage < 65:
+        return "FMD"  # Failed due to minor Defects
+    
+    # Passing conditions with defects
+    if major_failures > 5 or minor_failures > 15:
+        return "PJD"  # Passed with major Defects
+    elif major_failures > 0 or minor_failures > 8:
+        return "PMD"  # Passed with minor Defects
+    else:
+        return "PAS"  # Passed
 
 def _determine_initial_inspection_result(
     health_percentage: float, 
@@ -570,30 +798,16 @@ def _determine_initial_inspection_result(
     inspection
 ) -> str:
     """
-    Determine the inspection result based on health percentage and failure counts.
-    
-    Returns one of: "PAS", "PMD", "PJD", "FMD", "FJD", "FAI"
+    Legacy function - redirects to enhanced result determination.
+    Maintained for backward compatibility.
     """
+    safety_critical_count = len(inspection.safety_critical_issues) if hasattr(inspection, 'safety_critical_issues') else critical_failures
+    system_failures = {}  # Simplified for legacy compatibility
     
-    # For initial inspections, we use stricter criteria due to the comprehensive nature
-    
-    # Critical system failures result in immediate failure
-    if critical_failures >= 3 or health_percentage < 40:
-        return "FAI"  # Failed
-    elif critical_failures >= 1 and health_percentage < 60:
-        return "FJD"  # Failed due to major Defects
-    elif major_failures > 8 or health_percentage < 70:
-        return "FMD"  # Failed due to minor Defects
-    
-    # No critical failures - determine pass level
-    if major_failures == 0 and minor_failures <= 5:
-        return "PAS"  # Passed
-    elif major_failures <= 2 and minor_failures <= 10:
-        return "PMD"  # Passed with minor Defects
-    elif major_failures <= 5:
-        return "PJD"  # Passed with major Defects
-    else:
-        return "FMD"  # Failed due to minor Defects
+    return _determine_enhanced_inspection_result(
+        health_percentage, critical_failures, major_failures, 
+        minor_failures, safety_critical_count, system_failures
+    )
 
 
 def categorize_initial_inspection_failures(inspection) -> Dict:
@@ -675,8 +889,9 @@ def calculate_system_scores(inspection) -> Dict[str, float]:
             system_scores[system_name] = 0.0
     
     return system_scores
-de
-f get_initial_inspection_recommendations(inspection) -> List[str]:
+
+
+def get_initial_inspection_recommendations(inspection) -> List[str]:
     """
     Generate maintenance recommendations based on initial inspection results.
     
@@ -912,18 +1127,20 @@ def generate_initial_inspection_number() -> str:
             number_part = int(last_number.split('-')[-1])
             next_number = number_part + 1
         except (ValueError, IndexError):
-            next_number = 1
+            next_number = 1000
     else:
-        next_number = 1
+        next_number = 1000
     
     return f"{prefix}{next_number:04d}"
-def 
-generate_initial_inspection_summary(inspection) -> Dict:
+
+
+def generate_initial_inspection_summary(inspection) -> Dict:
     """
     Generate a comprehensive summary of the initial inspection results.
     
     Args:
         inspection: InitialInspection model instance with completed form data
+{{ ... }}
         
     Returns:
         Dictionary containing comprehensive inspection summary data
@@ -1216,8 +1433,7 @@ def export_initial_inspection_data(inspection, format_type='json') -> str:
     
     else:
         raise ValueError(f"Unsupported format type: {format_type}")
-def
- validate_initial_inspection_completion(inspection) -> Tuple[bool, List[str]]:
+def validate_initial_inspection_completion(inspection) -> Tuple[bool, List[str]]:
     """
     Validate that an initial inspection is ready for completion and scoring.
     
