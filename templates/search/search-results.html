@@ -330,17 +330,17 @@
 
             <!-- Initial Inspections Information Block -->
             {% if initial_inspections %}
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-              <div class="flex items-center justify-between mb-3">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 sm:p-4 mb-4">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
                 <div class="flex items-center">
-                  <i class="fas fa-search-plus text-amber-600 text-xl mr-3"></i>
-                  <div>
-                    <h3 class="text-lg font-semibold text-amber-800">Initial Vehicle Inspections</h3>
-                    <p class="text-sm text-amber-700">Comprehensive 160-point pre-purchase inspections</p>
+                  <i class="fas fa-search-plus text-amber-600 text-lg sm:text-xl mr-2 sm:mr-3 flex-shrink-0"></i>
+                  <div class="min-w-0">
+                    <h3 class="text-base sm:text-lg font-semibold text-amber-800">Initial Vehicle Inspections</h3>
+                    <p class="text-xs sm:text-sm text-amber-700">Comprehensive 160-point pre-purchase inspections</p>
                   </div>
                 </div>
-                <div class="text-right">
-                  <div class="text-2xl font-bold text-amber-600">{{ initial_inspections|length }}</div>
+                <div class="text-center sm:text-right flex-shrink-0">
+                  <div class="text-xl sm:text-2xl font-bold text-amber-600">{{ initial_inspections|length }}</div>
                   <div class="text-xs text-amber-600">
                     {% if initial_inspections|length == 1 %}
                     Initial Inspection
@@ -351,24 +351,24 @@
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div class="space-y-4 mb-4">
                 {% for initial_inspection in initial_inspections %}
-                <div class="bg-white border border-amber-200 rounded-lg p-3">
-                  <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center">
+                <div class="bg-white border border-amber-200 rounded-lg p-3 sm:p-4">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                    <div class="flex items-center min-w-0">
                       <div
-                        class="bg-amber-100 text-amber-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-2">
+                        class="bg-amber-100 text-amber-800 rounded-full w-6 h-6 flex items-center justify-center text-xs font-semibold mr-2 flex-shrink-0">
                         {{ forloop.counter }}
                       </div>
-                      <div>
-                        <h4 class="font-semibold text-gray-800 text-sm">{{ initial_inspection.inspection_number }}</h4>
+                      <div class="min-w-0">
+                        <h4 class="font-semibold text-gray-800 text-sm break-words">{{ initial_inspection.inspection_number }}</h4>
                         <p class="text-xs text-gray-500">
                           <i class="fas fa-calendar mr-1"></i>
                           {{ initial_inspection.inspection_date|date:"M j, Y" }}
                         </p>
                       </div>
                     </div>
-                    <div class="text-right">
+                    <div class="flex-shrink-0">
                       {% if initial_inspection.is_completed %}
                       <span
                         class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -383,20 +383,20 @@
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-2 gap-2 text-xs mb-3">
+                  <div class="space-y-3 mb-3">
                     <div>
-                      <span class="text-gray-500">Progress:</span>
+                      <span class="text-gray-500 text-xs">Progress:</span>
                       <div class="flex items-center mt-1">
-                        <div class="w-12 bg-gray-200 rounded-full h-1.5 mr-2">
-                          <div class="bg-amber-600 h-1.5 rounded-full"
+                        <div class="flex-1 bg-gray-200 rounded-full h-2 mr-3">
+                          <div class="bg-amber-600 h-2 rounded-full"
                             style="width: {{ initial_inspection.completion_percentage }}%"></div>
                         </div>
-                        <span class="text-gray-600 font-medium">{{ initial_inspection.completion_percentage }}%</span>
+                        <span class="text-gray-600 font-medium text-sm flex-shrink-0">{{ initial_inspection.completion_percentage }}%</span>
                       </div>
                     </div>
                     <div>
-                      <span class="text-gray-500">Technician:</span>
-                      <p class="font-medium text-gray-700 mt-1">
+                      <span class="text-gray-500 text-xs">Technician:</span>
+                      <p class="font-medium text-gray-700 mt-1 text-sm break-words">
                         {% if initial_inspection.technician %}
                         {{ initial_inspection.technician.get_full_name|default:initial_inspection.technician.username }}
                         {% else %}
@@ -408,7 +408,7 @@
 
                   <!-- Vehicle Health Index and Results -->
                   <div class="bg-gray-50 rounded-lg p-3 mb-3">
-                    <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3 text-xs">
                       <div>
                         <span class="text-gray-500">Health Index:</span>
                         <div class="mt-1">
@@ -487,7 +487,7 @@
                       </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 gap-3 text-xs mt-2">
+                    <div class="space-y-3 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-3 text-xs mt-3">
                       <div>
                         <span class="text-gray-500">Failed Points:</span>
                         <div class="mt-1">
@@ -544,14 +544,14 @@
                   </div>
                   {% endif %}
 
-                  <div class="flex items-center justify-between">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div class="text-xs text-gray-500">
                       <i class="fas fa-tachometer-alt mr-1"></i>
                       {{ initial_inspection.mileage_at_inspection|floatformat:0 }} miles
                     </div>
                     <button
                       onclick="openInitialInspectionModal('{{ initial_inspection.id }}', '{{ initial_inspection.inspection_number }}')"
-                      class="px-3 py-1 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 transition-colors duration-200">
+                      class="px-3 py-2 bg-amber-600 text-white rounded text-xs hover:bg-amber-700 transition-colors duration-200 w-full sm:w-auto">
                       <i class="fas fa-eye mr-1"></i>View Details
                     </button>
                   </div>
@@ -561,10 +561,10 @@
 
               <div class="bg-amber-100 border border-amber-300 rounded-lg p-3">
                 <div class="flex items-start">
-                  <i class="fas fa-info-circle text-amber-600 mt-0.5 mr-2"></i>
-                  <div class="text-sm text-amber-800">
+                  <i class="fas fa-info-circle text-amber-600 mt-0.5 mr-2 flex-shrink-0"></i>
+                  <div class="text-xs sm:text-sm text-amber-800 min-w-0">
                     <strong>About Initial Inspections:</strong> These comprehensive 160-point inspections are conducted
-                    before a vehicle is onboarded to Carfinity AutoCare to establish a baseline Vehicle Health Index and genneraly assess its overall condition, identify potential issues, and provide purchase
+                    before a vehicle is onboarded to Carfinity AutoCare to establish a baseline Vehicle Health Index and generally assess its overall condition, identify potential issues, and provide purchase
                     recommendations. They include road testing, structural analysis, and detailed component evaluation.
                   </div>
                 </div>

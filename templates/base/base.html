@@ -1,6 +1,9 @@
 {% load static %}
 
 <html lang="en">
+  {% load pwa %}
+  {% progressive_web_app_meta %}
+  <link rel="manifest" href="{% static 'manifest.json' %}">
   <head>
             <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-NLWHDSDVKB"></script>

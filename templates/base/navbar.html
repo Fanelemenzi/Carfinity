@@ -103,8 +103,10 @@
                 </svg>
               </button>
               <div x-show="open" class="mt-2 ml-4 space-y-2" style="display: none;">
-                <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">For Business</a>
                 <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">Individuals</a>
+                <a href="{% url 'insurance:insurance_dashboard' %}" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">Insurance</a>
+                <a href="{% url 'insurance:insurance_dashboard' %}" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">Banks and Financial Institutions</a>
+                <a href="#" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">Automotive Dealerships</a>
                 <a href="{% url 'maintenance_history:technician_dashboard' %}" class="block text-sm text-gray-700 hover:bg-gray-100 rounded px-2 py-1 transition duration-150" x-on:click="mobileNavOpen = false">Technicians</a>
               </div>
             </li>
