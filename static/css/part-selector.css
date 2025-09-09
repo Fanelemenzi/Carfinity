@@ -3543,7 +3543,7 @@ field:focus-within {
 
 /* Typography Utilities */
 .text-heading {
-    font-family: "Playfair Display", serif;
+    font-family: "Poppins", sans-serif;
     font-weight: 600;
 }
 
