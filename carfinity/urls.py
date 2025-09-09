@@ -1,5 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.http import HttpResponse
+from django.views.generic import RedirectView
 from . import settings
 from django.conf.urls.static import static
 
@@ -10,4 +12,5 @@ urlpatterns = [
     path('', include('maintenance_history.urls')),
     path('', include('onboarding.urls', namespace='onboarding')),
     path('insurance/', include('insurance_app.urls')),
-] #+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('favicon.ico', RedirectView.as_view(url='/static/images/icon.png', permanent=True)),
+] #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
