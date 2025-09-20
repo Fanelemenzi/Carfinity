@@ -1,0 +1,15 @@
+<!-- Session info template -->
+<!-- This template is used by the get_session_info inclusion tag -->
+{% if has_session %}
+<div class="session-info">
+    <div class="session-details">
+        <span class="session-key">{{ session_key }}</span>
+        {% if last_dashboard %}
+            <span class="last-dashboard">{{ last_dashboard }}</span>
+        {% endif %}
+        {% if dashboard_switches %}
+            <span class="switch-count">{{ dashboard_switches }}</span>
+        {% endif %}
+    </div>
+</div>
+{% endif %}

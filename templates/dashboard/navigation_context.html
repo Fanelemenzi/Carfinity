@@ -1,0 +1,19 @@
+<!-- Navigation context template -->
+<!-- This template is used by the get_navigation_context inclusion tag -->
+<div class="navigation-context">
+    {% if user and is_authenticated %}
+        <div class="user-info">
+            <span class="username">{{ user.username }}</span>
+            {% if current_dashboard %}
+                <span class="current-dashboard">{{ current_dashboard }}</span>
+            {% endif %}
+        </div>
+        {% if switch_options %}
+            <div class="dashboard-switches">
+                {% for option in switch_options %}
+                    <a href="{{ option.url }}" class="dashboard-switch">{{ option.display_name }}</a>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+</div>

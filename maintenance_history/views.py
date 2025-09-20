@@ -52,6 +52,24 @@ class TechnicianDashboardView(LoginRequiredMixin, ListView):
             is_completed=True
         ).count()
         
+        # Get assessment statistics
+        try:
+            from assessments.models import VehicleAssessment
+            user_assessments = VehicleAssessment.objects.filter(user=self.request.user)
+            context['total_assessments'] = user_assessments.count()
+            context['pending_assessments'] = user_assessments.filter(
+                status__in=['pending', 'in_progress']
+            ).count()
+            context['completed_assessments_today'] = user_assessments.filter(
+                completed_date__date=timezone.now().date(),
+                status='completed'
+            ).count()
+        except ImportError:
+            # If assessments app is not available, set defaults
+            context['total_assessments'] = 0
+            context['pending_assessments'] = 0
+            context['completed_assessments_today'] = 0
+        
         return context
 
 class CreateMaintenanceRecordView(LoginRequiredMixin, CreateView):

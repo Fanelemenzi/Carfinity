@@ -1,0 +1,178 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Start Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Start New Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-danger mr-2"></i>
+                            Start New Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-danger">01. Vehicle & Assessment Details</div>
+            <div class="text-sm font-medium text-gray-400">02. Location & Context</div>
+            <div class="text-sm font-medium text-gray-400">03. 120-Point Assessment</div>
+            <div class="text-sm font-medium text-gray-400">04. Results & Report</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        120-Point Vehicle Assessment
+                    </h2>
+                    <p class="text-gray-600">Enter the basic vehicle and assessment details to begin the comprehensive damage evaluation process.</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step 1 of 14</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Vehicle & Assessment Details</h3>
+                <p class="text-sm text-gray-500">Provide basic information to start the assessment</p>
+            </div>
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Assessment Type -->
+                    <div>
+                        <label for="{{ form.assessment_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Assessment Type <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.assessment_type }}
+                        {% if form.assessment_type.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.assessment_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Vehicle -->
+                    <div>
+                        <label for="{{ form.vehicle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Vehicle <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.vehicle }}
+                        {% if form.vehicle.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.vehicle.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Select the vehicle to be assessed</p>
+                    </div>
+
+                    <!-- Assessor Name -->
+                    <div>
+                        <label for="{{ form.assessor_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Assessor Name <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.assessor_name }}
+                        {% if form.assessor_name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.assessor_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Assessor Certification -->
+                    <div>
+                        <label for="{{ form.assessor_certification.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Assessor Certification
+                        </label>
+                        {{ form.assessor_certification }}
+                        {% if form.assessor_certification.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.assessor_certification.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Certification number or credentials</p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-between items-center space-x-4">
+                    <a href="{% url 'assessments:dashboard' %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        Continue to Location Details<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-red-600"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Assessment Types</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Crash Assessment:</strong> Post-accident damage evaluation</li>
+                            <li><strong>Pre-Purchase Assessment:</strong> Vehicle condition before purchase</li>
+                            <li><strong>Periodic Assessment:</strong> Regular maintenance evaluation</li>
+                            <li><strong>Insurance Claim:</strong> Insurance-related damage assessment</li>
+                            <li><strong>Total Loss Assessment:</strong> Comprehensive loss evaluation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

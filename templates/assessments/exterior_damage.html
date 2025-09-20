@@ -1,0 +1,438 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Exterior Damage Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exterior Damage Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-danger mr-2"></i>
+                            Exterior Damage Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01. Vehicle Details ✓</div>
+            <div class="text-sm font-medium text-success">02. Location & Context ✓</div>
+            <div class="text-sm font-medium text-danger">03. Exterior Damage Assessment</div>
+            <div class="text-sm font-medium text-gray-400">04. Continue Assessment...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Exterior Body Damage Assessment
+                    </h2>
+                    <p class="text-gray-600">Evaluate all exterior components for damage (Points 1-38)</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                    <button onclick="updateStatus()" class="text-sm text-red-600 hover:text-red-800 font-medium">Update Status</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Update Modal -->
+        <div id="statusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Update Assessment Status</h3>
+                    </div>
+                    <form id="statusForm" method="post" action="{% url 'assessments:update_status' assessment.id %}">
+                        {% csrf_token %}
+                        <div class="px-6 py-4">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+                            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="pending" {% if assessment.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="in_progress" {% if assessment.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="under_review" {% if assessment.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                                <option value="completed" {% if assessment.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="disputed" {% if assessment.status == 'disputed' %}selected{% endif %}>Disputed</option>
+                                <option value="cancelled" {% if assessment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                            <button type="button" onclick="closeStatusModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Cancel
+                            </button>
+                            <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Update Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Front End Assessment -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Front End Assessment (Points 1-10)</h3>
+                    <p class="text-sm text-gray-500">Evaluate front bumper, hood, grille, and headlight components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Front Bumper -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Front Bumper</label>
+                            <div class="space-y-2">
+                                {{ form.front_bumper }}
+                                {{ form.front_bumper_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Hood -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Hood</label>
+                            <div class="space-y-2">
+                                {{ form.hood }}
+                                {{ form.hood_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Front Grille -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Front Grille</label>
+                            <div class="space-y-2">
+                                {{ form.front_grille }}
+                                {{ form.front_grille_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Headlight Housings -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Headlight Housings</label>
+                            <div class="space-y-2">
+                                {{ form.headlight_housings }}
+                                {{ form.headlight_housings_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Headlight Lenses -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Headlight Lenses</label>
+                            <div class="space-y-2">
+                                {{ form.headlight_lenses }}
+                                {{ form.headlight_lenses_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Front Fenders -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Front Fenders</label>
+                            <div class="space-y-2">
+                                {{ form.front_fenders }}
+                                {{ form.front_fenders_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Panel Assessment -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Side Panel Assessment (Points 11-20)</h3>
+                    <p class="text-sm text-gray-500">Evaluate doors, mirrors, and side panel components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Driver Side Door -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Driver Side Door</label>
+                            <div class="space-y-2">
+                                {{ form.driver_side_door }}
+                                {{ form.driver_side_door_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Passenger Side Door -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Passenger Side Door</label>
+                            <div class="space-y-2">
+                                {{ form.passenger_side_door }}
+                                {{ form.passenger_side_door_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Rear Doors -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rear Doors</label>
+                            <div class="space-y-2">
+                                {{ form.rear_doors }}
+                                {{ form.rear_doors_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Side Mirrors -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Side Mirrors</label>
+                            <div class="space-y-2">
+                                {{ form.side_mirrors }}
+                                {{ form.side_mirrors_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Side Windows -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Side Windows</label>
+                            <div class="space-y-2">
+                                {{ form.side_windows }}
+                                {{ form.side_windows_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rear End Assessment -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Rear End Assessment (Points 21-30)</h3>
+                    <p class="text-sm text-gray-500">Evaluate rear bumper, trunk, and taillight components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Rear Bumper -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rear Bumper</label>
+                            <div class="space-y-2">
+                                {{ form.rear_bumper }}
+                                {{ form.rear_bumper_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Trunk/Hatch -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trunk/Hatch</label>
+                            <div class="space-y-2">
+                                {{ form.trunk_hatch }}
+                                {{ form.trunk_hatch_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Rear Quarter Panels -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rear Quarter Panels</label>
+                            <div class="space-y-2">
+                                {{ form.rear_quarter_panels }}
+                                {{ form.rear_quarter_panels_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Taillight Housings -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Taillight Housings</label>
+                            <div class="space-y-2">
+                                {{ form.taillight_housings }}
+                                {{ form.taillight_housings_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Rear Window -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Rear Window</label>
+                            <div class="space-y-2">
+                                {{ form.rear_window }}
+                                {{ form.rear_window_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roof and Pillars Assessment -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Roof and Pillars Assessment (Points 31-38)</h3>
+                    <p class="text-sm text-gray-500">Evaluate roof panel, pillars, and sunroof components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Roof Panel -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Roof Panel</label>
+                            <div class="space-y-2">
+                                {{ form.roof_panel }}
+                                {{ form.roof_panel_notes }}
+                            </div>
+                        </div>
+
+                        <!-- A-Pillars -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">A-Pillars</label>
+                            <div class="space-y-2">
+                                {{ form.a_pillars }}
+                                {{ form.a_pillars_notes }}
+                            </div>
+                        </div>
+
+                        <!-- B-Pillars -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">B-Pillars</label>
+                            <div class="space-y-2">
+                                {{ form.b_pillars }}
+                                {{ form.b_pillars_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Sunroof/Moonroof -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Sunroof/Moonroof</label>
+                            <div class="space-y-2">
+                                {{ form.sunroof_moonroof }}
+                                {{ form.sunroof_moonroof_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:incident_location' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Location
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Wheels & Tires<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Damage Severity Guide -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Damage Severity Guide
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">N</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">None</h4>
+                    <p class="text-xs text-gray-600">No damage</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-yellow-600 font-bold">L</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Light</h4>
+                    <p class="text-xs text-gray-600">Minor cosmetic damage</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-orange-600 font-bold">M</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Moderate</h4>
+                    <p class="text-xs text-gray-600">Functional damage requiring repair</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-red-600 font-bold">S</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Severe</h4>
+                    <p class="text-xs text-gray-600">Significant damage affecting safety</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-gray-600 font-bold">D</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Destroyed</h4>
+                    <p class="text-xs text-gray-600">Component needs replacement</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+
+<script>
+function updateStatus() {
+    document.getElementById('statusModal').classList.remove('hidden');
+}
+
+function closeStatusModal() {
+    document.getElementById('statusModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeStatusModal();
+    }
+});
+</script>
+{% endblock %}

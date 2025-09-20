@@ -1,0 +1,157 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a></h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    {% if app_list %}
+        <!-- Custom Authentication Management Section -->
+        <div class="module" style="margin-bottom: 30px;">
+            <h2>Group-Based Authentication Management</h2>
+            <table summary="{% trans 'Authentication management tools' %}">
+                <caption class="visually-hidden">{% trans 'Authentication management tools' %}</caption>
+                <tbody>
+                    <tr class="model-auth model-user">
+                        <th scope="row">
+                            <a href="/admin/users/user-permissions/">User Permissions Overview</a>
+                        </th>
+                        <td>View and manage user permissions, groups, and dashboard access</td>
+                    </tr>
+                    <tr class="model-auth model-group">
+                        <th scope="row">
+                            <a href="/admin/users/bulk-management/">Bulk User Management</a>
+                        </th>
+                        <td>Perform bulk operations on users (add/remove groups, sync permissions)</td>
+                    </tr>
+                    <tr class="model-auth model-permission">
+                        <th scope="row">
+                            <a href="/admin/users/permission-conflicts/">Permission Conflicts Report</a>
+                        </th>
+                        <td>View and resolve permission conflicts between groups and organizations</td>
+                    </tr>
+                    <tr class="model-organizations model-organization">
+                        <th scope="row">
+                            <a href="/admin/users/group-org-mapping/">Group-Organization Mapping</a>
+                        </th>
+                        <td>View relationships between groups and organizations</td>
+                    </tr>
+                    <tr class="model-organizations model-organization">
+                        <th scope="row">
+                            <a href="/admin/organizations/group-management/">Organization Group Management</a>
+                        </th>
+                        <td>Manage organization-group links and sync members automatically</td>
+                    </tr>
+                    <tr class="model-auth model-group">
+                        <th scope="row">
+                            <a href="/admin/users/auth-group-management/">Authentication Group Management</a>
+                        </th>
+                        <td>Configure which groups provide dashboard access and their settings</td>
+                    </tr>
+                    <tr class="model-auth model-export">
+                        <th scope="row">
+                            <a href="/admin/users/export-permissions/">Export User Permissions</a>
+                        </th>
+                        <td>Download CSV report of all user permissions and access rights</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Standard Django Admin Apps -->
+        {% for app in app_list %}
+            <div class="app-{{ app.app_label }} module">
+                <table>
+                    <caption>
+                        <a href="{{ app.app_url }}" class="section" title="{% blocktrans with name=app.name %}Models in the {{ name }} application{% endblocktrans %}">{{ app.name }}</a>
+                    </caption>
+                    {% for model in app.models %}
+                        <tr class="model-{{ model.object_name|lower }}">
+                            {% if model.admin_url %}
+                                <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                            {% else %}
+                                <th scope="row">{{ model.name }}</th>
+                            {% endif %}
+
+                            {% if model.add_url %}
+                                <td><a href="{{ model.add_url }}" class="addlink">{% trans 'Add' %}</a></td>
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+
+                            {% if model.admin_url %}
+                                {% if model.view_only %}
+                                    <td><a href="{{ model.admin_url }}" class="viewlink">{% trans 'View' %}</a></td>
+                                {% else %}
+                                    <td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+                                {% endif %}
+                            {% else %}
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>{% trans "You don't have permission to view or edit anything." %}</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div id="content-related">
+    <div class="module" id="recent-actions-module">
+        <h2>{% trans 'Authentication Quick Actions' %}</h2>
+        <ul class="actionlist">
+            <li class="addlink">
+                <a href="{% url 'admin:auth_user_add' %}">Add User</a>
+            </li>
+            <li class="addlink">
+                <a href="{% url 'admin:auth_group_add' %}">Add Group</a>
+            </li>
+            <li class="addlink">
+                <a href="{% url 'admin:organizations_organization_add' %}">Add Organization</a>
+            </li>
+            <li class="changelink">
+                <a href="/admin/users/user-permissions/">View User Permissions</a>
+            </li>
+            <li class="changelink">
+                <a href="/admin/users/permission-conflicts/">Check Conflicts</a>
+            </li>
+        </ul>
+    </div>
+
+    {% load log %}
+    {% get_admin_log 10 as admin_log for_user user %}
+    {% if admin_log %}
+    <div class="module" id="recent-actions-module">
+        <h2>{% trans 'Recent actions' %}</h2>
+        <h3>{% trans 'My actions' %}</h3>
+            {% for entry in admin_log %}
+            <ul class="actionlist">
+                <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+                    {% if entry.is_deletion or not entry.get_admin_url %}
+                        {{ entry.object_repr }}
+                    {% else %}
+                        <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+                    {% endif %}
+                    <br>
+                    {% if entry.content_type %}
+                        <span class="mini quiet">{% filter capfirst %}{{ entry.content_type.name }}{% endfilter %}</span>
+                    {% else %}
+                        <span class="mini quiet">{% trans 'Unknown content' %}</span>
+                    {% endif %}
+                </li>
+            </ul>
+            {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

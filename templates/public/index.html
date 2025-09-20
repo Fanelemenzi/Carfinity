@@ -2,266 +2,270 @@
 {% load static %}
 
 {% block content%}
-    <div>
-      <section class="relative bg-yellowGray-50 overflow-hidden" x-data="{ mobileNavOpen: false }">
-
-        <div class="relative pt-28 2xl:pt-60 lg:pb-32"><img class="hidden lg:block absolute top-0 right-0 h-full" src="{% static 'template-assets/worker1.webp' %}" alt=""/>
-          <div class="container px-4 mx-auto">
-            <div class="relative">
-              <div class="max-w-lg mx-auto lg:mx-0">
-                <div class="inline-flex items-center mb-8"><span class="inline-block mr-6">
-                    <svg width="32" height="32" viewbox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <rect width="32" height="32" rx="16" fill="#7781EE"></rect>
-                      <rect x="22.9492" y="9.63605" width="2" height="16" rx="1" transform="rotate(45 22.9492 9.63605)" fill="white"></rect>
-                      <rect x="7.62891" y="17.0431" width="2" height="7.57417" rx="1" transform="rotate(-45 7.62891 17.0431)" fill="white"></rect>
-                    </svg></span>            <span class="uppercase text-gray-900 font-medium">Cafinity AutoCare.</span></div>
-                <h1 class="text-7xl sm:text-8xl sm:text-10xl 2xl:text-12xl font-heading mb-18"><span>Extend your car's worth,</span>
-                  <div class="inline-block pr-12 relative"><span class="relative z-10">not your worries.</span><img class="absolute top-0 left-0 w-full 2xl:mt-6 -ml-4 2xl:-ml-10" src="{% static 'template-assets/background/green-circle-bg-text.svg'%}" alt=""/></div>
-                </h1>
-                <p class="text-xl mb-18">Carfinity Autocare protects more than just your vehicle, it protects your investment. Keeping your asset strong and your mind at ease.</p>
-                <a class="group relative inline-block h-16 w-full sm:w-40 bg-blueGray-900 rounded" href="{% url 'register' %}">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">Get Started</span></div>
-                  </div></a>
-              </div>
-            </div>
-          </div><img class="block lg:hidden pl-10 md:pl-40 mt-16 md:mt-32" src="{% static '' %}" alt=""/>
-        </div>
-
-      </section>
-
-      {% include "search/search_landing.html" %}
-
-      <section class="py-20 md:py-40 bg-yellowGray-500">
-        <div class="container px-4 mx-auto">
-          <div class="max-w-4xl mx-auto text-center mb-32">
-            <h1 class="text-6xl sm:text-7xl md:text-8xl font-heading font-semibold mb-12">Why choose Carfinity AutoCare?</h1>
-            <p class="text-2xl">We care about your vehicle so you dont have to</p>
-          </div>
-          <div class="flex flex-wrap -mx-3 -mb-6">
-            <div class="w-full md:w-1/2 lg:w-1/3 px-3 mb-6">
-              <div class="h-full max-w-sm lg:max-w-none mx-auto py-10 px-8 bg-white rounded-2xl">
-                <h4 class="text-3xl font-medium mb-2">Affordable</h4>
-                <p class="max-w-2xs mb-10 pr-10">Budget Friendly Monthly Subscriptions</p><a class="group relative inline-block h-16 w-full bg-blueGray-900 rounded" href="#">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">Get Started</span></div>
-                  </div></a>
-              </div>
-            </div>
-            <div class="w-full md:w-1/2 lg:w-1/3 px-3 mb-6">
-              <div class="h-full max-w-sm lg:max-w-none mx-auto py-10 px-8 bg-white rounded-2xl">
-                <h4 class="text-3xl font-medium mb-2">Transparent</h4>
-                <p class="max-w-2xs mb-10 pr-10">We pride ourselves on offering full transparency for our users and customers</p><a class="group relative inline-block h-16 w-full bg-blueGray-900 rounded" href="#">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">Explore</span></div>
-                  </div></a>
-              </div>
-            </div>
-            <div class="w-full md:w-1/2 lg:w-1/3 px-3 mb-6">
-              <div class="h-full max-w-sm lg:max-w-none mx-auto py-10 px-8 bg-white rounded-2xl">
-                <h4 class="text-3xl font-medium mb-2">Reliable</h4>
-                <p class="max-w-2xs mb-10 pr-10">We believe reliable is the core of our business and we have built our business model around it.</p><a class="group relative inline-block h-16 w-full bg-blueGray-900 rounded" href="#">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">Get Started</span></div>
-                  </div></a>
-              </div>
-            </div>
-           
-            
-      
-          </div>
-        </div>
-      </section>
-      <section class="py-20 md:py-40 bg-black">
-        <div class="container px-4 mx-auto">
-          <div class="max-w-2xl mx-auto mb-24 text-center">
-            <div class="inline-flex items-center px-5 py-2 bg-white rounded-full mb-8"><span class="block w-2 h-2 mr-2 rounded-full bg-indigo-500"></span>              <span class="uppercase text-sm font-medium tracking-tight">HOW IT WORKS</span></div>
-            <h1 class="text-6xl sm:text-7xl font-heading font-semibold text-white mb-14">How does it work?</h1>
-            <p class="text-2xl text-gray-300 mb-18">We partner with you in taking care of your vehicle the right way.</p>
-          </div>
-          <div class="max-w-xs mx-auto md:max-w-none">
-            <div class="flex flex-wrap justify-between items-center -mx-4">
-              <div class="w-full lg:w-1/3 px-4 mb-10 lg:mb-0">
-                <div class="max-w-sm 2xl:max-w-none mx-auto pt-6 pb-14 px-8 sm:px-14 mb-10 bg-gray-900 rounded-4xl border border-gray-600"><span class="block mb-6 text-5xl font-heading text-gray-400">01</span>
-                  <h4 class="max-w-xs text-3xl font-heading font-semibold text-white">Sign up for an autocare plan.</h4>
-                </div>
-                <div class="max-w-sm 2xl:max-w-none mx-auto pt-6 pb-14 px-8 sm:px-14 bg-gray-900 rounded-4xl border border-gray-600"><span class="block mb-6 text-5xl font-heading text-gray-400">02</span>
-                  <h4 class="max-w-xs text-3xl font-heading font-semibold text-white">Get maintenance schedule and quarterly inspections.</h4>
-                </div>
-              </div>
-              <div class="w-full lg:w-1/3 px-4 mb-10 lg:mb-0"><img class="px-6 2xl:px-0 mx-auto" src="template-assets/images/avatar-circle-woman-dark-bg.png" alt=""/></div>
-              <div class="w-full lg:w-1/3 px-4">
-                <div class="max-w-sm 2xl:max-w-none mx-auto pt-6 pb-14 px-8 sm:px-14 mb-10 bg-gray-900 rounded-4xl border border-gray-600"><span class="block mb-6 text-5xl font-heading text-gray-400">03</span>
-                  <h4 class="max-w-xs text-3xl font-heading font-semibold text-white">Digital maintenance records management.</h4>
-                </div>
-                <div class="max-w-sm 2xl:max-w-none mx-auto pt-6 pb-14 px-8 sm:px-14 bg-gray-900 rounded-4xl border border-gray-600"><span class="block mb-6 text-5xl font-heading text-gray-400">04</span>
-                  <h4 class="max-w-xs text-3xl font-heading font-semibold text-white">Drive with ease knowing your vehicle is protected.</h4>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section class="py-20 md:py-40 bg-yellowGray-50 overflow-hidden" x-data="{ slideWidth: 0, activeSlide: 0, slideCount: 3 }">
-        <div class="container px-4 mx-auto">
-          <div class="flex flex-wrap -mx-4">
-            <div class="w-full lg:w-1/3 px-4 mb-16 lg:mb-0">
-              <div class="max-w-sm mx-auto">
-                <div class="inline-flex items-center px-5 py-2 bg-white rounded-full mb-16"><span class="block w-2 h-2 mr-2 rounded-full bg-blue-500"></span>                  <span class="uppercase text-sm font-medium tracking-tight">CUSTOMER REVIEWS</span></div>
-                <h1 class="font-heading text-6xl font-semibold mb-10">New customer reviews</h1>
-                <p class="text-2xl mb-16">Create account to start using suncealand.</p><a class="group relative inline-block h-16 mb-8 w-full md:w-36 bg-blueGray-900 rounded" href="#">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded"><span class="text-base font-semibold uppercase">Join</span></div>
-                  </div></a>
-              </div>
-            </div>
-            <div class="w-full lg:w-2/3 px-4">
-              <div class="xl:max-w-4xl xl:ml-auto mb-12 md:mb-6 relative">
-                <button class="hidden md:inline-block absolute top-1/2 left-0 p-1" x-on:click.prevent="activeSlide &gt; 0 ? (activeSlide -= 1, slideWidth -= $refs['slide' + (activeSlide + 1)].offsetWidth) : null">
-                  <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M7.99906 16L9.41406 14.585L3.82906 9L2.74902 8L3.82906 7L9.41406 1.415L7.99906 8.29971e-07L-0.000937716 8L7.99906 16Z" fill="#04082F"></path>
-                  </svg>
-                </button>
-                <button class="hidden md:inline-block absolute top-1/2 right-0 p-1" x-on:click.prevent="activeSlide &lt; slideCount - 1 ? (activeSlide += 1, slideWidth += $refs['slide' + activeSlide].offsetWidth) : activeSlide = slideCount - 1">
-                  <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.00094 0L0.585938 1.415L6.17094 7L7.25098 8L6.17094 9L0.585938 14.585L2.00094 16L10.0009 8L2.00094 0Z" fill="#04082F"></path>
-                  </svg>
-                </button>
-                <div class="max-w-xl xl:max-w-2xl mx-auto bg-white rounded-3xl">
-                  <div class="py-7 px-6 sm:px-18 border-b border-yellowGray-50">
-                    <div class="overflow-hidden">
-                      <div class="flex transition-transform duration-500 ease-in-out -m-5" :style="'transform: translateX(-' + slideWidth + 'px)'">
-                        <div class="flex-shrink-0 w-full p-5" x-ref="slide1">
-                          <div class="flex flex-wrap -mb-2 items-center"><img class="w-16 h-16 mb-2 mr-6" src="{% static 'template-assets/images/avatar-review-man.png' %}" alt=""/>
-                            <div class="mb-2">
-                              <h4 class="text-2xl font-medium">Glen Harres</h4><span class="text-xs">Spotify, Junior Designer</span>
-                            </div>
-                          </div>
-                          <div class="pt-10 pb-12">
-                            <div class="relative pr-12 mb-16 md:mb-24"><span class="absolute top-0 right-0">
-                                <svg width="29" height="41" viewbox="0 0 29 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M22.536 9.016C23.64 9.016 24.576 9.256 25.344 9.736C26.16 10.168 26.832 10.744 27.36 11.464C27.888 12.232 28.248 13.12 28.44 14.128C28.68 15.136 28.8 16.12 28.8 17.08C28.8 19.432 28.176 21.616 26.928 23.632C25.728 25.648 23.856 27.256 21.312 28.456L20.664 27.16C22.056 26.536 23.256 25.624 24.264 24.424C25.32 23.176 25.92 21.88 26.064 20.536C26.256 19.672 26.256 18.856 26.064 18.088C25.104 19.048 23.856 19.528 22.32 19.528C20.832 19.528 19.584 19.072 18.576 18.16C17.568 17.248 17.064 15.952 17.064 14.272C17.064 12.736 17.568 11.488 18.576 10.528C19.632 9.52 20.952 9.016 22.536 9.016ZM8.568 9.016C9.672 9.016 10.608 9.256 11.376 9.736C12.192 10.168 12.864 10.744 13.392 11.464C13.92 12.232 14.28 13.12 14.472 14.128C14.712 15.136 14.832 16.12 14.832 17.08C14.832 19.432 14.208 21.616 12.96 23.632C11.76 25.648 9.888 27.256 7.344 28.456L6.696 27.16C8.088 26.536 9.288 25.624 10.296 24.424C11.352 23.176 11.952 21.88 12.096 20.536C12.288 19.672 12.288 18.856 12.096 18.088C11.136 19.048 9.888 19.528 8.352 19.528C6.864 19.528 5.616 19.072 4.608 18.16C3.6 17.248 3.096 15.952 3.096 14.272C3.096 12.736 3.6 11.488 4.608 10.528C5.664 9.52 6.984 9.016 8.568 9.016Z" fill="#9CD0FF"></path>
-                                </svg></span>
-                              <p class="text-2xl md:text-3xl leading-9">Tried a lot, find the best Tried a lot. Choose this one. A real nice tools and app. It comes with a few free plug-ins that will be more than enough for beginners.</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div class="flex-shrink-0 w-full p-5" x-ref="slide2">
-                          <div class="flex flex-wrap -mb-2 items-center"><img class="w-16 h-16 mb-2 mr-6" src="{% static 'template-assets/images/avatar-review-man.png' %}" alt=""/>
-                            <div class="mb-2">
-                              <h4 class="text-2xl font-medium">Sarah Chen</h4><span class="text-xs">TechGuru, Senior Analyst</span>
-                            </div>
-                          </div>
-                          <div class="pt-10 pb-12">
-                            <div class="relative pr-12 mb-16 md:mb-24"><span class="absolute top-0 right-0">
-                                <svg width="29" height="41" viewbox="0 0 29 41" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                  <path d="M22.536 9.016C23.64 9.016 24.576 9.256 25.344 9.736C26.16 10.168 26.832 10.744 27.36 11.464C27.888 12.232 28.248 13.12 28.44 14.128C28.68 15.136 28.8 16.12 28.8 17.08C28.8 19.432 28.176 21.616 26.928 23.632C25.728 25.648 23.856 27.256 21.312 28.456L20.664 27.16C22.056 26.536 23.256 25.624 24.264 24.424C25.32 23.176 25.92 21.88 26.064 20.536C26.256 19.672 26.256 18.856 26.064 18.088C25.104 19.048 23.856 19.528 22.32 19.528C20.832 19.528 19.584 19.072 18.576 18.16C17.568 17.248 17.064 15.952 17.064 14.272C17.064 12.736 17.568 11.488 18.576 10.528C19.632 9.52 20.952 9.016 22.536 9.016ZM8.568 9.016C9.672 9.016 10.608 9.256 11.376 9.736C12.192 10.168 12.864 10.744 13.392 11.464C13.92 12.232 14.28 13.12 14.472 14.128C14.712 15.136 14.832 16.12 14.832 17.08C14.832 19.432 14.208 21.616 12.96 23.632C11.76 25.648 9.888 27.256 7.344 28.456L6.696 27.16C8.088 26.536 9.288 25.624 10.296 24.424C11.352 23.176 11.952 21.88 12.096 20.536C12.288 19.672 12.288 18.856 12.096 18.088C11.136 19.048 9.888 19.528 8.352 19.528C6.864 19.528 5.616 19.072 4.608 18.16C3.6 17.248 3.096 15.952 3.096 14.272C3.096 12.736 3.6 11.488 4.608 10.528C5.664 9.52 6.984 9.016 8.568 9.016Z" fill="#9CD0FF"></path>
-                                </svg></span>
-                              <p class="text-2xl md:text-3xl leading-9">This software is the pinnacle of efficiency and performance. With its intuitive interface and seamless integration, it's perfect for users of all levels.</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div class="md:hidden w-full px-4 mt-12 text-center">
-                  <button class="inline-block p-1 mr-2" x-on:click.prevent="activeSlide &gt; 0 ? (activeSlide -= 1, slideWidth -= $refs['slide' + (activeSlide + 1)].offsetWidth) : null">
-                    <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7.99906 16L9.41406 14.585L3.82906 9L2.74902 8L3.82906 7L9.41406 1.415L7.99906 8.29971e-07L-0.000937716 8L7.99906 16Z" fill="#04082F"></path>
-                    </svg>
-                  </button>
-                  <button class="inline-block p-1" x-on:click.prevent="activeSlide &lt; slideCount - 1 ? (activeSlide += 1, slideWidth += $refs['slide' + activeSlide].offsetWidth) : activeSlide = slideCount - 1">
-                    <svg width="10" height="16" viewbox="0 0 10 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2.00094 0L0.585938 1.415L6.17094 7L7.25098 8L6.17094 9L0.585938 14.585L2.00094 16L10.0009 8L2.00094 0Z" fill="#04082F"></path>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-              <div class="max-w-xl xl:max-w-2xl mx-auto">
-                <div class="flex flex-wrap -mx-3">
-                  <div class="w-full sm:w-1/2 px-3 mb-6 md:mb-0">
-                    <div class="pt-12 pb-14 px-8 text-center bg-white rounded-3xl">
-                      <div class="flex mb-6 items-center justify-center">
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                      </div>
-                      <h5 class="text-2xl font-semibold">Trustpilot 4,9/5</h5><span>dapibus, sodales purus</span>
-                    </div>
-                  </div>
-                  <div class="w-full sm:w-1/2 px-3">
-                    <div class="pt-12 pb-14 px-8 text-center bg-white rounded-3xl">
-                      <div class="flex mb-6 items-center justify-center">
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg class="mr-1" width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                        <svg width="22" height="22" viewbox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M22 8.70844H13.6583L11 0.458435L8.34166 8.70844H0L6.80168 13.5484L4.19835 21.5418L11 16.5918L17.8017 21.5418L15.1983 13.5484L22 8.70844Z" fill="#9CCFFF"></path>
-                          <defs>
-                            <rect width="22" height="22" fill="white"></rect>
-                          </defs>
-                        </svg>
-                      </div>
-                      <h5 class="text-2xl font-semibold">Google: 4.7/5</h5><span>Nulla placerat liberod</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="max-w-4xl mx-auto"></div>
-          </div>
-        </div>
-      </section>
+<section class="overflow-hidden" x-data="{ mobileNavOpen: false }">
+  <div class="flex flex-wrap">
+    <div class="w-full md:w-1/2 relative" style="height: 860px;"><img class="absolute top-0 left-0 w-full h-full object-cover" src="{% static 'template-assets/images/hero/img2.png'%}" alt=""/>
+      <div class="absolute left-5 sm:left-10 right-5 sm:right-10 bottom-10">
+        <h1 class="font-heading mb-8 text-6xl sm:text-9xl xl:text-10xl text-white font-semibold max-w-4xl"><span>Trusted</span>          <span class="relative inline-block"><span class="relative z-10">assessments. </span>            <span class="absolute -bottom-2 left-0 h-1 w-full bg-green-200 rounded-full"></span></span>          <span>Faster claims Processing.</span></h1>
+        <p class="text-xl font-medium text-white mb-10 tracking-tight">AutoAssess makes insurance claims faster and simple.</p><a class="inline-flex justify-center items-center text-center h-20 p-5 font-semibold tracking-tight text-2xl text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">Book An Assesment</a>
+      </div>
     </div>
+    <div class="w-full md:w-1/2 relative" style="height:860px;"><img class="absolute top-0 left-0 w-full h-full object-cover" src="{% static 'template-assets/images/hero/img3.png'%}" alt=""/>
+      <div class="absolute left-5 sm:left-10 right-5 sm:right-10 bottom-10">
+        <div class="flex items-end justify-between flex-wrap gap-6">
+          <div class="flex items-start flex-wrap gap-6">
+            <div class="relative">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewbox="0 0 48 48" fill="none">
+                <circle cx="24" cy="24" r="24" fill="white"></circle>
+              </svg>
+              <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewbox="0 0 20 20" fill="none">
+                  <g clip-path="url(#clip0_231_4799)">
+                    <path d="M17.9176 11.7658L15.0151 10L17.9176 8.23417C18.2196 8.05332 18.4825 7.81416 18.691 7.53063C18.8995 7.24711 19.0495 6.92489 19.1322 6.58279C19.2149 6.24069 19.2286 5.88554 19.1726 5.53808C19.1166 5.19061 18.9919 4.85778 18.8059 4.559C18.6199 4.26022 18.3762 4.00148 18.0891 3.79786C17.8021 3.59425 17.4773 3.44984 17.1338 3.37306C16.7904 3.29628 16.435 3.28866 16.0886 3.35066C15.7421 3.41266 15.4115 3.54303 15.116 3.73417L12.501 5.40833V2.5C12.501 1.83696 12.2376 1.20107 11.7687 0.732233C11.2999 0.263392 10.664 0 10.001 0C9.33793 0 8.70205 0.263392 8.23321 0.732233C7.76437 1.20107 7.50098 1.83696 7.50098 2.5V5.49L4.88597 3.73417C4.28962 3.37698 3.57683 3.26834 2.90114 3.43164C2.22546 3.59495 1.64096 4.01713 1.27356 4.60725C0.906154 5.19736 0.785255 5.90818 0.936903 6.58658C1.08855 7.26498 1.50061 7.85666 2.08431 8.23417L4.98681 10L2.08431 11.7658C1.50061 12.1433 1.08855 12.735 0.936903 13.4134C0.785255 14.0918 0.906154 14.8026 1.27356 15.3927C1.64096 15.9829 2.22546 16.4051 2.90114 16.5684C3.57683 16.7317 4.28962 16.623 4.88597 16.2658L7.50098 14.5675V17.5C7.50098 18.163 7.76437 18.7989 8.23321 19.2678C8.70205 19.7366 9.33793 20 10.001 20C10.664 20 11.2999 19.7366 11.7687 19.2678C12.2376 18.7989 12.501 18.163 12.501 17.5V14.5167L15.116 16.2667C15.7123 16.6239 16.4251 16.7325 17.1008 16.5692C17.7765 16.4059 18.361 15.9837 18.7284 15.3936C19.0958 14.8035 19.2167 14.0927 19.065 13.4143C18.9134 12.7359 18.5013 12.1433 17.9176 11.7658Z" fill="#19191B"></path>
+                  </g>
+                  <defs>
+                    <clippath id="clip0_231_4799">
+                      <rect width="20" height="20" fill="white"></rect>
+                    </clippath>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+            <h6 class="font-heading text-black text-2xl sm:text-4xl tracking-tight font-semibold w-56 sm:w-auto sm:max-w-xs">Buying a car? Avoid hidden suprises with our detailed pre-purchase inspection.</h6>
+          </div><a class="flex items-center flex-wrap gap-3 group" href="#">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="27" viewbox="0 0 24 27" fill="none">
+              <path d="M22.5 10.9019C24.5 12.0566 24.5 14.9434 22.5 16.0981L5.24999 26.0574C3.24999 27.2121 0.749999 25.7687 0.749999 23.4593L0.75 3.5407C0.75 1.2313 3.25 -0.212069 5.25 0.942631L22.5 10.9019Z" fill="#7CFF8F"></path>
+            </svg>
+            <h6 class="font-heading text-black text-xl font-semibold tracking-tight group-hover:text-opacity-80 transition duration-200">Book An Inspection</h6></a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pt-14 pb-24" style="background:linear-gradient(131deg, #E8E5FE 26.82%, #FFEED8 96.89%);">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-wrap max-w-7xl mx-auto -m-3">
+        <div class="w-full md:w-1/2 p-3">
+          <div class="bg-white rounded-4xl p-10 h-full lg:h-60">
+            <div class="flex flex-wrap -m-3">
+              <div class="w-full lg:w-1/2 p-3">
+                <div class="flex flex-col justify-between gap-6 xl:gap-12">
+                  <h6 class="font-heading text-4xl font-semibold max-w-xs tracking-tight">Carfinity AutoAssess</h6><a class="inline-flex items-center gap-3 group mr-auto" href="#"><span class="text-neutral-600 font-semibold group-hover:text-neutral-800 tracking-tight transition duration-200">Contact us now</span>
+                    <div class="w-6 h-6 rounded-full border border-neutral-50 group-hover:border-neutral-200 transition duration-200 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewbox="0 0 12 12" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6 1L5.2825 1.6965L9.086 5.5H1V6.5H9.086L5.293 10.293L6 11L11 6L6 1Z" fill="#19191B"></path>
+                      </svg>
+                    </div></a>
+                </div>
+              </div>
+              <div class="w-full lg:w-1/2 p-3"><img class="mx-auto object-cover lg:mr-0 h-44" src="{% static 'template-assets/images/hero/autoassess.svg' %}" alt=""/></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 p-3">
+          <div class="bg-white rounded-4xl p-10 h-full lg:h-60">
+            <div class="flex flex-wrap -m-3">
+              <div class="w-full lg:w-1/2 p-3">
+                <div class="flex flex-col justify-between gap-6 xl:gap-12">
+                  <h6 class="font-heading text-4xl font-semibold max-w-xs tracking-tight">Carfinity AutoCheck</h6><a class="inline-flex items-center gap-3 group mr-auto" href="#"><span class="text-neutral-600 font-semibold group-hover:text-neutral-800 tracking-tight transition duration-200">Contact us now</span>
+                    <div class="w-6 h-6 rounded-full border border-neutral-50 group-hover:border-neutral-200 transition duration-200 flex items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewbox="0 0 12 12" fill="none">
+                        <path fill-rule="evenodd" clip-rule="evenodd" d="M6 1L5.2825 1.6965L9.086 5.5H1V6.5H9.086L5.293 10.293L6 11L11 6L6 1Z" fill="#19191B"></path>
+                      </svg>
+                    </div></a>
+                </div>
+              </div>
+              <div class="w-full lg:w-1/2 p-3"><img class="mx-auto object-cover lg:mr-0 h-44" src="{% static 'template-assets/images/hero/autocheck.svg' %}" alt=""/></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="py-12 md:py-24 bg-neutral-50">
+  <div class="container mx-auto px-4">
+    <div class="mb-12 md:mb-24 text-center max-w-6xl mx-auto">
+      <h1 class="mb-16 font-semibold text-6xl sm:text-9xl xl:text-11xl font-heading"><span>Join the community of</span><span class="bg-orange-50 rounded-lg px-4 mt-1 inline-block"> Carfinity AutoCare</span><span>users.</span></h1>
+      <p class="font-semibold text-2xl text-neutral-600 tracking-tight">Never miss a service with Carfinity Autocare.</p>
+    </div>
+    <div class="mb-20">
+      <div class="flex flex-wrap -m-2.5">
+        <div class="w-full md:w-1/2 xl:w-8/12 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="mb-24">
+              <h4 class="mb-2 text-5xl font-medium tracking-tight font-heading">Digital app</h4>
+              <p class="font-medium text-lg text-neutral-600 tracking-tight max-w-xl">Can create, connect, verify, and search across all you knowledge platforms is one centralized, secure place - accelarating productivity.</p>
+            </div>
+            <div class="flex flex-wrap justify-between items-end -m-8">
+              <div class="w-auto p-8"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">More</a></div>
+              <div class="w-auto p-8"><img class="h- object-cover" src="{% static 'template-assets/images/services/autocare6.png' %}" alt=""/></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 xl:w-4/12 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">Alerts and Nofications</h4>
+                <p class="mb-4 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">Tailoured alerts for your vehicle.</p><img class="mx-auto mb-8 h-64 object-cover" src="{% static 'template-assets/images/services/test4.png'%}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">More</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">Upcoming Schedule Maintainance</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">Be up-to-date with upcoming maintainance through a vehicle specific maintianance schedule</p><img class="mb-8 h-64 mx-auto object-cover" src="{% static 'template-assets/images/services/test3.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">More</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">Recent Maintenance</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">Keep track of recent maintaince and maintaince costs.</p><img class="mb-8 h-64 object-cover mx-auto" src="{% static 'template-assets/images/services/test2.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">More</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-full xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">Vehicle Health Overview</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">We design personalized email marketing campaigns that help build lasting customer...</p><img class="mb-8 h-64 object-cover mx-auto" src="{% static 'template-assets/images/services/test1.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">More</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-wrap justify-center">
+      <div class="w-auto"><a class="inline-flex justify-center items-center text-center h-20 p-5 font-semibold tracking-tight text-2xl text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">Sign Up for AutoCare</a></div>
+    </div>
+  </div>
+</section>
+<section class="py-12 md:py-24 xl:pb-64 bg-neutral-900">
+  <div class="container mx-auto px-4">
+    <div class="mb-12 md:mb-20 max-w-5xl">
+      <h1 class="relative text-6xl sm:text-9xl xl:text-11xl text-white font-semibold font-heading"><span class="mr-3">Why choose us</span>              <span class="relative inline-block"><span class="relative z-10">for your next assessment?</span>                <span class="absolute -bottom-2 left-0 h-2.5 w-full bg-green-100 rounded-full"></span></span></h1>
+    </div>
+    <h3 class="mb-8 text-4xl text-white font-semibold tracking-tight font-heading">The most important news</h3>
+    <div class="flex flex-wrap -m-3">
+      <div class="w-full md:w-1/2 xl:w-1/3 p-3">
+        <div class="flex flex-col h-full justify-center p-10 bg-white rounded-5xl">
+          <div class="flex flex-wrap items-center -m-3 mb-5">
+            <div class="w-auto p-3">
+              <div class="flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-full"><img src="{% static 'template-assets/images/features/sticker.svg' %}" alt=""/></div>
+            </div>
+            <div class="flex-1 p-3">
+              <h4 class="text-4xl font-medium tracking-tight font-heading max-w-xs">Certified Mechanics</h4>
+            </div>
+          </div>
+          <p class="text-neutral-600 font-medium tracking-tight max-w-sm">Tailor your marketing approach with our customizable campaigns. We work closely with you to understand your unique goals and audience, designing personalized strategies that ensure your message reaches the right people at the right time.</p>
+        </div>
+      </div>
+      <div class="relative xl:top-20 w-full md:w-1/2 xl:w-1/3 p-3">
+        <div class="mb-6 p-10 bg-white rounded-5xl">
+          <div class="flex flex-wrap items-center -m-3 mb-5">
+            <div class="w-auto p-3">
+              <div class="flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-full"><img src="{% static 'template-assets/images/features/sticker.svg' %}" alt=""/></div>
+            </div>
+            <div class="flex-1 p-3">
+              <h4 class="text-4xl font-medium tracking-tight font-heading max-w-xs">Fast Turnaround</h4>
+            </div>
+          </div>
+          <p class="text-neutral-600 font-medium tracking-tight max-w-sm">Unlock the power of data with our advanced analytics tools. Gain actionable insights into customer behavior, market trends, and campaign performance</p>
+        </div>
+        <div class="p-10 bg-white rounded-5xl">
+          <div class="flex flex-wrap items-center -m-3 mb-5">
+            <div class="w-auto p-3">
+              <div class="flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-full"><img src="{% static 'template-assets/images/features/sticker.svg' %}" alt=""/></div>
+            </div>
+            <div class="flex-1 p-3">
+              <h4 class="text-4xl font-medium tracking-tight font-heading max-w-xs">Digital Reports</h4>
+            </div>
+          </div>
+          <p class="text-neutral-600 font-medium tracking-tight max-w-sm">We're here for you around the clock. Our dedicated support team is ready to assist with any questions or concerns you may have.</p>
+        </div>
+      </div>
+      <div class="relative xl:top-40 w-full xl:w-1/3 p-3">
+        <div class="flex flex-col h-full justify-center p-10 bg-white rounded-5xl">
+          <div class="flex flex-wrap items-center -m-3 mb-5">
+            <div class="w-auto p-3">
+              <div class="flex items-center justify-center w-16 h-16 bg-neutral-900 rounded-full"><img src="{% static 'template-assets/images/features/sticker.svg' %}" alt=""/></div>
+            </div>
+            <div class="flex-1 p-3">
+              <h4 class="text-4xl font-medium tracking-tight font-heading max-w-xs">Data Driven Insights</h4>
+            </div>
+          </div>
+          <p class="text-neutral-600 font-medium tracking-tight max-w-sm">Maximize the effectiveness of your digital campaigns through A/B testing and continuous optimization. We fine-tune your content, ads, and user experience to increase engagement, conversions, and overall success.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!--Service Comparison Section-->
+<section class="py-12 md:py-24 bg-neutral-50">
+  <div class="container mx-auto px-4">
+    <div class="mb-12 md:mb-24 text-center max-w-6xl mx-auto">
+      <h1 class="mb-16 font-semibold text-6xl sm:text-9xl xl:text-11xl font-heading"><span>Our Services</span><span class="bg-orange-50 rounded-lg px-4 mt-1 inline-block"></span><span></span></h1>
+      <p class="font-semibold text-2xl text-neutral-600 tracking-tight">Never miss a service with Carfinity Autocare.</p>
+    </div>
+    <div class="mb-20">
+      <div class="flex flex-wrap -m-2.5">
+        <div class="w-full md:w-1/2 xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">AutoAssess</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">Be up-to-date with upcoming maintainance through a vehicle specific maintianance schedule</p><img class="mb-8 h-64 mx-auto object-cover" src="{% static 'template-assets/images/services/AutoAssess.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">Book Now</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-1/2 xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">AutoCheck</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">Keep track of recent maintaince and maintaince costs.</p><img class="mb-8 h-64 object-cover mx-auto" src="{% static 'template-assets/images/services/AutoCheck.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">Book Now</a></div>
+            </div>
+          </div>
+        </div>
+        <div class="w-full md:w-full xl:w-1/3 p-2.5">
+          <div class="h-full p-10 bg-white rounded-5xl">
+            <div class="flex flex-col justify-between h-full">
+              <div class="w-full">
+                <h4 class="mb-2 text-4xl font-medium tracking-tight font-heading">AutoCare</h4>
+                <p class="mb-12 font-medium text-lg text-neutral-600 tracking-tight max-w-xs">We design personalized email marketing campaigns that help build lasting customer...</p><img class="mb-8 h-64 object-cover mx-auto" src="{% static 'template-assets/images/services/Autocare_logo.png' %}" alt=""/>
+              </div>
+              <div class="w-full"><a class="inline-flex justify-center items-center text-center h-16 p-5 font-semibold tracking-tight text-xl hover:text-white focus:text-white bg-white hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="#">Sign Up</a></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!--End of service comparison section-->
+<section class="bg-neutral-100 pt-12 md:pt-24">
+  <div class="container mx-auto px-4">
+    <h1 class="text-6xl sm:text-9xl xl:text-11xl font-semibold text-neutral-800 max-w-sm sm:max-w-6xl relative mb-12 tracking-tight font-heading"><span class="mr-3">Want to learn how</span>      <span class="relative inline-block"><span class="relative z-10">to create templates?</span>        <span class="absolute -bottom-2 left-0 h-2.5 w-full bg-orange-500 rounded-full"></span></span></h1>
+    <p class="text-2xl md:text-4xl font-semibold mb-16 text-neutral-600 tracking-tight">Visit Pixel Rocket and learn frontend web development</p><a class="inline-flex justify-center items-center text-center h-20 p-5 font-semibold tracking-tight text-2xl text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="https://www.pixelrocket.store">Visit Pixel Rocket</a><img class="w-full h-full object-cover" style="height: 515px;" src="{% static 'template-assets/images/download/phone-picture.png' %}" alt=""/>
+  </div>
+</section>
 
 {% endblock%}
 

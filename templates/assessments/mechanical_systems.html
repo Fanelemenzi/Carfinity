@@ -1,0 +1,330 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Mechanical Systems Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mechanical Systems Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-cog text-danger mr-2"></i>
+                            Mechanical Systems Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-04. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-success">05. Interior Assessment ✓</div>
+            <div class="text-sm font-medium text-danger">06. Mechanical Systems</div>
+            <div class="text-sm font-medium text-gray-400">07. Continue Assessment...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Mechanical Systems Assessment
+                    </h2>
+                    <p class="text-gray-600">Evaluate engine and mechanical components (Points 70-89)</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                    <button onclick="updateStatus()" class="text-sm text-red-600 hover:text-red-800 font-medium">Update Status</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Update Modal -->
+        <div id="statusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Update Assessment Status</h3>
+                    </div>
+                    <form id="statusForm" method="post" action="{% url 'assessments:update_status' assessment.id %}">
+                        {% csrf_token %}
+                        <div class="px-6 py-4">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
+                            <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="pending" {% if assessment.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="in_progress" {% if assessment.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="under_review" {% if assessment.status == 'under_review' %}selected{% endif %}>Under Review</option>
+                                <option value="completed" {% if assessment.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="disputed" {% if assessment.status == 'disputed' %}selected{% endif %}>Disputed</option>
+                                <option value="cancelled" {% if assessment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                            <button type="button" onclick="closeStatusModal()" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Cancel
+                            </button>
+                            <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Update Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Engine Bay Assessment -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Engine Bay Assessment (Points 70-77)</h3>
+                    <p class="text-sm text-gray-500">Evaluate engine block, radiator, battery, and related components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Engine Block -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Engine Block</label>
+                            <div class="space-y-2">
+                                {{ form.engine_block }}
+                                {{ form.engine_block_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Radiator -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Radiator</label>
+                            <div class="space-y-2">
+                                {{ form.radiator }}
+                                {{ form.radiator_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Battery -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Battery</label>
+                            <div class="space-y-2">
+                                {{ form.battery }}
+                                {{ form.battery_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Belts and Hoses -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Belts and Hoses</label>
+                            <div class="space-y-2">
+                                {{ form.belts_and_hoses }}
+                                {{ form.belts_and_hoses_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Suspension and Steering -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Suspension and Steering (Points 78-84)</h3>
+                    <p class="text-sm text-gray-500">Evaluate suspension components and steering systems</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Shock Absorbers -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Shock Absorbers</label>
+                            <div class="space-y-2">
+                                {{ form.shock_absorbers }}
+                                {{ form.shock_absorbers_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Struts -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Struts</label>
+                            <div class="space-y-2">
+                                {{ form.struts }}
+                                {{ form.struts_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Brake Lines -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Brake Lines</label>
+                            <div class="space-y-2">
+                                {{ form.brake_lines }}
+                                {{ form.brake_lines_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exhaust System -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Exhaust System (Points 85-89)</h3>
+                    <p class="text-sm text-gray-500">Evaluate exhaust manifold, catalytic converter, and muffler</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Exhaust Manifold -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Exhaust Manifold</label>
+                            <div class="space-y-2">
+                                {{ form.exhaust_manifold }}
+                                {{ form.exhaust_manifold_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Catalytic Converter -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catalytic Converter</label>
+                            <div class="space-y-2">
+                                {{ form.catalytic_converter }}
+                                {{ form.catalytic_converter_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Muffler -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Muffler</label>
+                            <div class="space-y-2">
+                                {{ form.muffler }}
+                                {{ form.muffler_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:interior_damage' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Interior
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Electrical Systems<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Condition Guide -->
+        <div class="mt-8 bg-gray-50 border border-gray-200 rounded-md p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Component Condition Guide</h3>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">E</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Excellent</h4>
+                    <p class="text-xs text-gray-600">Perfect condition</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">G</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Good</h4>
+                    <p class="text-xs text-gray-600">Normal wear</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-yellow-600 font-bold">F</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Fair</h4>
+                    <p class="text-xs text-gray-600">Needs attention</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-orange-600 font-bold">P</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Poor</h4>
+                    <p class="text-xs text-gray-600">Needs repair</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-red-600 font-bold">F</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Failed</h4>
+                    <p class="text-xs text-gray-600">Not functional</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateStatus() {
+    document.getElementById('statusModal').classList.remove('hidden');
+}
+
+function closeStatusModal() {
+    document.getElementById('statusModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('statusModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeStatusModal();
+    }
+});
+</script>
+{% endblock %}

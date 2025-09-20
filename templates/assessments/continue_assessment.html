@@ -1,0 +1,328 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Continue Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Continue Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-danger mr-2"></i>
+                            Continue Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="{% url 'assessments:dashboard' %}" class="text-sm text-gray-600 hover:text-gray-900">
+                        <i class="fas fa-arrow-left mr-1"></i>Back to Dashboard
+                    </a>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Resume Assessment Progress</h2>
+            <p class="text-gray-600">Continue your 120-point vehicle assessment from where you left off</p>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-8 bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Assessment Details</h3>
+                <p class="text-sm text-gray-500">Current assessment information and status</p>
+            </div>
+            <div class="px-6 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Assessment ID</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900">{{ assessment.assessment_id }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Vehicle</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900">{{ assessment.vehicle }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Assessment Type</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900">{{ assessment.get_assessment_type_display }}
+                        </p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Current Status</h4>
+                        <span class="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if assessment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif assessment.status == 'in_progress' %}bg-blue-100 text-blue-800
+                            {% elif assessment.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif assessment.status == 'under_review' %}bg-purple-100 text-purple-800
+                            {% elif assessment.status == 'disputed' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ assessment.get_status_display }}
+                        </span>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Assessor</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900">{{ assessment.assessor_name }}</p>
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-700">Started</h4>
+                        <p class="mt-1 text-lg font-semibold text-gray-900">{{ assessment.assessment_date|date:"M d, Y
+                            H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Overview -->
+        <div class="mb-8 bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Assessment Progress</h3>
+                <p class="text-sm text-gray-500">Track your progress through the 120-point assessment</p>
+            </div>
+            <div class="px-6 py-6">
+                <!-- Overall Progress Bar -->
+                <div class="mb-6">
+                    <div class="flex justify-between text-sm font-medium text-gray-700 mb-2">
+                        <span>Overall Progress</span>
+                        <span>{{ progress_percentage }}% Complete</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div id="progressBar" class="bg-danger h-2 rounded-full transition-all duration-300"
+                            data-progress="{{ progress_percentage|default:0 }}"></div>
+                    </div>
+                </div>
+
+                <!-- Step Progress -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for step_name, step_data in step_progress.items %}
+                    <div
+                        class="border rounded-lg p-4 {% if step_data.completed %}bg-green-50 border-green-200{% elif step_data.current %}bg-red-50 border-red-200{% else %}bg-gray-50 border-gray-200{% endif %}">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4
+                                class="text-sm font-medium {% if step_data.completed %}text-green-800{% elif step_data.current %}text-red-800{% else %}text-gray-600{% endif %}">
+                                {{ step_data.title }}
+                            </h4>
+                            {% if step_data.completed %}
+                            <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            {% elif step_data.current %}
+                            <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            {% else %}
+                            <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                                    clip-rule="evenodd"></path>
+                            </svg>
+                            {% endif %}
+                        </div>
+                        <p
+                            class="text-xs {% if step_data.completed %}text-green-600{% elif step_data.current %}text-red-600{% else %}text-gray-500{% endif %}">
+                            {{ step_data.description }}
+                        </p>
+                        {% if step_data.current %}
+                        <div class="mt-3">
+                            <a href="{{ step_data.url }}"
+                                class="bg-danger hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-xs transition duration-200">
+                                <i class="fas fa-play mr-1"></i>Continue
+                            </a>
+                        </div>
+                        {% elif not step_data.completed and step_data.available %}
+                        <div class="mt-3">
+                            <a href="{{ step_data.url }}"
+                                class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-xs transition duration-200">
+                                <i class="fas fa-arrow-right mr-1"></i>Start
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Quick Actions</h3>
+                <p class="text-sm text-gray-500">Manage your assessment with these tools</p>
+            </div>
+            <div class="px-6 py-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <a href="{% url 'assessments:assessment_detail' assessment.id %}"
+                        class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-eye text-primary"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">View Details</h4>
+                            <p class="text-sm text-gray-500">Review assessment information</p>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'assessments:upload_photos' assessment.id %}"
+                        class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-camera text-success"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">Upload Photos</h4>
+                            <p class="text-sm text-gray-500">Add documentation photos</p>
+                        </div>
+                    </a>
+
+                    {% if assessment.status == 'completed' %}
+                    <a href="{% url 'assessments:generate_report' assessment.id %}"
+                        class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-file-alt text-accent"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">Generate Report</h4>
+                            <p class="text-sm text-gray-500">Create assessment report</p>
+                        </div>
+                    </a>
+                    {% else %}
+                    <button onclick="updateStatus()"
+                        class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors w-full text-left">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-edit text-warning"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <h4 class="text-sm font-medium text-gray-900">Update Status</h4>
+                            <p class="text-sm text-gray-500">Change assessment status</p>
+                        </div>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Update Modal -->
+        <div id="statusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-medium text-gray-900">Update Assessment Status</h3>
+                    </div>
+                    <form id="statusForm" method="post" action="{% url 'assessments:update_status' assessment.id %}">
+                        {% csrf_token %}
+                        <div class="px-6 py-4">
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Current
+                                Status</label>
+                            <select name="status" id="status"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                <option value="pending" {% if assessment.status=='pending' %}selected{% endif %}>Pending
+                                </option>
+                                <option value="in_progress" {% if assessment.status=='in_progress' %}selected{% endif
+                                    %}>In Progress</option>
+                                <option value="under_review" {% if assessment.status=='under_review' %}selected{% endif
+                                    %}>Under Review</option>
+                                <option value="completed" {% if assessment.status=='completed' %}selected{% endif %}>
+                                    Completed</option>
+                                <option value="disputed" {% if assessment.status=='disputed' %}selected{% endif %}>
+                                    Disputed</option>
+                                <option value="cancelled" {% if assessment.status=='cancelled' %}selected{% endif %}>
+                                    Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                            <button type="button" onclick="closeStatusModal()"
+                                class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                class="bg-danger hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                Update Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+
+{% else %}
+{% include "dashboard/login_dashboard.html" %}
+{% endif %}
+
+<script>
+    // Set progress bar width on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        const progressBar = document.getElementById('progressBar');
+        const progress = progressBar.getAttribute('data-progress');
+        progressBar.style.width = progress + '%';
+    });
+
+    function updateStatus() {
+        document.getElementById('statusModal').classList.remove('hidden');
+    }
+
+    function closeStatusModal() {
+        document.getElementById('statusModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('statusModal').addEventListener('click', function (e) {
+        if (e.target === this) {
+            closeStatusModal();
+        }
+    });
+</script>
+{% endblock %}

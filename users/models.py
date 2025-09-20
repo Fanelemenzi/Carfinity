@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 import datetime
 from django.db.models import JSONField
 import json
@@ -105,3 +105,182 @@ class OrganizationUser(models.Model):
         verbose_name = "Organization User"
         verbose_name_plural = "Organization Users"
         unique_together = ('user', 'organization')  # Ensure a user can't join the same organization multiple times
+
+
+class AuthenticationGroup(models.Model):
+    """
+    Model to configure which Django groups are used for authentication and dashboard access.
+    This allows administrators to dynamically configure authentication groups without code changes.
+    """
+    
+    DASHBOARD_CHOICES = [
+        ('customer', 'Customer Dashboard'),
+        ('insurance', 'Insurance Dashboard'),
+        ('admin', 'Admin Dashboard'),
+        ('technician', 'Technician Dashboard'),
+        ('custom', 'Custom Dashboard'),
+    ]
+    
+    # Link to Django Group
+    group = models.OneToOneField(
+        Group, 
+        on_delete=models.CASCADE, 
+        related_name='auth_config',
+        help_text="Django group that this configuration applies to"
+    )
+    
+    # Dashboard configuration
+    dashboard_type = models.CharField(
+        max_length=20, 
+        choices=DASHBOARD_CHOICES,
+        help_text="Type of dashboard this group provides access to"
+    )
+    
+    dashboard_url = models.CharField(
+        max_length=200,
+        help_text="""
+        URL path where users will be redirected after login. Must be a valid Django URL pattern.
+        
+        SYNTAX RULES:
+        • Must start with forward slash (/) - e.g., '/dashboard/' not 'dashboard/'
+        • Should end with forward slash (/) for consistency - e.g., '/insurance/' not '/insurance'
+        • Use lowercase with hyphens for multi-word URLs - e.g., '/technician-dashboard/' not '/TechnicianDashboard/'
+        • No spaces or special characters except hyphens and underscores
+        
+        AVAILABLE DASHBOARDS IN THIS PROJECT:
+        • Customer Dashboard: '/dashboard/' - Main customer portal for vehicle/maintenance info
+        • Insurance Dashboard: '/insurance/' - Insurance company portal for policies and claims  
+        • Technician Dashboard: '/technician-dashboard/' - Service technician tools and maintenance records
+        • Admin Dashboard: '/admin/' - Django admin interface (use with caution for regular users)
+        
+        OTHER POSSIBLE DASHBOARD URLS:
+        • Fleet Management: '/fleet-dashboard/' - Fleet management tools and reporting
+        • Manager Dashboard: '/manager/' - Management oversight and reporting tools
+        • Service Portal: '/service/' - Service center management interface
+        • Claims Processing: '/claims/' - Insurance claims processing interface
+        • Risk Assessment: '/risk-assessment/' - Risk analysis and assessment tools
+        • Quality Control: '/quality-control/' - Quality assurance and control interface
+        
+        CUSTOM DASHBOARD EXAMPLES:
+        • Parts Inventory: '/parts-inventory/'
+        • Customer Service: '/customer-service/'
+        • Scheduling: '/scheduling/'
+        • Reporting: '/reporting/'
+        • Analytics: '/analytics/'
+        • Compliance: '/compliance/'
+        
+        IMPORTANT NOTES:
+        • Ensure the URL pattern exists in your Django urls.py files before using
+        • Test the URL manually in your browser before saving to avoid 404 errors
+        • Use the 'Test Config' button in Authentication Group Management to validate URL accessibility
+        • Dashboard URLs must be unique across all authentication groups to prevent conflicts
+        • Consider user permissions and access levels when setting dashboard URLs
+        • URLs are case-sensitive - use lowercase for consistency
+        
+        EXAMPLES OF CORRECT SYNTAX:
+        ✓ '/dashboard/' - Customer dashboard (verified to exist)
+        ✓ '/insurance/' - Insurance dashboard (verified to exist)
+        ✓ '/technician-dashboard/' - Technician dashboard (verified to exist)
+        ✓ '/admin/' - Django admin (verified to exist)
+        ✓ '/custom-app/dashboard/' - Custom app dashboard
+        
+        EXAMPLES OF INCORRECT SYNTAX:
+        ✗ 'dashboard' (missing leading slash)
+        ✗ '/dashboard' (missing trailing slash - recommended for consistency)
+        ✗ '/Dashboard/' (uppercase letters)
+        ✗ '/dash board/' (contains space)
+        ✗ '/dashboard/?' (contains query parameters)
+        ✗ '/dashboard/#section' (contains fragment identifier)
+        
+        TESTING YOUR URL:
+        1. Save this configuration
+        2. Go to Authentication Group Management
+        3. Click 'Test Config' button for this group
+        4. Verify the URL is accessible and loads correctly
+        5. Test with actual users to ensure proper permissions
+        """
+    )
+    
+    # Display configuration
+    display_name = models.CharField(
+        max_length=100,
+        help_text="Human-readable name for this group (e.g., 'Customer Users', 'Insurance Agents')"
+    )
+    
+    description = models.TextField(
+        blank=True,
+        help_text="Description of what this group provides access to"
+    )
+    
+    # Priority for dashboard selection (higher number = higher priority)
+    priority = models.IntegerField(
+        default=1,
+        help_text="Priority when user has multiple groups (higher number = default dashboard)"
+    )
+    
+    # Active status
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this group configuration is active"
+    )
+    
+    # Organization type compatibility
+    compatible_org_types = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of organization types compatible with this group (e.g., ['insurance', 'fleet'])"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Authentication Group Configuration"
+        verbose_name_plural = "Authentication Group Configurations"
+        ordering = ['-priority', 'display_name']
+    
+    def __str__(self):
+        return f"{self.display_name} ({self.group.name})"
+    
+    def get_dashboard_display(self):
+        """Get human-readable dashboard type"""
+        return dict(self.DASHBOARD_CHOICES).get(self.dashboard_type, self.dashboard_type)
+    
+    @classmethod
+    def get_active_auth_groups(cls):
+        """Get all active authentication groups"""
+        return cls.objects.filter(is_active=True).select_related('group')
+    
+    @classmethod
+    def get_group_dashboard_mapping(cls):
+        """Get mapping of group names to dashboard URLs"""
+        mapping = {}
+        for auth_group in cls.get_active_auth_groups():
+            mapping[auth_group.group.name] = {
+                'url': auth_group.dashboard_url,
+                'type': auth_group.dashboard_type,
+                'display_name': auth_group.display_name,
+                'priority': auth_group.priority
+            }
+        return mapping
+    
+    @classmethod
+    def get_recommended_groups_for_org_type(cls, org_type):
+        """Get recommended groups for a given organization type"""
+        recommended = []
+        for auth_group in cls.get_active_auth_groups():
+            if org_type in auth_group.compatible_org_types:
+                recommended.append(auth_group.group.name)
+        return recommended
+    
+    def save(self, *args, **kwargs):
+        # Ensure dashboard_url starts with /
+        if self.dashboard_url and not self.dashboard_url.startswith('/'):
+            self.dashboard_url = '/' + self.dashboard_url
+        
+        # Ensure dashboard_url ends with /
+        if self.dashboard_url and not self.dashboard_url.endswith('/'):
+            self.dashboard_url = self.dashboard_url + '/'
+            
+        super().save(*args, **kwargs)

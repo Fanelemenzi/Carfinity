@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}
+{% load dashboard_extras %}
+
+{% block title %}Simple Test - Carfinity{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Simple Template Test</h1>
+    
+    {% if user.is_authenticated %}
+        <p>User: {{ user.username }}</p>
+        
+        <!-- Test the template tag -->
+        {% get_user_dashboard_access user as dashboard_access %}
+        
+        <h2>Dashboard Access:</h2>
+        <ul>
+            <li>Available Dashboards: {{ dashboard_access.available_dashboards|join:", " }}</li>
+            <li>Default Dashboard: {{ dashboard_access.default_dashboard|default:"None" }}</li>
+            <li>Has Conflicts: {{ dashboard_access.has_conflicts|yesno:"Yes,No" }}</li>
+            {% if dashboard_access.conflict_details %}
+                <li>Conflict Details: {{ dashboard_access.conflict_details }}</li>
+            {% endif %}
+        </ul>
+    {% else %}
+        <p>Not authenticated</p>
+    {% endif %}
+</div>
+{% endblock %}

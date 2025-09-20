@@ -1,0 +1,198 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static admin_list %}
+
+{% block title %}User Permissions Management{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .permission-status {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .status-ok { background-color: #d4edda; color: #155724; }
+        .status-warning { background-color: #fff3cd; color: #856404; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+        .filter-form { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
+        .stats-row { margin-bottom: 20px; }
+        .stat-box { 
+            background: white; 
+            padding: 15px; 
+            border-radius: 5px; 
+            border-left: 4px solid #007cba;
+            margin-right: 15px;
+            display: inline-block;
+            min-width: 150px;
+        }
+        .stat-number { font-size: 24px; font-weight: bold; color: #007cba; }
+        .stat-label { color: #666; font-size: 12px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>User Permissions Management</h1>
+    
+    <!-- Statistics Row -->
+    <div class="stats-row">
+        <div class="stat-box">
+            <div class="stat-number">{{ total_users }}</div>
+            <div class="stat-label">Total Users</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ users_with_groups }}</div>
+            <div class="stat-label">Users with Groups</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-number">{{ users_with_orgs }}</div>
+            <div class="stat-label">Users with Organizations</div>
+        </div>
+    </div>
+    
+    <!-- Filter Form -->
+    <form method="get" class="filter-form">
+        <div style="display: flex; gap: 15px; align-items: end;">
+            <div>
+                <label for="search">Search Users:</label><br>
+                <input type="text" name="search" id="search" value="{{ search_query }}" 
+                       placeholder="Username, email, or name" style="width: 200px;">
+            </div>
+            <div>
+                <label for="group">Filter by Group:</label><br>
+                <select name="group" id="group">
+                    <option value="">All Groups</option>
+                    {% for group in all_groups %}
+                        <option value="{{ group.name }}" {% if group.name == group_filter %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label for="org_type">Filter by Organization Type:</label><br>
+                <select name="org_type" id="org_type">
+                    <option value="">All Types</option>
+                    {% for type_code, type_name in org_types %}
+                        <option value="{{ type_code }}" {% if type_code == org_type_filter %}selected{% endif %}>
+                            {{ type_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <button type="submit" class="default">Filter</button>
+                <a href="/admin/users/user-permissions/" class="button">Clear</a>
+            </div>
+        </div>
+    </form>
+    
+    <!-- Export and Bulk Actions -->
+    <div style="margin-bottom: 15px;">
+        <a href="/admin/users/export-permissions/" class="button">Export CSV</a>
+        <a href="/admin/users/bulk-management/" class="button">Bulk Management</a>
+        <a href="/admin/users/permission-conflicts/" class="button">View Conflicts</a>
+    </div>
+    
+    <!-- User Permissions Table -->
+    <div class="results">
+        <table id="result_list">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Groups</th>
+                    <th>Organization</th>
+                    <th>Dashboard Access</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in user_permissions %}
+                <tr class="{% cycle 'row1' 'row2' %}">
+                    <td>
+                        <strong>{{ item.user.username }}</strong><br>
+                        <small>{{ item.user.email }}</small><br>
+                        {% if item.user.first_name or item.user.last_name %}
+                            <small>{{ item.user.first_name }} {{ item.user.last_name }}</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.groups %}
+                            {% for group in item.groups %}
+                                <span class="permission-status {% if group in 'customers,insurance_company' %}status-ok{% else %}status-warning{% endif %}">
+                                    {{ group }}
+                                </span><br>
+                            {% endfor %}
+                        {% else %}
+                            <span class="permission-status status-error">No Groups</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.organization %}
+                            <strong>{{ item.organization.name }}</strong><br>
+                            <small>{{ item.organization.get_organization_type_display }}</small><br>
+                            {% if item.organization_role %}
+                                <small>Role: {{ item.organization_role }}</small>
+                            {% endif %}
+                        {% else %}
+                            <span class="permission-status status-error">No Organization</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.permissions.available_dashboards %}
+                            {% for dashboard in item.permissions.available_dashboards %}
+                                <span class="permission-status {% if dashboard == item.permissions.default_dashboard %}status-ok{% else %}status-warning{% endif %}">
+                                    {{ dashboard|title }}
+                                    {% if dashboard == item.permissions.default_dashboard %}(Default){% endif %}
+                                </span><br>
+                            {% endfor %}
+                        {% else %}
+                            <span class="permission-status status-error">No Access</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.permissions.has_conflicts %}
+                            <span class="permission-status status-error">Conflicts</span><br>
+                            <small title="{{ item.permissions.conflict_details }}">
+                                {{ item.permissions.conflict_details|truncatechars:50 }}
+                            </small>
+                        {% else %}
+                            <span class="permission-status status-ok">OK</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin:auth_user_change' item.user.id %}" class="button">Edit User</a>
+                        {% if item.organization %}
+                            <a href="{% url 'admin:organizations_organization_change' item.organization.id %}" class="button">Edit Org</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6">No users found matching the criteria.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <p class="paginator">
+            {% if page_obj.has_previous %}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if group_filter %}group={{ group_filter }}&{% endif %}{% if org_type_filter %}org_type={{ org_type_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="prev">‹ Previous</a>
+            {% endif %}
+            
+            <span class="this-page">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% if group_filter %}group={{ group_filter }}&{% endif %}{% if org_type_filter %}org_type={{ org_type_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="next">Next ›</a>
+            {% endif %}
+        </p>
+    {% endif %}
+</div>
+{% endblock %}

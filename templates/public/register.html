@@ -2,112 +2,246 @@
 {% load static %}
 
 {% block content%}
-<section class="relative py-24 overflow-hidden"><img class="absolute top-0 left-0 w-full h-full" src="{% static 'template-assets/background/background-color-paint.png' %}" alt=""/>
-  <div class="container px-4 mx-auto">
-    <div class="relative w-full md:max-w-xl lg:max-w-4xl mx-auto px-6 md:px-20 py-18 md:py-32 bg-white rounded-4xl">
-      <div class="max-w-md mx-auto text-center">
-        <h1 class="font-heading font-semibold text-5xl mb-20">Sign Up</h1>
-        <a class="group relative inline-block h-16 mb-14 w-full sm:max-w-md bg-blueGray-900 rounded" href="#">
-          <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-            <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded">
-              <img src="{% static 'template-assets/logos/google-icon-button.svg' %}" alt=""/>
-              <span class="ml-2 text-base font-semibold uppercase">SIGN UP WITH GOOGLE</span>
-            </div>
-          </div>
-        </a>
-        <div class="max-w-md mx-auto">
-          <div class="flex mb-12 items-center">
-            <div class="h-px w-52 bg-gray-100"></div>
-            <span class="mx-6 text-xs text-gray-200">or</span>
-            <div class="h-px w-52 bg-gray-100"></div>
-          </div>
-          <form method="POST" action="{% url 'register' %}">
-            {% csrf_token %}
-            <div class="max-w-md xl:max-w-3xl mx-auto">
-              <!-- Username -->
-              <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Username</span>
-                {{ form.username }}
-                {% if form.username.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.username.errors }}</div>
-                {% endif %}
-              </div>
+<section class="bg-neutral-50 py-12 md:py-24">
+  <div class="container mx-auto px-4">
+    <div class="bg-white rounded-3xl overflow-hidden">
+      <div class="flex flex-wrap">
+        <div class="w-full xl:w-1/2">
+          <div style="height: 710px;"><img class="h-full w-full object-cover" src="{% static 'template-assets/images/sign-in/mechanic.webp' %}" alt=""/></div>
+        </div>
+        <div class="w-full xl:w-1/2">
+          <div class="px-8 md:px-16 pt-16 pb-20">
+            <form method="POST" action="{% url 'register' %}">
+              {% csrf_token %}
+              <span class="inline-block text-neutral-600 text-xl font-semibold tracking-tight mb-4">Account</span>
+              <h1 class="text-6xl font-semibold tracking-tight mb-6 font-heading">Create your account</h1>
+              <p class="text-neutral-600 font-medium tracking-tight mb-16">Join Carfinity and start managing your vehicles today.</p>
+              
+              <!-- Display error messages -->
+              {% if messages %}
+                <div class="mb-6">
+                  {% for message in messages %}
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-3">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endif %}
 
-              <!-- First Name -->
-              <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">First Name</span>
-                {{ form.first_name }}
-                {% if form.first_name.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.first_name.errors }}</div>
-                {% endif %}
-              </div>
+              <!-- Display form errors -->
+              {% if form.errors %}
+                <div class="mb-6">
+                  {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                      <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-3">
+                        {{ error }}
+                      </div>
+                    {% endfor %}
+                  {% endfor %}
+                </div>
+              {% endif %}
 
-              <!-- Last Name -->
-              <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Last Name</span>
-                {{ form.last_name }}
-                {% if form.last_name.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.last_name.errors }}</div>
-                {% endif %}
-              </div>
+              <div class="flex flex-wrap -m-3 mb-3">
+                <!-- First Name -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.first_name.id_for_label }}">First Name</label>
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                         id="{{ form.first_name.id_for_label }}" 
+                         name="{{ form.first_name.name }}" 
+                         type="text" 
+                         placeholder="Enter First Name" 
+                         value="{{ form.first_name.value|default:'' }}"
+                         required/>
+                </div>
 
-              <!-- Email -->
-              <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Email Address</span>
-                {{ form.email }}
-                {% if form.email.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.email.errors }}</div>
-                {% endif %}
-              </div>
+                <!-- Last Name -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.last_name.id_for_label }}">Last Name</label>
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                         id="{{ form.last_name.id_for_label }}" 
+                         name="{{ form.last_name.name }}" 
+                         type="text" 
+                         placeholder="Enter Last Name" 
+                         value="{{ form.last_name.value|default:'' }}"
+                         required/>
+                </div>
 
-              <!-- Password -->
-              <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Password</span>
-                {{ form.password1 }}
-                {% if form.password1.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.password1.errors }}</div>
-                {% endif %}
-                {% if form.password1.help_text %}
-                <div class="text-gray-500 text-sm mt-1">{{ form.password1.help_text|safe }}</div>
-                {% endif %}
-              </div>
+                <!-- Username -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.username.id_for_label }}">Username</label>
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                         id="{{ form.username.id_for_label }}" 
+                         name="{{ form.username.name }}" 
+                         type="text" 
+                         placeholder="Enter Username" 
+                         value="{{ form.username.value|default:'' }}"
+                         required/>
+                </div>
 
-              <!-- Confirm Password -->
-              <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg">
-                <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Confirm Password</span>
-                {{ form.password2 }}
-                {% if form.password2.errors %}
-                <div class="text-red-500 text-sm mt-1">{{ form.password2.errors }}</div>
-                {% endif %}
-                {% if form.password2.help_text %}
-                <div class="text-gray-500 text-sm mt-1">{{ form.password2.help_text|safe }}</div>
-                {% endif %}
+                <!-- Email -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.email.id_for_label }}">Email Address</label>
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                         id="{{ form.email.id_for_label }}" 
+                         name="{{ form.email.name }}" 
+                         type="email" 
+                         placeholder="Enter Email Address" 
+                         value="{{ form.email.value|default:'' }}"
+                         required/>
+                </div>
+
+                <!-- Password -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.password1.id_for_label }}">Password</label>
+                  <div class="relative">
+                    <input class="w-full px-8 py-5 pr-16 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                           id="{{ form.password1.id_for_label }}" 
+                           name="{{ form.password1.name }}" 
+                           type="password" 
+                           placeholder="Enter Password" 
+                           required/>
+                    <button type="button" id="togglePassword1" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition duration-200">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="w-full p-3">
+                  <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="{{ form.password2.id_for_label }}">Confirm Password</label>
+                  <div class="relative">
+                    <input class="w-full px-8 py-5 pr-16 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" 
+                           id="{{ form.password2.id_for_label }}" 
+                           name="{{ form.password2.name }}" 
+                           type="password" 
+                           placeholder="Confirm Password" 
+                           required/>
+                    <button type="button" id="togglePassword2" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-neutral-400 hover:text-neutral-600 transition duration-200">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Terms and Conditions -->
+                <div class="w-full p-3">
+                  <div class="flex items-start mb-4">
+                    <input type="checkbox" id="terms" name="terms" class="mt-1 mr-3 rounded border-neutral-300 text-neutral-900 focus:ring-neutral-500" required>
+                    <label for="terms" class="text-neutral-600 font-medium tracking-tight text-sm">
+                      I agree to the <a href="#" class="text-neutral-900 hover:text-neutral-700 underline">Terms of Service</a> and <a href="#" class="text-neutral-900 hover:text-neutral-700 underline">Privacy Policy</a>
+                    </label>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="w-full p-3">
+                  <button class="flex justify-center items-center text-center h-full w-full p-5 font-semibold tracking-tight text-lg text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" type="submit">Create Account</button>
+                </div>
               </div>
 
               <div class="text-center">
-                <button type="submit" class="group relative inline-block h-16 mb-6 w-full md:w-44 bg-blueGray-900 rounded">
-                  <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                    <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded">
-                      <span class="text-base font-semibold uppercase">SIGN UP</span>
-                    </div>
-                  </div>
-                </button>
-                <p class="text-sm text-gray-600 mb-6">
-                  Already have an account? 
-                  <a class="text-blue-500 hover:text-blue-700 underline font-medium" href="{% url 'login' %}">Sign in here</a>
-                </p>
-                <p class="text-2xs text-gray-300">
-                  <span>By signing up I agree to</span>
-                  <a class="inline-block underline hover:text-gray-400" href="#">the terms & conditions</a>
-                  <span>and</span>
-                  <a class="inline-block underline hover:text-gray-400" href="#">privacy policy.</a>
-                </p>
+                <span class="text-neutral-600 font-medium tracking-tight">Already have an account? </span>
+                <a class="inline-block text-neutral-900 font-semibold tracking-tight hover:text-neutral-700 transition duration-200" href="{% url 'login' %}">Sign in here</a>
               </div>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitButton = document.querySelector('button[type="submit"]');
+    const togglePassword1Button = document.getElementById('togglePassword1');
+    const togglePassword2Button = document.getElementById('togglePassword2');
+    const password1Input = document.getElementById('{{ form.password1.id_for_label }}');
+    const password2Input = document.getElementById('{{ form.password2.id_for_label }}');
+    
+    // Form validation
+    function validateForm() {
+        let isValid = true;
+        
+        // Get all required inputs
+        const requiredInputs = form.querySelectorAll('input[required]');
+        
+        requiredInputs.forEach(input => {
+            // Clear previous error states
+            input.classList.remove('border-red-300', 'focus:ring-red-100');
+            
+            // Validate required fields
+            if (!input.value.trim()) {
+                input.classList.add('border-red-300', 'focus:ring-red-100');
+                isValid = false;
+            }
+        });
+        
+        // Validate email format
+        const emailInput = document.getElementById('{{ form.email.id_for_label }}');
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (emailInput.value && !emailRegex.test(emailInput.value)) {
+            emailInput.classList.add('border-red-300', 'focus:ring-red-100');
+            isValid = false;
+        }
+        
+        // Validate password match
+        if (password1Input.value !== password2Input.value && password1Input.value && password2Input.value) {
+            password2Input.classList.add('border-red-300', 'focus:ring-red-100');
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+    
+    // Real-time validation
+    const inputs = form.querySelectorAll('input');
+    inputs.forEach(input => {
+        input.addEventListener('blur', validateForm);
+        input.addEventListener('input', function() {
+            this.classList.remove('border-red-300', 'focus:ring-red-100');
+        });
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // Show loading state
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Creating Account...';
+    });
+    
+    // Password visibility toggle functions
+    function setupPasswordToggle(button, input) {
+        button.addEventListener('click', function() {
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            
+            // Toggle icon
+            const icon = this.querySelector('svg');
+            if (type === 'text') {
+                // Show hide icon
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"></path>';
+            } else {
+                // Show eye icon
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>';
+            }
+        });
+    }
+    
+    // Setup password toggles
+    setupPasswordToggle(togglePassword1Button, password1Input);
+    setupPasswordToggle(togglePassword2Button, password2Input);
+});
+</script>
 {% endblock %}

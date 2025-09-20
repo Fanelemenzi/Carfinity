@@ -60,16 +60,16 @@ class UpdateUserForm(UserChangeForm):
 		
 class SignUpForm(UserCreationForm):
 	email = forms.EmailField(label="", widget=forms.TextInput(attrs={
-		'class': 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg',
-		'placeholder': 'Email Address'
+		'class': 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200',
+		'placeholder': 'Enter Email Address'
 	}))
 	first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={
-		'class': 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg',
-		'placeholder': 'First Name'
+		'class': 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200',
+		'placeholder': 'Enter First Name'
 	}))
 	last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput(attrs={
-		'class': 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg',
-		'placeholder': 'Last Name'
+		'class': 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200',
+		'placeholder': 'Enter Last Name'
 	}))
 
 	class Meta:
@@ -79,17 +79,17 @@ class SignUpForm(UserCreationForm):
 	def __init__(self, *args, **kwargs):
 		super(SignUpForm, self).__init__(*args, **kwargs)
 
-		self.fields['username'].widget.attrs['class'] = 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg'
-		self.fields['username'].widget.attrs['placeholder'] = 'Username'
+		self.fields['username'].widget.attrs['class'] = 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200'
+		self.fields['username'].widget.attrs['placeholder'] = 'Enter Username'
 		self.fields['username'].label = ''
-		self.fields['username'].help_text = '<span class="text-2xs text-gray-300">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</span>'
+		self.fields['username'].help_text = ''
 
-		self.fields['password1'].widget.attrs['class'] = 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg'
-		self.fields['password1'].widget.attrs['placeholder'] = 'Password'
+		self.fields['password1'].widget.attrs['class'] = 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200'
+		self.fields['password1'].widget.attrs['placeholder'] = 'Enter Password'
 		self.fields['password1'].label = ''
-		self.fields['password1'].help_text = '<ul class="text-2xs text-gray-300"><li>Your password can\'t be too similar to your other personal information.</li><li>Your password must contain at least 8 characters.</li><li>Your password can\'t be a commonly used password.</li><li>Your password can\'t be entirely numeric.</li></ul>'
+		self.fields['password1'].help_text = ''
 
-		self.fields['password2'].widget.attrs['class'] = 'w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg'
+		self.fields['password2'].widget.attrs['class'] = 'w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200'
 		self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
 		self.fields['password2'].label = ''
-		self.fields['password2'].help_text = '<span class="text-2xs text-gray-300">Enter the same password as before, for verification.</span>'
+		self.fields['password2'].help_text = ''

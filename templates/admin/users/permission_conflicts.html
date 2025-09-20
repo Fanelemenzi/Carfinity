@@ -1,0 +1,180 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static %}
+
+{% block title %}Permission Conflicts Report{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .conflict-item {
+        margin-bottom: 20px;
+        padding: 15px;
+        border-left: 4px solid #dc3545;
+        background: #f8f9fa;
+        border-radius: 5px;
+    }
+
+    .conflict-header {
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #dc3545;
+    }
+
+    .conflict-details {
+        margin-left: 15px;
+    }
+
+    .conflict-details dt {
+        font-weight: bold;
+        margin-top: 10px;
+    }
+
+    .conflict-details dd {
+        margin-left: 15px;
+        margin-bottom: 5px;
+    }
+
+    .no-conflicts {
+        text-align: center;
+        padding: 40px;
+        color: #28a745;
+        font-size: 18px;
+    }
+
+    .summary-box {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007cba;
+    }
+
+    .action-buttons {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>Permission Conflicts Report</h1>
+
+    <!-- Summary -->
+    <div class="summary-box">
+        <h3>Summary</h3>
+        <p>Total users with permission conflicts: <strong>{{ total_conflicts }}</strong></p>
+        {% if total_conflicts > 0 %}
+        <p style="color: #dc3545;">These users may have issues accessing the correct dashboards or features.</p>
+        {% else %}
+        <p style="color: #28a745;">All users have properly configured permissions!</p>
+        {% endif %}
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="/admin/users/user-permissions/" class="button">Back to User Permissions</a>
+        <a href="/admin/users/bulk-management/" class="button">Bulk Management</a>
+        <a href="/admin/users/export-permissions/" class="button">Export All Permissions</a>
+    </div>
+
+    <!-- Conflicts List -->
+    {% if conflicts_data %}
+    {% for item in conflicts_data %}
+    <div class="conflict-item">
+        <div class="conflict-header">
+            ⚠ {{ item.user.username }} ({{ item.user.email }})
+        </div>
+
+        <dl class="conflict-details">
+            <dt>Conflict Details:</dt>
+            <dd>{{ item.permissions.conflict_details }}</dd>
+
+            <dt>User Groups:</dt>
+            <dd>
+                {% if item.groups %}
+                {% for group in item.groups %}
+                <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{ group
+                    }}</span>
+                {% endfor %}
+                {% else %}
+                <em>No groups assigned</em>
+                {% endif %}
+            </dd>
+
+            <dt>Organization:</dt>
+            <dd>
+                {% if item.organization %}
+                {{ item.organization.name }} ({{ item.organization.get_organization_type_display }})
+                {% else %}
+                <em>No organization assigned</em>
+                {% endif %}
+            </dd>
+
+            <dt>Available Dashboards:</dt>
+            <dd>
+                {% if item.permissions.available_dashboards %}
+                {% for dashboard in item.permissions.available_dashboards %}
+                <span style="background: #d1ecf1; padding: 2px 6px; border-radius: 3px; margin-right: 5px;">{{
+                    dashboard|title }}</span>
+                {% endfor %}
+                {% else %}
+                <em style="color: #dc3545;">No dashboard access</em>
+                {% endif %}
+            </dd>
+
+            <dt>Recommended Actions:</dt>
+            <dd>
+                <ul style="margin-top: 5px;">
+                    {% if not item.groups %}
+                    <li>Assign user to appropriate groups (customers or insurance_company)</li>
+                    {% endif %}
+                    {% if not item.organization %}
+                    <li>Assign user to an organization</li>
+                    {% endif %}
+                    {% if item.groups and item.organization %}
+                    <li>Review group assignments to match organization type</li>
+                    <li>Check if organization is linked to correct groups</li>
+                    {% endif %}
+                </ul>
+            </dd>
+
+            <dt>Quick Actions:</dt>
+            <dd style="margin-top: 10px;">
+                <a href="{% url 'admin:auth_user_change' item.user.id %}" class="button">Edit User</a>
+                {% if item.organization %}
+                <a href="{% url 'admin:organizations_organization_change' item.organization.id %}" class="button">Edit
+                    Organization</a>
+                {% endif %}
+            </dd>
+        </dl>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="no-conflicts">
+        <h2>🎉 No Permission Conflicts Found!</h2>
+        <p>All users have properly configured permissions and can access their appropriate dashboards.</p>
+    </div>
+    {% endif %}
+
+    <!-- Help Section -->
+    <div style="margin-top: 30px; padding: 15px; background: #e9ecef; border-radius: 5px;">
+        <h3>Understanding Permission Conflicts</h3>
+        <ul>
+            <li><strong>No Groups:</strong> User has no group assignments and cannot access any dashboards</li>
+            <li><strong>No Organization:</strong> User has groups but no organization, which may limit dashboard
+                functionality</li>
+            <li><strong>Group-Organization Mismatch:</strong> User's groups don't match their organization type (e.g.,
+                customer group with insurance organization)</li>
+            <li><strong>Multiple Access:</strong> User has access to multiple dashboards but no clear default</li>
+        </ul>
+
+        <h4>Resolution Steps:</h4>
+        <ol>
+            <li>Ensure users are assigned to appropriate groups based on their role</li>
+            <li>Verify users are associated with the correct organization</li>
+            <li>Check that organizations are linked to the correct groups</li>
+            <li>Use the bulk management tool to fix multiple users at once</li>
+        </ol>
+    </div>
+</div>
+{% endblock %}

@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'vehicle_equip',
     'onboarding',
     'insurance_app',
+    'assessments',
 ]
 
 MIDDLEWARE = [

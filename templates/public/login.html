@@ -2,76 +2,57 @@
 {% load static %}
 
 {% block content%}
-      <section class="relative py-24 overflow-hidden"><img class="absolute top-0 left-0 w-full h-full" src="{% static 'template-assets/background/background-color-paint.png' %}" alt=""/>
-        <div class="container px-4 mx-auto">
-          <div class="relative w-full md:max-w-xl lg:max-w-4xl mx-auto px-6 md:px-20 py-18 md:py-32 bg-white rounded-4xl">
-            <div class="max-w-md mx-auto text-center">
-              <h1 class="font-heading font-semibold text-5xl mb-20">Sign in</h1><a class="group relative inline-block h-16 mb-14 w-full sm:max-w-md bg-blueGray-900 rounded" href="#">
-                <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-                  <div class="flex h-full w-full items-center justify-center bg-white border-2 border-blueGray-900 rounded"><img src="{% static 'template-assets/logos/google-icon-button.svg' %}" alt=""/><span class="ml-2 text-base font-semibold uppercase">LOGIN WITH GOOGLE</span></div>
-                </div></a>
-              <div class="max-w-md mx-auto">
-                <div class="flex mb-12 items-center">
-                  <div class="h-px w-52 bg-gray-100"></div><span class="mx-6 text-xs text-gray-200">or</span>
-                  <div class="h-px w-52 bg-gray-100"></div>
+<section class="bg-neutral-50 py-12 md:py-24">
+  <div class="container mx-auto px-4">
+    <div class="bg-white rounded-3xl overflow-hidden">
+      <div class="flex flex-wrap">
+        <div class="w-full xl:w-1/2">
+          <div style="height: 710px;"><img class="h-full w-full object-cover" src="{% static 'template-assets/images/sign-in/mechanic.webp' %}" alt=""/></div>
+        </div>
+        <div class="w-full xl:w-1/2">
+          <div class="px-8 md:px-16 pt-16 pb-20">
+            <form method="POST" action="{% url 'login' %}">
+              {% csrf_token %}
+              {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+              {% endif %}
+              <span class="inline-block text-neutral-600 text-xl font-semibold tracking-tight mb-4">Account</span>
+              <h1 class="text-6xl font-semibold tracking-tight mb-6 font-heading">Sign in to your account</h1>
+              <p class="text-neutral-600 font-medium tracking-tight mb-16">Access your dashboard and manage your vehicles.</p>
+              
+              <!-- Display error messages -->
+              {% if messages %}
+                <div class="mb-6">
+                  {% for message in messages %}
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-3">
+                      {{ message }}
+                    </div>
+                  {% endfor %}
                 </div>
+              {% endif %}
 
-
-                <form method="POST" action="{% url 'login' %}">
-  {% csrf_token %}
-  <div class="max-w-md xl:max-w-3xl mx-auto">
-    
-    <!-- Username Field -->
-    <div class="relative group px-8 pt-5 pb-4 mb-4 bg-gray-50 rounded-lg">
-      <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Your Username</span>
-      <input 
-        class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" 
-        type="text" 
-        placeholder="Enter your username" 
-        name="username"
-        required
-      />
-    </div>
-
-    <!-- Password Field -->
-    <div class="relative group px-8 pt-5 pb-4 mb-8 bg-gray-50 rounded-lg">
-      <span class="hidden group-hover:block absolute top-0 left-0 ml-8 mt-2 text-2xs text-gray-300">Your Password</span>
-      <input 
-        class="w-full bg-transparent text-base placeholder-blueGray-900 font-semibold outline-none rounded-lg" 
-        type="password" 
-        placeholder="Password" 
-        name="password"
-        required
-      />
-    </div>
-
-    <!-- Submit Button -->
-    <div class="text-center">
-      <button type="submit" class="group relative inline-block h-16 mb-8 w-full md:w-44 bg-blueGray-900 rounded">
-        <div class="absolute top-0 left-0 transform -translate-y-1 -translate-x-1 w-full h-full group-hover:translate-y-0 group-hover:translate-x-0 transition duration-300">
-          <div class="flex h-full w-full items-center justify-center bg-blue-500 border-2 border-blueGray-900 rounded">
-            <span class="text-base font-semibold uppercase">LOGIN</span>
-          </div>
-        </div>
-      </button>
-
-      <!-- Terms and Privacy Notice -->
-      <p class="text-2xs text-gray-300">
-        <span>By signing up I agree to</span>
-        <a class="inline-block underline hover:text-gray-400" href="#">the terms & conditions</a>
-        <span>and</span>
-        <a class="inline-block underline hover:text-gray-400" href="#">privacy policy.</a>
-      </p>
-    </div>
-
-  </div>
-</form>
-
-
-
+              <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="username">Your Username</label>
+              <div class="flex flex-wrap -m-3 mb-3">
+                <div class="w-full p-3">
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" id="username" name="username" type="text" placeholder="Enter Username" required/>
+                </div>
+                <label class="block mb-3 text-neutral-600 font-medium tracking-tight" for="password">Your Password</label>
+                <div class="w-full p-3">
+                  <input class="w-full px-8 py-5 outline-none rounded-lg border border-neutral-100 placeholder-neutral-300 font-medium focus:ring-4 focus:ring-neutral-100 transition duration-200" id="password" name="password" type="password" placeholder="Enter Password" required/>
+                </div>
+                <div class="w-full p-3">
+                  <button class="flex justify-center items-center text-center h-full w-full p-5 font-semibold tracking-tight text-lg text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" type="submit">Sign In</button>
+                </div>
               </div>
-            </div>
+              <div class="text-center">
+                <span class="text-neutral-600 font-medium tracking-tight">Don't have an account? </span>
+                <a class="inline-block text-neutral-900 font-semibold tracking-tight hover:text-neutral-700 transition duration-200" href="{% url 'register' %}">Sign up here</a>
+              </div>
+            </form>
           </div>
         </div>
-      </section>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock %}

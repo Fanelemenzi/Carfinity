@@ -1,0 +1,264 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static %}
+
+{% block title %}Authentication Group Management{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .auth-group-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .status-active { color: #28a745; font-weight: bold; }
+        .status-inactive { color: #dc3545; }
+        .priority-high { color: #007cba; font-weight: bold; }
+        .priority-normal { color: #6c757d; }
+        .dashboard-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .dashboard-customer { background: #d4edda; color: #155724; }
+        .dashboard-insurance { background: #cce5ff; color: #004085; }
+        .dashboard-admin { background: #f8d7da; color: #721c24; }
+        .dashboard-custom { background: #e2e3e5; color: #383d41; }
+        .test-button {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .test-button:hover { background: #138496; }
+        .section-header {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-left: 4px solid #007cba;
+            margin: 20px 0 15px 0;
+            font-weight: bold;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007cba;
+            text-align: center;
+        }
+        .stat-number { font-size: 24px; font-weight: bold; color: #007cba; }
+        .stat-label { color: #666; font-size: 12px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>Authentication Group Management</h1>
+    <p>Configure which Django groups provide dashboard access and manage their settings.</p>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ total_auth_groups }}</div>
+            <div class="stat-label">Total Auth Groups</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ active_auth_groups }}</div>
+            <div class="stat-label">Active Auth Groups</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ total_users_in_auth_groups }}</div>
+            <div class="stat-label">Users in Auth Groups</div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin:users_authenticationgroup_add' %}" class="button">Add Authentication Group</a>
+        <a href="{% url 'admin:users_authenticationgroup_changelist' %}" class="button">Manage All Groups</a>
+        <button onclick="runSetupCommand()" class="button">Setup Default Groups</button>
+    </div>
+    
+    <!-- Configured Authentication Groups -->
+    <div class="section-header">Configured Authentication Groups</div>
+    
+    {% for auth_group in auth_groups %}
+    <div class="auth-group-card">
+        <div style="display: flex; justify-content: between; align-items: center;">
+            <div style="flex-grow: 1;">
+                <h3>
+                    <a href="{% url 'admin:users_authenticationgroup_change' auth_group.id %}">
+                        {{ auth_group.display_name }}
+                    </a>
+                    <small>({{ auth_group.group.name }})</small>
+                    {% if auth_group.is_active %}
+                        <span class="status-active">ACTIVE</span>
+                    {% else %}
+                        <span class="status-inactive">INACTIVE</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div>
+                <button class="test-button" onclick="testAuthGroup({{ auth_group.id }})">
+                    Test Config
+                </button>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 10px;">
+            <!-- Dashboard Configuration -->
+            <div>
+                <strong>Dashboard:</strong><br>
+                <span class="dashboard-tag dashboard-{{ auth_group.dashboard_type }}">
+                    {{ auth_group.get_dashboard_display }}
+                </span><br>
+                <small>URL: <code>{{ auth_group.dashboard_url }}</code></small><br>
+                <small>Priority: 
+                    <span class="{% if auth_group.priority > 1 %}priority-high{% else %}priority-normal{% endif %}">
+                        {{ auth_group.priority }}
+                    </span>
+                </small>
+            </div>
+            
+            <!-- Organization Compatibility -->
+            <div>
+                <strong>Compatible Org Types:</strong><br>
+                {% if auth_group.compatible_org_types %}
+                    {% for org_type in auth_group.compatible_org_types %}
+                        <span style="background: #e9ecef; padding: 2px 6px; border-radius: 3px; font-size: 11px; margin: 1px;">
+                            {{ org_type }}
+                        </span>
+                    {% endfor %}
+                {% else %}
+                    <span style="color: #6c757d;">None specified</span>
+                {% endif %}
+            </div>
+            
+            <!-- User Information -->
+            <div>
+                <strong>Users:</strong><br>
+                <span style="color: #007cba;">{{ auth_group.group.user_set.count }} users</span><br>
+                {% if auth_group.description %}
+                    <small style="color: #6c757d;">{{ auth_group.description|truncatechars:60 }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>No authentication groups configured. <a href="{% url 'admin:users_authenticationgroup_add' %}">Add one now</a>.</p>
+    {% endfor %}
+    
+    <!-- Unconfigured Groups -->
+    {% if unconfigured_groups %}
+    <div class="section-header">Unconfigured Django Groups</div>
+    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <p><strong>The following Django groups don't have authentication configurations:</strong></p>
+        <ul>
+            {% for group in unconfigured_groups %}
+            <li>
+                <strong>{{ group.name }}</strong> ({{ group.user_set.count }} users)
+                - <a href="{% url 'admin:users_authenticationgroup_add' %}?group={{ group.id }}">Configure</a>
+            </li>
+            {% endfor %}
+        </ul>
+        <p><em>Groups without authentication configurations won't provide dashboard access.</em></p>
+    </div>
+    {% endif %}
+    
+    <!-- Help Section -->
+    <div class="section-header">Configuration Guide</div>
+    <div style="background: #e9ecef; padding: 15px; border-radius: 5px;">
+        <h4>How to Configure Authentication Groups:</h4>
+        <ol>
+            <li><strong>Create Django Group:</strong> First create a Django group in the Groups section</li>
+            <li><strong>Add Authentication Config:</strong> Create an AuthenticationGroup configuration linking to the Django group</li>
+            <li><strong>Set Dashboard:</strong> Configure which dashboard the group provides access to</li>
+            <li><strong>Set Priority:</strong> Higher priority groups become the default when users have multiple groups</li>
+            <li><strong>Organization Compatibility:</strong> Specify which organization types should automatically get this group</li>
+        </ol>
+        
+        <h4>Dashboard Types:</h4>
+        <ul>
+            <li><strong>Customer:</strong> For regular customers accessing vehicle and maintenance info</li>
+            <li><strong>Insurance:</strong> For insurance company users accessing policies and risk data</li>
+            <li><strong>Admin:</strong> For administrative users with full system access</li>
+            <li><strong>Technician:</strong> For service technicians accessing maintenance tools</li>
+            <li><strong>Custom:</strong> For custom dashboard implementations</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+function testAuthGroup(authGroupId) {
+    const button = event.target;
+    const originalText = button.textContent;
+    button.textContent = 'Testing...';
+    button.disabled = true;
+    
+    fetch('/admin/users/ajax/test-auth-group/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `group_id=${authGroupId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const results = data.test_results;
+            let message = `Test Results for "${results.display_name}":\n\n`;
+            message += `✓ Group: ${results.group_name}\n`;
+            message += `✓ Dashboard URL: ${results.dashboard_url}\n`;
+            message += `✓ Dashboard Type: ${results.dashboard_type}\n`;
+            message += `✓ Active: ${results.is_active ? 'Yes' : 'No'}\n`;
+            message += `✓ Users: ${results.user_count}\n`;
+            message += `✓ Priority: ${results.priority}\n`;
+            message += `✓ URL Valid: ${results.url_valid ? 'Yes' : 'No'}\n`;
+            
+            if (results.has_conflicts) {
+                message += `⚠ Conflicts: ${results.conflicting_groups.join(', ')}\n`;
+            } else {
+                message += `✓ No conflicts\n`;
+            }
+            
+            if (results.compatible_org_types.length > 0) {
+                message += `✓ Compatible Orgs: ${results.compatible_org_types.join(', ')}\n`;
+            }
+            
+            alert(message);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Network error: ' + error);
+    })
+    .finally(() => {
+        button.textContent = originalText;
+        button.disabled = false;
+    });
+}
+
+function runSetupCommand() {
+    if (confirm('This will create/update default authentication group configurations. Continue?')) {
+        alert('Setup command would be run here. Use: python manage.py setup_auth_groups');
+    }
+}
+</script>
+
+{% csrf_token %}
+{% endblock %}

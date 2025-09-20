@@ -1,0 +1,176 @@
+{% extends "admin/base_site.html" %}
+{% load admin_urls static %}
+
+{% block title %}Bulk User Management{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .bulk-form { margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; }
+        .user-list { max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; }
+        .user-item { margin-bottom: 5px; }
+        .action-section { margin-bottom: 20px; padding: 15px; background: white; border-radius: 5px; }
+        .select-all-btn { margin-bottom: 10px; }
+    </style>
+    <script>
+        function toggleAllUsers() {
+            const checkboxes = document.querySelectorAll('input[name="user_ids"]');
+            const selectAllBtn = document.getElementById('select-all');
+            const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+            
+            checkboxes.forEach(cb => cb.checked = !allChecked);
+            selectAllBtn.textContent = allChecked ? 'Select All' : 'Deselect All';
+        }
+        
+        function updateSelectedCount() {
+            const checked = document.querySelectorAll('input[name="user_ids"]:checked').length;
+            document.getElementById('selected-count').textContent = checked;
+        }
+        
+        function validateForm() {
+            const selectedUsers = document.querySelectorAll('input[name="user_ids"]:checked').length;
+            const action = document.querySelector('input[name="action"]:checked');
+            
+            if (selectedUsers === 0) {
+                alert('Please select at least one user.');
+                return false;
+            }
+            
+            if (!action) {
+                alert('Please select an action.');
+                return false;
+            }
+            
+            const actionValue = action.value;
+            if ((actionValue === 'add_to_group' || actionValue === 'remove_from_group')) {
+                const groupId = document.getElementById('group_id').value;
+                if (!groupId) {
+                    alert('Please select a group.');
+                    return false;
+                }
+            }
+            
+            return confirm(`Are you sure you want to perform this action on ${selectedUsers} users?`);
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to checkboxes
+            document.querySelectorAll('input[name="user_ids"]').forEach(cb => {
+                cb.addEventListener('change', updateSelectedCount);
+            });
+            
+            // Initial count
+            updateSelectedCount();
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h1>Bulk User Management</h1>
+    
+    <form method="post" onsubmit="return validateForm()">
+        {% csrf_token %}
+        
+        <!-- User Selection Section -->
+        <div class="action-section">
+            <h2>Select Users</h2>
+            <button type="button" id="select-all" class="button select-all-btn" onclick="toggleAllUsers()">Select All</button>
+            <p>Selected users: <span id="selected-count">0</span></p>
+            
+            <div class="user-list">
+                {% for user in users %}
+                <div class="user-item">
+                    <label>
+                        <input type="checkbox" name="user_ids" value="{{ user.id }}">
+                        <strong>{{ user.username }}</strong> ({{ user.email }})
+                        {% if user.first_name or user.last_name %}
+                            - {{ user.first_name }} {{ user.last_name }}
+                        {% endif %}
+                        <br>
+                        <small style="margin-left: 20px;">
+                            Groups: 
+                            {% if user.groups.all %}
+                                {% for group in user.groups.all %}{{ group.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </small>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Action Selection Section -->
+        <div class="action-section">
+            <h2>Select Action</h2>
+            
+            <div style="margin-bottom: 15px;">
+                <label>
+                    <input type="radio" name="action" value="add_to_group">
+                    Add users to group
+                </label>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label>
+                    <input type="radio" name="action" value="remove_from_group">
+                    Remove users from group
+                </label>
+            </div>
+            
+            <div style="margin-bottom: 15px; margin-left: 20px;">
+                <label for="group_id">Select Group:</label>
+                <select name="group_id" id="group_id">
+                    <option value="">Choose a group...</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}">{{ group.name }} ({{ group.user_set.count }} members)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <hr style="margin: 20px 0;">
+            
+            <div style="margin-bottom: 15px;">
+                <label>
+                    <input type="radio" name="action" value="sync_org_groups">
+                    Sync users with their organization groups
+                </label>
+                <br>
+                <small style="margin-left: 20px; color: #666;">
+                    This will add users to groups linked to their organizations
+                </small>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label>
+                    <input type="radio" name="action" value="check_permissions">
+                    Check user permissions for conflicts
+                </label>
+                <br>
+                <small style="margin-left: 20px; color: #666;">
+                    This will check for group-organization conflicts and log them
+                </small>
+            </div>
+        </div>
+        
+        <!-- Submit Section -->
+        <div class="action-section">
+            <button type="submit" class="default">Execute Action</button>
+            <a href="/admin/users/user-permissions/" class="button">Cancel</a>
+        </div>
+    </form>
+    
+    <!-- Help Section -->
+    <div class="action-section">
+        <h3>Help</h3>
+        <ul>
+            <li><strong>Add to group:</strong> Adds selected users to the chosen group</li>
+            <li><strong>Remove from group:</strong> Removes selected users from the chosen group</li>
+            <li><strong>Sync org groups:</strong> Automatically adds users to groups linked to their organizations</li>
+            <li><strong>Check permissions:</strong> Validates user permissions and logs any conflicts found</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

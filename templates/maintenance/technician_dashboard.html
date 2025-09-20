@@ -8,6 +8,7 @@
 {% if user.is_authenticated %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,6 +34,7 @@
         }
     </script>
 </head>
+
 <body class="bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow-lg border-b border-gray-200 sticky top-0 z-40">
@@ -41,11 +43,12 @@
                 <!-- Left Side - Logo and Mobile Menu -->
                 <div class="flex items-center space-x-1 sm:space-x-8">
                     <!-- Mobile Menu Button -->
-                    <button class="lg:hidden p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md touch-manipulation" 
+                    <button
+                        class="lg:hidden p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-md touch-manipulation"
                         x-data x-on:click="$dispatch('toggle-mobile-menu')" aria-label="Open menu">
                         <i class="fas fa-bars text-lg"></i>
                     </button>
-                    
+
                     <div class="flex-shrink-0">
                         <h1 class="text-base sm:text-xl font-bold text-gray-900">
                             <i class="fas fa-tools text-primary mr-1 sm:mr-2 text-sm sm:text-base"></i>
@@ -53,24 +56,29 @@
                             <span class="sm:hidden">Technician</span>
                         </h1>
                     </div>
-                    
+
                     <!-- Quick Navigation Links - Desktop Only -->
                     <div class="hidden lg:flex items-center space-x-6">
-                        <a href="{% url 'maintenance_history:technician_dashboard' %}" class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200 text-primary border-b-2 border-primary">
+                        <a href="{% url 'maintenance_history:technician_dashboard' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200 text-primary border-b-2 border-primary">
                             <i class="fas fa-tachometer-alt mr-1"></i>Overview
                         </a>
-                        <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
+                        <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
                             <i class="fas fa-plus mr-1"></i>New Inspection
                         </a>
-                        <a href="{% url 'maintenance_history:inspection_form_list' %}" class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
+                        <a href="{% url 'maintenance_history:inspection_form_list' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
                             <i class="fas fa-clipboard-list mr-1"></i>Forms
                             {% if pending_inspections > 0 %}
-                                <span class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                    {{ pending_inspections }}
-                                </span>
+                            <span
+                                class="ml-1 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ pending_inspections }}
+                            </span>
                             {% endif %}
                         </a>
-                        <a href="{% url 'maintenance_history:create_record' %}" class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
+                        <a href="{% url 'maintenance_history:create_record' %}"
+                            class="text-sm font-medium text-gray-700 hover:text-primary transition duration-200">
                             <i class="fas fa-wrench mr-1"></i>Maintenance
                         </a>
                     </div>
@@ -85,28 +93,30 @@
                             aria-label="Quick actions">
                             <i class="fas fa-plus text-base"></i>
                             {% if pending_inspections > 0 %}
-                                <span class="absolute -top-1 -right-1 text-xs bg-yellow-500 text-white rounded-full px-1 py-0.5 min-w-[16px] text-center leading-none">
-                                    {{ pending_inspections }}
-                                </span>
+                            <span
+                                class="absolute -top-1 -right-1 text-xs bg-yellow-500 text-white rounded-full px-1 py-0.5 min-w-[16px] text-center leading-none">
+                                {{ pending_inspections }}
+                            </span>
                             {% endif %}
                         </button>
-                        
+
                         <!-- Mobile Quick Actions Dropdown -->
-                        <div x-show="quickOpen" x-transition:enter="transition ease-out duration-200" 
-                            x-transition:enter-start="opacity-0 transform scale-95" 
-                            x-transition:enter-end="opacity-100 transform scale-100" 
-                            x-transition:leave="transition ease-in duration-150" 
-                            x-transition:leave-start="opacity-100 transform scale-100" 
-                            x-transition:leave-end="opacity-0 transform scale-95" 
+                        <div x-show="quickOpen" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform scale-95"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-95"
                             class="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1rem)] bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                            
+
                             <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                                 <h3 class="text-sm font-semibold text-gray-900">Quick Actions</h3>
                                 <p class="text-xs text-gray-500 mt-1">Start new tasks</p>
                             </div>
-                            
+
                             <div class="py-2">
-                                <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+                                <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-plus text-green-600 text-sm"></i>
                                     </div>
@@ -115,8 +125,9 @@
                                         <p class="text-xs text-gray-500">50-point vehicle check</p>
                                     </div>
                                 </a>
-                                
-                                <a href="{% url 'maintenance_history:create_initial_inspection' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+
+                                <a href="{% url 'maintenance_history:create_initial_inspection' %}"
+                                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-search-plus text-blue-600 text-sm"></i>
                                     </div>
@@ -125,8 +136,9 @@
                                         <p class="text-xs text-gray-500">160-point pre-purchase</p>
                                     </div>
                                 </a>
-                                
-                                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+
+                                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}"
+                                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-car-side text-indigo-600 text-sm"></i>
                                     </div>
@@ -135,8 +147,9 @@
                                         <p class="text-xs text-gray-500">Add new vehicle</p>
                                     </div>
                                 </a>
-                                
-                                <a href="{% url 'maintenance_history:create_record' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+
+                                <a href="{% url 'maintenance_history:create_record' %}"
+                                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-wrench text-purple-600 text-sm"></i>
                                     </div>
@@ -145,12 +158,24 @@
                                         <p class="text-xs text-gray-500">Log service work</p>
                                     </div>
                                 </a>
+
+                                <a href="{% url 'assessments:start_assessment' %}"
+                                    class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
+                                    <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                                        <i class="fas fa-clipboard-check text-red-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-medium">Vehicle Assessment</p>
+                                        <p class="text-xs text-gray-500">120-point damage assessment</p>
+                                    </div>
+                                </a>
                             </div>
                         </div>
                     </div>
 
                     <!-- Refresh Button - Mobile Optimized -->
-                    <button class="bg-primary text-white p-1.5 sm:px-4 sm:py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    <button
+                        class="bg-primary text-white p-1.5 sm:px-4 sm:py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition duration-200 touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                         onclick="location.reload()" aria-label="Refresh data">
                         <i class="fas fa-sync-alt text-base sm:mr-2"></i>
                         <span class="hidden sm:inline">Refresh Data</span>
@@ -158,94 +183,121 @@
 
                     <!-- User Profile - Mobile Optimized -->
                     <div class="relative" x-data="{ userOpen: false }">
-                        <button @click="userOpen = !userOpen" @click.away="userOpen = false" 
+                        <button @click="userOpen = !userOpen" @click.away="userOpen = false"
                             class="flex items-center text-sm text-gray-700 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-lg px-2 py-1.5 transition duration-200 touch-manipulation min-w-[44px] min-h-[44px]"
                             aria-label="User menu">
-                            <div class="w-7 h-7 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-1 sm:mr-2">
+                            <div
+                                class="w-7 h-7 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-1 sm:mr-2">
                                 <i class="fas fa-user text-primary text-xs"></i>
                             </div>
                             <div class="hidden md:block text-left">
-                                <p class="font-medium text-xs leading-tight">{{ user.get_full_name|default:user.username|truncatechars:12 }}</p>
+                                <p class="font-medium text-xs leading-tight">{{
+                                    user.get_full_name|default:user.username|truncatechars:12 }}</p>
                                 <p class="text-xs text-gray-500">Technician</p>
                             </div>
-                            <svg class="w-3 h-3 ml-1 transition-transform duration-200" :class="{ 'rotate-180': userOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            <svg class="w-3 h-3 ml-1 transition-transform duration-200"
+                                :class="{ 'rotate-180': userOpen }" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        
+
                         <!-- User Dropdown Menu -->
-                        <div x-show="userOpen" x-transition:enter="transition ease-out duration-200" 
-                            x-transition:enter-start="opacity-0 transform scale-95" 
-                            x-transition:enter-end="opacity-100 transform scale-100" 
-                            x-transition:leave="transition ease-in duration-150" 
-                            x-transition:leave-start="opacity-100 transform scale-100" 
-                            x-transition:leave-end="opacity-0 transform scale-95" 
+                        <div x-show="userOpen" x-transition:enter="transition ease-out duration-200"
+                            x-transition:enter-start="opacity-0 transform scale-95"
+                            x-transition:enter-end="opacity-100 transform scale-100"
+                            x-transition:leave="transition ease-in duration-150"
+                            x-transition:leave-start="opacity-100 transform scale-100"
+                            x-transition:leave-end="opacity-0 transform scale-95"
                             class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
-                            
+
                             <!-- User Info Header -->
                             <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
                                 <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                                    <div
+                                        class="w-10 h-10 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-3">
                                         <i class="fas fa-user text-primary text-sm"></i>
                                     </div>
                                     <div class="flex-1 min-w-0">
-                                        <p class="text-sm font-medium text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                                        <p class="text-sm font-medium text-gray-900 truncate">{{
+                                            user.get_full_name|default:user.username }}</p>
                                         <p class="text-sm text-gray-600 truncate">{{ user.email }}</p>
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                                        <span
+                                            class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
                                             Technician
                                         </span>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Quick Stats -->
                             <div class="px-4 py-3 border-b border-gray-200">
                                 <div class="grid grid-cols-3 gap-3 text-center">
                                     <div>
-                                        <p class="text-lg font-semibold text-gray-900">{{ total_inspections|default:0 }}</p>
+                                        <p class="text-lg font-semibold text-gray-900">{{ total_inspections|default:0 }}
+                                        </p>
                                         <p class="text-xs text-gray-600">Total</p>
                                     </div>
                                     <div>
-                                        <p class="text-lg font-semibold {% if pending_inspections > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">
+                                        <p
+                                            class="text-lg font-semibold {% if pending_inspections > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">
                                             {{ pending_inspections|default:0 }}
                                         </p>
                                         <p class="text-xs text-gray-600">Pending</p>
                                     </div>
                                     <div>
-                                        <p class="text-lg font-semibold text-gray-900">{{ completed_today|default:0 }}</p>
+                                        <p class="text-lg font-semibold text-gray-900">{{ completed_today|default:0 }}
+                                        </p>
                                         <p class="text-xs text-gray-600">Today</p>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Menu Items -->
                             <div class="py-1">
-                                <a href="{% url 'maintenance_history:technician_dashboard' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="{% url 'maintenance_history:technician_dashboard' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-tachometer-alt mr-3 w-4"></i>Dashboard
                                 </a>
-                                <a href="{% url 'maintenance_history:inspection_form_list' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="{% url 'maintenance_history:inspection_form_list' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-clipboard-list mr-3 w-4"></i>Inspection Forms
                                     {% if pending_inspections > 0 %}
-                                        <span class="ml-auto bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                                            {{ pending_inspections }}
-                                        </span>
+                                    <span class="ml-auto bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                                        {{ pending_inspections }}
+                                    </span>
                                     {% endif %}
                                 </a>
-                                <a href="{% url 'maintenance_history:inspection_list' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="{% url 'maintenance_history:inspection_list' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-chart-bar mr-3 w-4"></i>All Records
                                 </a>
-                                <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="{% url 'assessments:dashboard' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                    <i class="fas fa-clipboard-check mr-3 w-4"></i>Vehicle Assessments
+                                    {% if pending_assessments > 0 %}
+                                    <span class="ml-auto bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                                        {{ pending_assessments }}
+                                    </span>
+                                    {% endif %}
+                                </a>
+                                <a href="{% url 'dashboard' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-car mr-3 w-4"></i>Vehicle Dashboard
                                 </a>
-                                
+
                                 <div class="border-t border-gray-200 my-1"></div>
-                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="#"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-cog mr-3 w-4"></i>Settings
                                 </a>
-                                <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
+                                <a href="#"
+                                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150 touch-manipulation">
                                     <i class="fas fa-question-circle mr-3 w-4"></i>Help
                                 </a>
-                                <a href="{% url 'logout' %}" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-150 touch-manipulation">
+                                <a href="{% url 'logout' %}"
+                                    class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-150 touch-manipulation">
                                     <i class="fas fa-sign-out-alt mr-3 w-4"></i>Logout
                                 </a>
                             </div>
@@ -256,40 +308,53 @@
         </div>
 
         <!-- Mobile Menu (Slide-out from left) -->
-        <div class="lg:hidden fixed inset-0 z-50" x-data="{ mobileOpen: false }" x-on:toggle-mobile-menu.window="mobileOpen = !mobileOpen" x-show="mobileOpen" style="display: none;">
+        <div class="lg:hidden fixed inset-0 z-50" x-data="{ mobileOpen: false }"
+            x-on:toggle-mobile-menu.window="mobileOpen = !mobileOpen" x-show="mobileOpen" style="display: none;">
             <!-- Backdrop -->
-            <div class="fixed inset-0 bg-black bg-opacity-50" x-on:click="mobileOpen = false" x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
-            
+            <div class="fixed inset-0 bg-black bg-opacity-50" x-on:click="mobileOpen = false"
+                x-transition:enter="transition-opacity ease-linear duration-300" x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100" x-transition:leave="transition-opacity ease-linear duration-300"
+                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+
             <!-- Mobile Menu Panel -->
-            <div class="fixed inset-y-0 left-0 flex flex-col w-80 max-w-[85vw] bg-white shadow-xl" x-transition:enter="transition ease-in-out duration-300 transform" x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0" x-transition:leave="transition ease-in-out duration-300 transform" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full">
-                
+            <div class="fixed inset-y-0 left-0 flex flex-col w-80 max-w-[85vw] bg-white shadow-xl"
+                x-transition:enter="transition ease-in-out duration-300 transform"
+                x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
+                x-transition:leave="transition ease-in-out duration-300 transform"
+                x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full">
+
                 <!-- Header -->
                 <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 bg-primary text-white">
                     <div class="flex items-center">
                         <i class="fas fa-tools mr-2"></i>
                         <h2 class="text-lg font-semibold">Technician Menu</h2>
                     </div>
-                    <button @click="mobileOpen = false" class="p-2 hover:bg-white hover:bg-opacity-20 rounded-md touch-manipulation" aria-label="Close menu">
+                    <button @click="mobileOpen = false"
+                        class="p-2 hover:bg-white hover:bg-opacity-20 rounded-md touch-manipulation"
+                        aria-label="Close menu">
                         <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
-                
+
                 <!-- User Info -->
                 <div class="px-4 py-4 border-b border-gray-200 bg-gray-50">
                     <div class="flex items-center">
-                        <div class="w-12 h-12 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-3">
+                        <div
+                            class="w-12 h-12 bg-primary bg-opacity-20 rounded-full flex items-center justify-center mr-3">
                             <i class="fas fa-user text-primary text-lg"></i>
                         </div>
                         <div class="flex-1 min-w-0">
-                            <p class="text-sm font-medium text-gray-900 truncate">{{ user.get_full_name|default:user.username }}</p>
+                            <p class="text-sm font-medium text-gray-900 truncate">{{
+                                user.get_full_name|default:user.username }}</p>
                             <p class="text-sm text-gray-600 truncate">{{ user.email }}</p>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
+                            <span
+                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 mt-1">
                                 Technician
                             </span>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Quick Stats -->
                 <div class="px-4 py-3 border-b border-gray-200 bg-blue-50">
                     <div class="grid grid-cols-3 gap-3 text-center">
@@ -298,7 +363,8 @@
                             <p class="text-xs text-gray-600">Total</p>
                         </div>
                         <div>
-                            <p class="text-lg font-semibold {% if pending_inspections > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">
+                            <p
+                                class="text-lg font-semibold {% if pending_inspections > 0 %}text-yellow-600{% else %}text-gray-900{% endif %}">
                                 {{ pending_inspections|default:0 }}
                             </p>
                             <p class="text-xs text-gray-600">Pending</p>
@@ -309,69 +375,99 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Navigation Links -->
                 <div class="flex-1 overflow-y-auto py-4">
                     <nav class="px-4 space-y-2">
-                        <a href="{% url 'maintenance_history:technician_dashboard' %}" @click="mobileOpen = false" 
+                        <a href="{% url 'maintenance_history:technician_dashboard' %}" @click="mobileOpen = false"
                             class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation bg-primary bg-opacity-10 text-primary border-r-2 border-primary">
                             <i class="fas fa-tachometer-alt mr-3 w-5"></i>Dashboard Overview
                         </a>
-                        
+
                         <div class="pt-2">
-                            <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick Actions</p>
-                            <a href="{% url 'maintenance_history:start_inspection_workflow' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Quick
+                                Actions</p>
+                            <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                                @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-plus mr-3 w-5 text-green-600"></i>New Inspection
                                 <span class="ml-auto text-xs text-gray-500">50-point</span>
                             </a>
-                            <a href="{% url 'maintenance_history:create_initial_inspection' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'maintenance_history:create_initial_inspection' %}"
+                                @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-search-plus mr-3 w-5 text-blue-600"></i>Initial Inspection
                                 <span class="ml-auto text-xs text-gray-500">160-point</span>
                             </a>
-                            <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-car-side mr-3 w-5 text-indigo-600"></i>Vehicle Onboarding
                                 <span class="ml-auto text-xs text-gray-500">Add vehicle</span>
                             </a>
-                            <a href="{% url 'maintenance_history:create_record' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'maintenance_history:create_record' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-wrench mr-3 w-5 text-purple-600"></i>Maintenance Record
                             </a>
+                            <a href="{% url 'assessments:start_assessment' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                                <i class="fas fa-clipboard-check mr-3 w-5 text-red-600"></i>Vehicle Assessment
+                                <span class="ml-auto text-xs text-gray-500">120-point</span>
+                            </a>
                         </div>
-                        
+
                         <div class="border-t border-gray-200 my-2 pt-2">
-                            <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</p>
-                            <a href="{% url 'maintenance_history:inspection_form_list' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <p class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Management
+                            </p>
+                            <a href="{% url 'maintenance_history:inspection_form_list' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-clipboard-list mr-3 w-5"></i>Inspection Forms
                                 {% if pending_inspections > 0 %}
-                                    <span class="ml-auto bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
-                                        {{ pending_inspections }}
-                                    </span>
+                                <span class="ml-auto bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                                    {{ pending_inspections }}
+                                </span>
                                 {% endif %}
                             </a>
-                            <a href="{% url 'maintenance_history:initial_inspection_list' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'maintenance_history:initial_inspection_list' %}"
+                                @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-search mr-3 w-5"></i>Initial Inspections
                             </a>
-                            <a href="{% url 'maintenance_history:inspection_list' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'assessments:dashboard' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                                <i class="fas fa-clipboard-check mr-3 w-5"></i>Vehicle Assessments
+                                {% if pending_assessments > 0 %}
+                                <span class="ml-auto bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs">
+                                    {{ pending_assessments }}
+                                </span>
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'maintenance_history:inspection_list' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-chart-bar mr-3 w-5"></i>All Records
                             </a>
                         </div>
-                        
+
                         <div class="border-t border-gray-200 my-2 pt-2">
-                            <a href="{% url 'dashboard' %}" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                            <a href="{% url 'dashboard' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-car mr-3 w-5"></i>Vehicle Dashboard
                             </a>
                         </div>
                     </nav>
                 </div>
-                
+
                 <!-- Footer Actions -->
                 <div class="border-t border-gray-200 p-4 space-y-2">
-                    <a href="#" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                    <a href="#" @click="mobileOpen = false"
+                        class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                         <i class="fas fa-cog mr-3 w-5"></i>Settings
                     </a>
-                    <a href="#" @click="mobileOpen = false" class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                    <a href="#" @click="mobileOpen = false"
+                        class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                         <i class="fas fa-question-circle mr-3 w-5"></i>Help & Support
                     </a>
-                    <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition duration-200 touch-manipulation">
+                    <a href="{% url 'logout' %}"
+                        class="flex items-center px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition duration-200 touch-manipulation">
                         <i class="fas fa-sign-out-alt mr-3 w-5"></i>Logout
                     </a>
                 </div>
@@ -464,6 +560,57 @@
             </div>
         </div>
 
+        <!-- Additional Metrics Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Vehicle Assessments -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-red-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clipboard-check text-red-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Vehicle Assessments</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ total_assessments|default:0 }}</p>
+                        <p class="text-xs text-red-600">120-point damage checks</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending Assessments -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-orange-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clock text-orange-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Pending Assessments</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ pending_assessments|default:0 }}</p>
+                        <p class="text-xs text-orange-600">In progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Assessment Dashboard Link -->
+            <div
+                class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200">
+                <a href="{% url 'assessments:dashboard' %}" class="flex items-center h-full">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chart-line text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-900">Assessment Dashboard</p>
+                        <p class="text-xs text-blue-600">View all assessments →</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+
         <!-- Quick Actions Section -->
         <div class="mb-8">
             <div class="flex items-center justify-between mb-6">
@@ -477,12 +624,14 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
-                <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-success group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-success group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-plus text-success group-hover:text-white"></i>
                             </div>
                         </div>
@@ -493,10 +642,12 @@
                     </div>
                 </a>
 
-                <a href="{% url 'maintenance_history:create_initial_inspection' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:create_initial_inspection' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-search-plus text-accent group-hover:text-white"></i>
                             </div>
                         </div>
@@ -507,10 +658,12 @@
                     </div>
                 </a>
 
-                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-blue-500 bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-blue-500 group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-car-side text-blue-500 group-hover:text-white"></i>
                             </div>
                         </div>
@@ -521,10 +674,12 @@
                     </div>
                 </a>
 
-                <a href="{% url 'maintenance_history:inspection_form_list' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:inspection_form_list' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-warning group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-warning group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-clock text-warning group-hover:text-white"></i>
                             </div>
                         </div>
@@ -535,10 +690,12 @@
                     </div>
                 </a>
 
-                <a href="{% url 'maintenance_history:inspection_list' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:inspection_list' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-chart-bar text-primary group-hover:text-white"></i>
                             </div>
                         </div>
@@ -549,16 +706,34 @@
                     </div>
                 </a>
 
-                <a href="{% url 'maintenance_history:create_record' %}" class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                <a href="{% url 'maintenance_history:create_record' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
-                            <div class="w-8 h-8 bg-secondary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-secondary bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
                                 <i class="fas fa-wrench text-secondary group-hover:text-white"></i>
                             </div>
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-900">Maintenance</p>
                             <p class="text-xs text-gray-500">Create service record</p>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="{% url 'assessments:start_assessment' %}"
+                    class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <div
+                                class="w-8 h-8 bg-red-600 bg-opacity-20 rounded-lg flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors duration-200">
+                                <i class="fas fa-clipboard-check text-red-600 group-hover:text-white"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-900">Assessment</p>
+                            <p class="text-xs text-gray-500">120-point damage check</p>
                         </div>
                     </div>
                 </a>
@@ -571,9 +746,10 @@
                 <h2 class="text-xl font-bold text-gray-900">Inspection Workflows</h2>
                 <span class="text-sm text-gray-500">Complete Processes</span>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
                 <!-- Start New Inspection Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
                     <div class="flex items-center mb-4">
                         <span class="text-2xl mr-3">✅</span>
                         <div>
@@ -581,33 +757,43 @@
                             <p class="text-sm text-gray-600">Quarterly vehicle health check</p>
                         </div>
                     </div>
-                    
+
                     <div class="space-y-3 mb-6">
-                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
+                        <div
+                            class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                1</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">Vehicle Selection</div>
                                 <div class="text-xs text-gray-600">Choose vehicle, set date & mileage</div>
                             </div>
                         </div>
-                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
+                        <div
+                            class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                2</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">50-Point Checklist</div>
                                 <div class="text-xs text-gray-600">Complete detailed inspection form</div>
                             </div>
                         </div>
-                        <div class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
+                        <div
+                            class="flex items-center p-3 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                3</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">Health Index</div>
                                 <div class="text-xs text-gray-600">Auto-calculated vehicle health score</div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="text-center">
-                        <a href="{% url 'maintenance_history:start_inspection_workflow' %}" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <a href="{% url 'maintenance_history:start_inspection_workflow' %}"
+                            class="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-sm hover:shadow-md">
                             <span class="mr-2">🚀</span>
                             Start Inspection
                         </a>
@@ -615,7 +801,8 @@
                 </div>
 
                 <!-- Initial Inspection Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
                     <div class="flex items-center mb-4">
                         <span class="text-2xl mr-3">🔍</span>
                         <div>
@@ -623,41 +810,105 @@
                             <p class="text-sm text-gray-600">Pre-purchase comprehensive check</p>
                         </div>
                     </div>
-                    
+
                     <div class="space-y-3 mb-6">
-                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">1</div>
+                        <div
+                            class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                1</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">Vehicle Setup</div>
                                 <div class="text-xs text-gray-600">VIN, mileage, technician details</div>
                             </div>
                         </div>
-                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">2</div>
+                        <div
+                            class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                2</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">160-Point Check</div>
                                 <div class="text-xs text-gray-600">Road test, frame, structure</div>
                             </div>
                         </div>
-                        <div class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
-                            <div class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">3</div>
+                        <div
+                            class="flex items-center p-3 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-amber-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                3</div>
                             <div class="flex-1">
                                 <div class="font-semibold text-gray-900 text-sm">Assessment</div>
                                 <div class="text-xs text-gray-600">Purchase recommendation</div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="text-center">
-                        <a href="{% url 'maintenance_history:create_initial_inspection' %}" class="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                        <a href="{% url 'maintenance_history:create_initial_inspection' %}"
+                            class="inline-flex items-center px-6 py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors duration-200 shadow-sm hover:shadow-md">
                             <span class="mr-2">🔍</span>
                             Start Initial
                         </a>
                     </div>
                 </div>
 
+                <!-- Vehicle Assessment Card -->
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-3">🔍</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">120-Point Assessment</h3>
+                            <p class="text-sm text-gray-600">Comprehensive damage evaluation</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-6">
+                        <div
+                            class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                1</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Vehicle & Context</div>
+                                <div class="text-xs text-gray-600">Vehicle details, incident location</div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                2</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">120-Point Evaluation</div>
+                                <div class="text-xs text-gray-600">Exterior, interior, mechanical systems</div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center p-3 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                3</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Damage Assessment</div>
+                                <div class="text-xs text-gray-600">Categorization & financial evaluation</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{% url 'assessments:start_assessment' %}"
+                            class="inline-flex items-center px-6 py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                            <span class="mr-2">🔍</span>
+                            Start Assessment
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Management Tools Card -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
                     <div class="flex items-center mb-4">
                         <span class="text-2xl mr-3">📋</span>
                         <div>
@@ -665,24 +916,35 @@
                             <p class="text-sm text-gray-600">View and update existing records</p>
                         </div>
                     </div>
-                    
+
                     <div class="space-y-3">
-                        <a href="{% url 'maintenance_history:inspection_form_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                        <a href="{% url 'maintenance_history:inspection_form_list' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📝</span>
-                            <span class="font-medium text-gray-900 text-sm">Inspection Forms ({{ pending_inspections|default:0 }} pending)</span>
+                            <span class="font-medium text-gray-900 text-sm">Inspection Forms ({{
+                                pending_inspections|default:0 }} pending)</span>
                         </a>
-                        
-                        <a href="{% url 'maintenance_history:initial_inspection_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+
+                        <a href="{% url 'maintenance_history:initial_inspection_list' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🔍</span>
                             <span class="font-medium text-gray-900 text-sm">Initial Inspections</span>
                         </a>
-                        
-                        <a href="{% url 'maintenance_history:inspection_list' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+
+                        <a href="{% url 'assessments:dashboard' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📋</span>
+                            <span class="font-medium text-gray-900 text-sm">Vehicle Assessments</span>
+                        </a>
+
+                        <a href="{% url 'maintenance_history:inspection_list' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">📊</span>
                             <span class="font-medium text-gray-900 text-sm">All Inspection Records</span>
                         </a>
-                        
-                        <a href="{% url 'maintenance_history:create_record' %}" class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+
+                        <a href="{% url 'maintenance_history:create_record' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🔧</span>
                             <span class="font-medium text-gray-900 text-sm">Create Maintenance Record</span>
                         </a>
@@ -700,7 +962,8 @@
                         <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
                         <p class="text-sm text-gray-500">Latest maintenance and inspection records</p>
                     </div>
-                    <a href="{% url 'maintenance_history:create_record' %}" class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'maintenance_history:create_record' %}"
+                        class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
                         <i class="fas fa-plus mr-2"></i>New Record
                     </a>
                 </div>
@@ -709,11 +972,16 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service Type</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vehicle</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Service Type</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Action</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -721,7 +989,8 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ record.vehicle.vin }}</div>
-                                <div class="text-sm text-gray-500">{{ record.vehicle.year }} {{ record.vehicle.make }} {{ record.vehicle.model }}</div>
+                                <div class="text-sm text-gray-500">{{ record.vehicle.year }} {{ record.vehicle.make }}
+                                    {{ record.vehicle.model }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ record.service_type }}
@@ -730,7 +999,8 @@
                                 {{ record.date_performed|date:"M d, Y" }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
                                     <i class="fas fa-check mr-1"></i>Completed
                                 </span>
                             </td>
@@ -764,7 +1034,7 @@
                                 <p class="text-sm text-gray-500">Verify VIN, mileage, and basic details first</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">
                                 <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
@@ -774,7 +1044,7 @@
                                 <p class="text-sm text-gray-500">Follow the checklist order for consistency</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">
                                 <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
@@ -784,7 +1054,7 @@
                                 <p class="text-sm text-gray-500">Document specific issues and recommendations</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-start space-x-3">
                             <div class="flex-shrink-0">
                                 <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
@@ -809,37 +1079,41 @@
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-900">Excellent (90-100)</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success text-white">
                                     Excellent
                                 </span>
                             </div>
                             <p class="text-xs text-gray-500">Vehicle in outstanding condition</p>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-900">Good (80-89)</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-white">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary text-white">
                                     Good
                                 </span>
                             </div>
                             <p class="text-xs text-gray-500">Minor issues, routine maintenance needed</p>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-900">Fair (70-79)</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-white">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning text-white">
                                     Fair
                                 </span>
                             </div>
                             <p class="text-xs text-gray-500">Some repairs required, monitor closely</p>
                         </div>
-                        
+
                         <div class="bg-gray-50 p-4 rounded-lg">
                             <div class="flex items-center justify-between mb-2">
                                 <span class="text-sm font-medium text-gray-900">Poor (Below 70)</span>
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger text-white">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-danger text-white">
                                     Poor
                                 </span>
                             </div>
@@ -853,7 +1127,7 @@
 
     <script>
         // Refresh button functionality
-        document.querySelector('button[class*="bg-primary"]').addEventListener('click', function() {
+        document.querySelector('button[class*="bg-primary"]').addEventListener('click', function () {
             this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
             setTimeout(() => {
                 this.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Refresh Data';
@@ -862,9 +1136,10 @@
         });
     </script>
 </body>
+
 </html>
 
 {%else%}
-  {% include "dashboard/login_dashboard.html"%}
+{% include "dashboard/login_dashboard.html"%}
 {%endif%}
 {% endblock %}

@@ -1,0 +1,312 @@
+{% load static %}
+{% load dashboard_extras %}
+
+<nav class="px-10 py-7">
+  <div class="relative flex items-center justify-between">
+    <a class="relative z-10 pr-4 xl:pr-0" href="{% url 'home' %}">
+      <img class="h-10" src="{% static 'images/carfinity logo.png' %}" alt=""/>
+    </a>
+    
+    <div class="hidden xl:flex xl:justify-center gap-16 xl:absolute xl:w-full xl:top-1/2 xl:left-1/2 xl:transform xl:-translate-y-1/2 xl:-translate-x-1/2">
+      <a class="inline-block text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'about' %}">About Us</a>
+      <a class="inline-block text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'blog' %}">Blog</a>
+      <a class="inline-block text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'search' %}">Search</a>
+    </div>
+    
+    <div class="relative hidden xl:flex items-center gap-2">
+      {% if user.is_authenticated %}
+        <!-- Authenticated user navigation with conditional dashboard links -->
+        {% get_user_dashboard_access user as dashboard_access %}
+        
+        <!-- Dashboard Navigation -->
+        {% if dashboard_access.available_dashboards %}
+          {% if dashboard_access.available_dashboards|length == 1 %}
+            <!-- Single dashboard access -->
+            {% for dashboard in dashboard_access.available_dashboards %}
+              {% if dashboard == 'customer' %}
+                <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">
+                  <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+                </a>
+              {% elif dashboard == 'insurance' %}
+                <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'insurance:insurance_dashboard' %}">
+                  <i class="fas fa-shield-alt mr-2"></i>Insurance Dashboard
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% else %}
+            <!-- Multiple dashboard access - show dropdown -->
+            <div class="relative" x-data="{ dashboardOpen: false }">
+              <button @click="dashboardOpen = !dashboardOpen" @click.away="dashboardOpen = false"
+                class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200">
+                <i class="fas fa-th-large mr-2"></i>Dashboards
+                <svg class="w-4 h-4 ml-2 transition-transform duration-200" :class="{ 'rotate-180': dashboardOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              
+              <!-- Dashboard Dropdown -->
+              <div x-show="dashboardOpen" x-transition:enter="transition ease-out duration-200" 
+                x-transition:enter-start="opacity-0 transform scale-95" 
+                x-transition:enter-end="opacity-100 transform scale-100" 
+                x-transition:leave="transition ease-in duration-150" 
+                x-transition:leave-start="opacity-100 transform scale-100" 
+                x-transition:leave-end="opacity-0 transform scale-95" 
+                class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                
+                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 class="text-sm font-semibold text-gray-900">Available Dashboards</h3>
+                  <p class="text-xs text-gray-500 mt-1">Select the dashboard you want to access</p>
+                </div>
+                
+                <div class="py-2">
+                  {% for dashboard in dashboard_access.available_dashboards %}
+                    {% if dashboard == 'customer' %}
+                      <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                        <i class="fas fa-tachometer-alt mr-3 w-4 text-blue-600"></i>
+                        <div>
+                          <p class="font-medium">Customer Dashboard</p>
+                          <p class="text-xs text-gray-500">Vehicle management and maintenance</p>
+                        </div>
+                      </a>
+                    {% elif dashboard == 'insurance' %}
+                      <a href="{% url 'insurance:insurance_dashboard' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                        <i class="fas fa-shield-alt mr-3 w-4 text-green-600"></i>
+                        <div>
+                          <p class="font-medium">Insurance Dashboard</p>
+                          <p class="text-xs text-gray-500">Risk assessment and claims</p>
+                        </div>
+                      </a>
+                    {% endif %}
+                  {% endfor %}
+                  
+                  <div class="border-t border-gray-200 mt-2 pt-2">
+                    <a href="{% url 'dashboard_selector' %}" class="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 transition duration-150">
+                      <i class="fas fa-cog mr-3 w-4"></i>Dashboard Selector
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% else %}
+          <!-- No dashboard access - show message -->
+          <span class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg text-gray-500 bg-gray-100 border border-gray-300 rounded-lg cursor-not-allowed">
+            <i class="fas fa-exclamation-triangle mr-2"></i>No Access
+          </span>
+        {% endif %}
+        
+        <!-- Dashboard Switching for Current Page -->
+        {% if dashboard_access.available_dashboards|length > 1 and request.resolver_match.url_name in 'dashboard,insurance_dashboard' %}
+          {% get_dashboard_switch_options user request.resolver_match.url_name as switch_options %}
+          {% if switch_options %}
+            <div class="relative" x-data="{ switchOpen: false }">
+              <button @click="switchOpen = !switchOpen" @click.away="switchOpen = false"
+                class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-blue-600 hover:bg-blue-700 focus:bg-blue-700 border border-blue-600 rounded-lg focus:ring-4 focus:ring-blue-400 transition duration-200">
+                <i class="fas fa-exchange-alt mr-2"></i>Switch
+              </button>
+              
+              <!-- Switch Options Dropdown -->
+              <div x-show="switchOpen" x-transition:enter="transition ease-out duration-200" 
+                x-transition:enter-start="opacity-0 transform scale-95" 
+                x-transition:enter-end="opacity-100 transform scale-100" 
+                x-transition:leave="transition ease-in duration-150" 
+                x-transition:leave-start="opacity-100 transform scale-100" 
+                x-transition:leave-end="opacity-0 transform scale-95" 
+                class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                
+                <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+                  <h3 class="text-sm font-semibold text-gray-900">Switch Dashboard</h3>
+                </div>
+                
+                <div class="py-2">
+                  {% for option in switch_options %}
+                    <a href="{{ option.url }}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                      <i class="fas fa-arrow-right mr-3 w-4 text-blue-600"></i>
+                      <div>
+                        <p class="font-medium">{{ option.display_name }}</p>
+                        <p class="text-xs text-gray-500">{{ option.description }}</p>
+                      </div>
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+        
+        <!-- User Profile and Logout -->
+        <div class="relative" x-data="{ userOpen: false }">
+          <button @click="userOpen = !userOpen" @click.away="userOpen = false"
+            class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200">
+            <i class="fas fa-user mr-2"></i>{{ user.first_name|default:user.username|truncatechars:10 }}
+            <svg class="w-4 h-4 ml-2 transition-transform duration-200" :class="{ 'rotate-180': userOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <!-- User Dropdown -->
+          <div x-show="userOpen" x-transition:enter="transition ease-out duration-200" 
+            x-transition:enter-start="opacity-0 transform scale-95" 
+            x-transition:enter-end="opacity-100 transform scale-100" 
+            x-transition:leave="transition ease-in duration-150" 
+            x-transition:leave-start="opacity-100 transform scale-100" 
+            x-transition:leave-end="opacity-0 transform scale-95" 
+            class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+            
+            <!-- User Info Header -->
+            <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
+              <div class="flex items-center">
+                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                  <i class="fas fa-user text-blue-600"></i>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-900">{{ user.first_name|default:user.username }}</p>
+                  <p class="text-xs text-gray-500">{{ user.email }}</p>
+                  {% if dashboard_access.user_groups %}
+                    <div class="flex flex-wrap gap-1 mt-1">
+                      {% for group in dashboard_access.user_groups %}
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          {{ group|title }}
+                        </span>
+                      {% endfor %}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Menu Items -->
+            <div class="py-2">
+              <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                <i class="fas fa-user-cog mr-3 w-4"></i>Profile Settings
+              </a>
+              <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                <i class="fas fa-bell mr-3 w-4"></i>Notifications
+              </a>
+              <a href="#" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                <i class="fas fa-question-circle mr-3 w-4"></i>Help & Support
+              </a>
+              
+              <div class="border-t border-gray-200 my-2"></div>
+              
+              <!-- Enhanced Logout with Session Cleanup -->
+              <form method="post" action="{% url 'logout' %}" class="block">
+                {% csrf_token %}
+                <button type="submit" class="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition duration-150 text-left">
+                  <i class="fas fa-sign-out-alt mr-3 w-4"></i>Logout
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+      {% else %}
+        <!-- Public/unauthenticated user navigation -->
+        <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'login' %}">Login</a>
+        <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'register' %}">Sign Up</a>
+      {% endif %}
+      
+      <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'contact' %}">Contact us</a>
+    </div>
+    
+    <!-- Mobile Menu Button -->
+    <button class="xl:hidden" x-on:click="mobileNavOpen = !mobileNavOpen">
+      <svg xmlns="http://www.w3.org/2000/svg" width="34" height="14" viewbox="0 0 34 14" fill="none">
+        <g clip-path="url(#clip0_231_4713)">
+          <rect width="34" height="3" rx="1.5" fill="#19191B"></rect>
+          <rect y="11" width="34" height="3" rx="1.5" fill="#19191B"></rect>
+        </g>
+        <defs>
+          <clippath id="clip0_231_4713">
+            <rect width="34" height="14" fill="white"></rect>
+          </clippath>
+        </defs>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<!-- Mobile Navigation Menu -->
+<div class="hidden fixed top-0 left-0 bottom-0 w-5/6 max-w-xs z-50" :class="{'block': mobileNavOpen, 'hidden': !mobileNavOpen}">
+  <div class="fixed inset-0 bg-black opacity-20" x-on:click="mobileNavOpen = !mobileNavOpen"></div>
+  <nav class="relative p-8 w-full h-full bg-white overflow-y-auto">
+    <div class="flex flex-col justify-between h-full">
+      <div class="flex items-center justify-between">
+        <a class="pr-4" href="{% url 'home' %}">
+          <img class="h-10" src="{% static 'images/carfinity logo.png' %}" alt=""/>
+        </a>
+        <button x-on:click="mobileNavOpen = !mobileNavOpen">
+          <svg width="24" height="24" viewbox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 18L18 6M6 6L18 18" stroke="#252E4A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="flex flex-col gap-8 py-16">
+        <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'about' %}">About Us</a>
+        <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'blog' %}">Blog</a>
+        <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'search' %}">Search</a>
+        
+        {% if user.is_authenticated %}
+          <!-- Mobile Dashboard Links -->
+          {% get_user_dashboard_access user as dashboard_access %}
+          {% if dashboard_access.available_dashboards %}
+            <div class="border-t border-gray-200 pt-4">
+              <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Dashboards</p>
+              {% for dashboard in dashboard_access.available_dashboards %}
+                {% if dashboard == 'customer' %}
+                  <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="{% url 'dashboard' %}">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Customer Dashboard
+                  </a>
+                {% elif dashboard == 'insurance' %}
+                  <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="{% url 'insurance:insurance_dashboard' %}">
+                    <i class="fas fa-shield-alt mr-2"></i>Insurance Dashboard
+                  </a>
+                {% endif %}
+              {% endfor %}
+              
+              {% if dashboard_access.available_dashboards|length > 1 %}
+                <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200" href="{% url 'dashboard_selector' %}">
+                  <i class="fas fa-th-large mr-2"></i>Dashboard Selector
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+      
+      <div class="flex flex-col items-center gap-2">
+        {% if user.is_authenticated %}
+          <!-- Authenticated user mobile navigation -->
+          {% if dashboard_access.available_dashboards %}
+            {% if dashboard_access.available_dashboards|length == 1 %}
+              {% for dashboard in dashboard_access.available_dashboards %}
+                {% if dashboard == 'customer' %}
+                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">Dashboard</a>
+                {% elif dashboard == 'insurance' %}
+                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'insurance:insurance_dashboard' %}">Insurance Dashboard</a>
+                {% endif %}
+              {% endfor %}
+            {% else %}
+              <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard_selector' %}">Select Dashboard</a>
+            {% endif %}
+          {% endif %}
+          
+          <!-- Enhanced Mobile Logout -->
+          <form method="post" action="{% url 'logout' %}" class="w-full">
+            {% csrf_token %}
+            <button type="submit" class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-red-600 focus:bg-red-600 border border-red-600 rounded-lg focus:ring-4 focus:ring-red-400 transition duration-200">
+              <i class="fas fa-sign-out-alt mr-2"></i>Logout
+            </button>
+          </form>
+        {% else %}
+          <!-- Public/unauthenticated user mobile navigation -->
+          <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'login' %}">Login</a>
+          <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg text-white bg-neutral-900 hover:bg-neutral-800 focus:bg-neutral-800 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'register' %}">Sign Up</a>
+        {% endif %}
+        
+        <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'contact' %}">Contact us</a>
+      </div>
+    </div>
+  </nav>
+</div>

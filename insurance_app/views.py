@@ -11,8 +11,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
+from users.permissions import require_group, require_organization_type, check_permission_conflicts
+from django.utils.decorators import method_decorator
+from django.contrib import messages
+from django.shortcuts import render
 
 # Dashboard Views
+@method_decorator([require_group('insurance_company'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
 class DashboardView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/insurance_dashboard.html'
     context_object_name = 'policies'
@@ -24,59 +29,128 @@ class DashboardView(LoginRequiredMixin, ListView):
         ).prefetch_related('vehicles')
     
     def get_context_data(self, **kwargs):
+        import logging
+        logger = logging.getLogger(__name__)
+        
         context = super().get_context_data(**kwargs)
         
-        # Get all vehicles for user's policies
-        vehicles = Vehicle.objects.filter(
-            policy__policy_holder=self.request.user,
-            policy__status='active'
-        )
+        # Initialize error context
+        error_context = {
+            'has_errors': False,
+            'error_messages': [],
+            'warning_messages': []
+        }
         
-        # Portfolio Maintenance Compliance
-        compliance_data = MaintenanceCompliance.objects.filter(
-            vehicle__in=vehicles
-        ).aggregate(
-            avg_compliance=Avg('overall_compliance_rate'),
-            avg_critical_compliance=Avg('critical_maintenance_compliance')
-        )
+        try:
+            # Get all vehicles for user's policies with error handling
+            vehicles = Vehicle.objects.filter(
+                policy__policy_holder=self.request.user,
+                policy__status='active'
+            )
+            
+            if not vehicles.exists():
+                error_context['warning_messages'].append("No active vehicles found in your insurance policies.")
+                
+        except Exception as e:
+            logger.error(f"Error retrieving vehicles for insurance dashboard, user {self.request.user.id}: {str(e)}")
+            error_context['has_errors'] = True
+            error_context['error_messages'].append("Unable to load vehicle data. Please try again later.")
+            vehicles = Vehicle.objects.none()
         
-        # Vehicle Condition Distribution
-        condition_distribution = vehicles.values('current_condition').annotate(
-            count=Count('id')
-        )
+        # Portfolio Maintenance Compliance with error handling
+        try:
+            compliance_data = MaintenanceCompliance.objects.filter(
+                vehicle__in=vehicles
+            ).aggregate(
+                avg_compliance=Avg('overall_compliance_rate'),
+                avg_critical_compliance=Avg('critical_maintenance_compliance')
+            )
+        except Exception as e:
+            logger.warning(f"Error retrieving compliance data for user {self.request.user.id}: {str(e)}")
+            compliance_data = {'avg_compliance': 0, 'avg_critical_compliance': 0}
+            error_context['warning_messages'].append("Unable to load compliance data.")
         
-        # Risk Alerts
-        active_alerts = RiskAlert.objects.filter(
-            vehicle__in=vehicles,
-            is_resolved=False
-        ).order_by('-severity', '-created_at')[:10]
+        # Vehicle Condition Distribution with error handling
+        try:
+            condition_distribution = vehicles.values('current_condition').annotate(
+                count=Count('id')
+            )
+        except Exception as e:
+            logger.warning(f"Error retrieving condition distribution for user {self.request.user.id}: {str(e)}")
+            condition_distribution = []
+            error_context['warning_messages'].append("Unable to load vehicle condition data.")
         
-        # Recent Accidents
-        recent_accidents = Accident.objects.filter(
-            vehicle__in=vehicles,
-            accident_date__gte=timezone.now() - timedelta(days=30)
-        ).select_related('vehicle')
+        # Risk Alerts with error handling
+        try:
+            active_alerts = RiskAlert.objects.filter(
+                vehicle__in=vehicles,
+                is_resolved=False
+            ).order_by('-severity', '-created_at')[:10]
+        except Exception as e:
+            logger.warning(f"Error retrieving risk alerts for user {self.request.user.id}: {str(e)}")
+            active_alerts = []
+            error_context['warning_messages'].append("Unable to load risk alerts.")
         
-        # Get high-risk vehicles for the table
-        high_risk_vehicles_list = vehicles.filter(risk_score__gte=7).select_related('policy')[:10]
+        # Recent Accidents with error handling
+        try:
+            recent_accidents = Accident.objects.filter(
+                vehicle__in=vehicles,
+                accident_date__gte=timezone.now() - timedelta(days=30)
+            ).select_related('vehicle')
+        except Exception as e:
+            logger.warning(f"Error retrieving recent accidents for user {self.request.user.id}: {str(e)}")
+            recent_accidents = []
+            error_context['warning_messages'].append("Unable to load recent accident data.")
         
-        # Calculate average health index
-        avg_health_index = vehicles.aggregate(avg_health=Avg('vehicle_health_index'))['avg_health'] or 0
+        # Get high-risk vehicles for the table with error handling
+        try:
+            high_risk_vehicles_list = vehicles.filter(risk_score__gte=7).select_related('policy')[:10]
+        except Exception as e:
+            logger.warning(f"Error retrieving high-risk vehicles for user {self.request.user.id}: {str(e)}")
+            high_risk_vehicles_list = []
+            error_context['warning_messages'].append("Unable to load high-risk vehicle data.")
+        
+        # Calculate average health index with error handling
+        try:
+            avg_health_index = vehicles.aggregate(avg_health=Avg('vehicle_health_index'))['avg_health'] or 0
+        except Exception as e:
+            logger.warning(f"Error calculating average health index for user {self.request.user.id}: {str(e)}")
+            avg_health_index = 0
+            error_context['warning_messages'].append("Unable to calculate average health index.")
+        
+        # Add error messages to Django messages framework
+        from django.contrib import messages
+        if error_context['has_errors']:
+            for error_msg in error_context['error_messages']:
+                messages.error(self.request, error_msg)
+        
+        if error_context['warning_messages']:
+            for warning_msg in error_context['warning_messages']:
+                messages.warning(self.request, warning_msg)
+        
+        # Calculate high-risk vehicle count safely
+        try:
+            high_risk_count = vehicles.filter(risk_score__gte=7).count()
+        except Exception as e:
+            logger.warning(f"Error counting high-risk vehicles for user {self.request.user.id}: {str(e)}")
+            high_risk_count = 0
         
         context.update({
-            'total_vehicles': vehicles.count(),
+            'total_vehicles': vehicles.count() if vehicles else 0,
             'avg_compliance_rate': compliance_data['avg_compliance'] or 0,
             'avg_critical_compliance': compliance_data['avg_critical_compliance'] or 0,
             'avg_health_index': avg_health_index,
             'condition_distribution': list(condition_distribution),
             'active_alerts': active_alerts,
             'recent_accidents': recent_accidents,
-            'high_risk_vehicles': vehicles.filter(risk_score__gte=7).count(),
+            'high_risk_vehicles': high_risk_count,
             'high_risk_vehicles_list': high_risk_vehicles_list,
+            'error_context': error_context,
         })
         
         return context
 
+@method_decorator([require_group('insurance_company'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
 class VehicleDetailView(LoginRequiredMixin, DetailView):
     model = Vehicle
     template_name = 'dashboard/insurance_detail.html'
@@ -498,3 +572,141 @@ def get_comprehensive_accident_data(request, vehicle_id):
         return JsonResponse({'error': 'Vehicle not found'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_group('insurance_company')
+@require_organization_type('insurance')
+@check_permission_conflicts
+def insurance_dashboard_view(request):
+    """
+    Function-based view for insurance dashboard with comprehensive error handling.
+    Alternative to the class-based DashboardView for consistency with customer dashboard.
+    """
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    # Initialize default values
+    policies = []
+    total_vehicles = 0
+    avg_compliance_rate = 0
+    avg_critical_compliance = 0
+    avg_health_index = 0
+    condition_distribution = []
+    active_alerts = []
+    recent_accidents = []
+    high_risk_vehicles = 0
+    high_risk_vehicles_list = []
+    
+    # Error handling context
+    error_context = {
+        'has_errors': False,
+        'error_messages': [],
+        'warning_messages': []
+    }
+    
+    try:
+        # Get user's insurance policies
+        policies = InsurancePolicy.objects.filter(
+            policy_holder=request.user,
+            status='active'
+        ).prefetch_related('vehicles')
+        
+        if not policies.exists():
+            error_context['warning_messages'].append("No active insurance policies found.")
+        
+        # Get all vehicles for user's policies
+        vehicles = Vehicle.objects.filter(
+            policy__policy_holder=request.user,
+            policy__status='active'
+        )
+        
+        if not vehicles.exists():
+            error_context['warning_messages'].append("No vehicles found in your active insurance policies.")
+        else:
+            total_vehicles = vehicles.count()
+            
+            # Portfolio Maintenance Compliance
+            try:
+                compliance_data = MaintenanceCompliance.objects.filter(
+                    vehicle__in=vehicles
+                ).aggregate(
+                    avg_compliance=Avg('overall_compliance_rate'),
+                    avg_critical_compliance=Avg('critical_maintenance_compliance')
+                )
+                avg_compliance_rate = compliance_data['avg_compliance'] or 0
+                avg_critical_compliance = compliance_data['avg_critical_compliance'] or 0
+            except Exception as e:
+                logger.warning(f"Error calculating compliance data for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to calculate compliance metrics.")
+            
+            # Vehicle Condition Distribution
+            try:
+                condition_distribution = list(vehicles.values('current_condition').annotate(count=Count('id')))
+            except Exception as e:
+                logger.warning(f"Error getting condition distribution for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to load vehicle condition data.")
+            
+            # Risk Alerts
+            try:
+                active_alerts = RiskAlert.objects.filter(
+                    vehicle__in=vehicles,
+                    is_resolved=False
+                ).order_by('-severity', '-created_at')[:10]
+            except Exception as e:
+                logger.warning(f"Error getting risk alerts for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to load risk alerts.")
+            
+            # Recent Accidents
+            try:
+                recent_accidents = Accident.objects.filter(
+                    vehicle__in=vehicles,
+                    accident_date__gte=timezone.now() - timedelta(days=30)
+                ).select_related('vehicle')
+            except Exception as e:
+                logger.warning(f"Error getting recent accidents for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to load recent accident data.")
+            
+            # High-risk vehicles
+            try:
+                high_risk_vehicles = vehicles.filter(risk_score__gte=7).count()
+                high_risk_vehicles_list = vehicles.filter(risk_score__gte=7).select_related('policy')[:10]
+            except Exception as e:
+                logger.warning(f"Error getting high-risk vehicles for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to load high-risk vehicle data.")
+            
+            # Average health index
+            try:
+                avg_health_index = vehicles.aggregate(avg_health=Avg('vehicle_health_index'))['avg_health'] or 0
+            except Exception as e:
+                logger.warning(f"Error calculating health index for user {request.user.id}: {str(e)}")
+                error_context['warning_messages'].append("Unable to calculate average health index.")
+    
+    except Exception as e:
+        logger.error(f"Error in insurance dashboard for user {request.user.id}: {str(e)}")
+        error_context['has_errors'] = True
+        error_context['error_messages'].append("Unable to load dashboard data. Please try again later.")
+    
+    # Add error context to messages
+    if error_context['has_errors']:
+        for error_msg in error_context['error_messages']:
+            messages.error(request, error_msg)
+    
+    if error_context['warning_messages']:
+        for warning_msg in error_context['warning_messages']:
+            messages.warning(request, warning_msg)
+    
+    context = {
+        'policies': policies,
+        'total_vehicles': total_vehicles,
+        'avg_compliance_rate': avg_compliance_rate,
+        'avg_critical_compliance': avg_critical_compliance,
+        'avg_health_index': avg_health_index,
+        'condition_distribution': condition_distribution,
+        'active_alerts': active_alerts,
+        'recent_accidents': recent_accidents,
+        'high_risk_vehicles': high_risk_vehicles,
+        'high_risk_vehicles_list': high_risk_vehicles_list,
+        'error_context': error_context,
+    }
+    
+    return render(request, 'dashboard/insurance_dashboard.html', context)
