@@ -61,7 +61,7 @@ class AuthenticationService:
             name='insurance',
             url='/insurance-dashboard/',
             display_name='Insurance Dashboard',
-            required_groups=['insurance_company'],
+            required_groups=['Insurance Companies'],
             required_org_types=['insurance']
         )
     }
@@ -83,7 +83,7 @@ class AuthenticationService:
             'default_redirect': '/dashboard/',
             'priority': 1
         },
-        ('insurance_company', 'insurance'): {
+        ('Insurance Companies', 'insurance'): {
             'dashboards': ['insurance'],
             'default_redirect': '/insurance-dashboard/',
             'priority': 1
@@ -684,8 +684,8 @@ class DashboardRouter:
         """
         user_groups = list(user.groups.values_list('name', flat=True))
         
-        # Priority order: insurance_company > customers
-        if 'insurance_company' in user_groups:
+        # Priority order: Insurance Companies > customers
+        if 'Insurance Companies' in user_groups:
             return 'insurance'
         elif 'customers' in user_groups:
             return 'customer'
@@ -1053,7 +1053,7 @@ class OrganizationService:
         # Fallback to default mapping if no configured groups found
         if not groups:
             default_mapping = {
-                'insurance': ['insurance_company'],
+                'insurance': ['Insurance Companies'],
                 'fleet': ['customers'],
                 'dealership': ['customers'],
                 'service': ['customers'],

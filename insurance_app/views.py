@@ -17,7 +17,7 @@ from django.contrib import messages
 from django.shortcuts import render
 
 # Dashboard Views
-@method_decorator([require_group('insurance_company'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
 class DashboardView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/insurance_dashboard.html'
     context_object_name = 'policies'
@@ -150,7 +150,7 @@ class DashboardView(LoginRequiredMixin, ListView):
         
         return context
 
-@method_decorator([require_group('insurance_company'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
 class VehicleDetailView(LoginRequiredMixin, DetailView):
     model = Vehicle
     template_name = 'dashboard/insurance_detail.html'
@@ -574,7 +574,7 @@ def get_comprehensive_accident_data(request, vehicle_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@require_group('insurance_company')
+@require_group('Insurance Companies')
 @require_organization_type('insurance')
 @check_permission_conflicts
 def insurance_dashboard_view(request):
