@@ -198,6 +198,45 @@ class VehicleDetailView(LoginRequiredMixin, DetailView):
         
         return context
 
+@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+class AssessmentDashboardView(LoginRequiredMixin, ListView):
+    template_name = 'dashboard/insurance_assessment_dashboard.html'
+    context_object_name = 'assessments'
+    
+    def get_queryset(self):
+        # Return empty queryset for now - will be populated with actual assessment data later
+        return []
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Add context data for the assessment dashboard
+        context.update({
+            'active_claims': 24,
+            'pending_reviews': 8,
+            'avg_processing_time': '4.2h',
+            'cost_savings': '£18.5K',
+            'accuracy_rate': '94.2%',
+            'customer_satisfaction': '4.7/5',
+        })
+        
+        return context
+
+@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+class BookAssessmentView(LoginRequiredMixin, ListView):
+    template_name = 'dashboard/insurance_booking.html'
+    context_object_name = 'bookings'
+    
+    def get_queryset(self):
+        # Return empty queryset for now - will be populated with actual booking data later
+        return []
+    
+    def post(self, request, *args, **kwargs):
+        # Handle form submission for booking new assessments
+        # This will be implemented in later tasks
+        messages.success(request, 'Assessment request submitted successfully!')
+        return self.get(request, *args, **kwargs)
+
 # API ViewSets
 class MaintenanceScheduleViewSet(viewsets.ModelViewSet):
     serializer_class = MaintenanceScheduleSerializer

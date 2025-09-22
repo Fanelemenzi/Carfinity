@@ -9,10 +9,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Insurance Risk Assessment Dashboard</title>
+    <title>Insurance Claims Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
+    <link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
     <script>
         tailwind.config = {
             theme: {
@@ -29,304 +31,859 @@
             }
         }
     </script>
+    <style>
+        /* Landing Page Custom Styles */
+        .action-card {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .action-card:hover::before {
+            left: 100%;
+        }
+        
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .action-button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .action-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .action-button:hover::after {
+            width: 300px;
+            height: 300px;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        .notification-badge {
+            animation: bounce 1s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0,-8px,0);
+            }
+            70% {
+                transform: translate3d(0,-4px,0);
+            }
+            90% {
+                transform: translate3d(0,-2px,0);
+            }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Mobile-First Responsive Design */
+        
+        /* Mobile Navigation */
+        .mobile-nav-toggle {
+            display: none;
+        }
+        
+        .mobile-nav-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-nav-menu.active {
+            transform: translateX(0);
+        }
+        
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .mobile-nav-overlay.active {
+            display: block;
+        }
+        
+        /* Touch-Optimized Controls */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+        
+        .swipe-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .swipe-item {
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+        
+        /* Mobile Tablet Breakpoints */
+        @media (max-width: 1024px) {
+            /* Tablet Layout */
+            .desktop-only {
+                display: none !important;
+            }
+            
+            .tablet-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tablet-single {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            /* Mobile Layout */
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .desktop-nav {
+                display: none;
+            }
+            
+            .mobile-nav-menu {
+                display: block;
+            }
+            
+            /* Condensed Mobile Dashboard */
+            .mobile-dashboard {
+                padding: 1rem;
+            }
+            
+            .mobile-header {
+                padding: 0.75rem 1rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            .mobile-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+            
+            .mobile-action-cards {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .action-card {
+                margin-bottom: 1rem;
+            }
+            
+            .action-card .p-6 {
+                padding: 1rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+            
+            /* Mobile Typography */
+            .mobile-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            .mobile-subtitle {
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+            
+            /* Mobile Cards */
+            .mobile-card {
+                border-radius: 0.75rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+            
+            .mobile-card-compact {
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+            
+            /* Touch-Friendly Buttons */
+            .mobile-button {
+                min-height: 48px;
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+                touch-action: manipulation;
+            }
+            
+            .mobile-icon-button {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            /* Small Mobile Layout */
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .welcome-section h2 {
+                font-size: 1.25rem;
+            }
+            
+            .mobile-single-column {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Compact Mobile Cards */
+            .mobile-compact .action-card {
+                padding: 0.75rem;
+            }
+            
+            .mobile-compact .stats-card {
+                padding: 0.75rem;
+            }
+            
+            /* Mobile Navigation Adjustments */
+            .mobile-nav-item {
+                padding: 1rem;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 1.125rem;
+            }
+            
+            /* Mobile Activity Feed */
+            .mobile-activity {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+            
+            .mobile-activity-item {
+                padding: 0.75rem;
+                border-bottom: 1px solid #f3f4f6;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            /* Extra Small Mobile */
+            .mobile-dashboard {
+                padding: 0.75rem;
+            }
+            
+            .mobile-header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .mobile-title {
+                font-size: 1.25rem;
+            }
+            
+            .mobile-card {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .mobile-button {
+                min-height: 44px;
+                padding: 0.625rem 1.25rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Swipe Gestures */
+        .swipe-enabled {
+            touch-action: pan-x;
+        }
+        
+        .swipe-indicator {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .swipe-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.3);
+            transition: background 0.3s ease;
+        }
+        
+        .swipe-dot.active {
+            background: #3b82f6;
+        }
+        
+        /* Loading States for Mobile */
+        .mobile-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .mobile-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Visual Indicators */
+        .status-indicator {
+            position: relative;
+        }
+        
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .urgent-indicator::after {
+            background: #ef4444;
+            animation: pulse 1s infinite;
+        }
+        
+        .warning-indicator::after {
+            background: #f59e0b;
+        }
+        
+        /* Hover Effects for Interactive Elements */
+        .interactive-hover:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+        
+        .card-hover:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-lg border-b border-gray-200">
+    <!-- Header Navigation -->
+    <nav class="dashboard-header mobile-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
+            <div class="dashboard-nav">
                 <div class="flex items-center">
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-nav-toggle mobile-icon-button mr-3 text-gray-600 hover:text-gray-900 focus:outline-none md:hidden" id="mobileMenuToggle">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    
                     <div class="flex-shrink-0">
-                        <h1 class="text-xl font-bold text-gray-900">
-                            <i class="fas fa-shield-alt text-primary mr-2"></i>
-                            Insurance Risk Dashboard
-                        </h1>
+                        <a href="{% url 'insurance:dashboard' %}" class="dashboard-logo">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="hidden sm:inline">Insurance Claims Portal</span>
+                            <span class="sm:hidden">Claims</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Desktop Navigation Menu -->
+                    <div class="desktop-nav hidden md:block ml-10">
+                        <div class="nav-menu">
+                            <a href="{% url 'insurance:dashboard' %}" class="nav-item active">
+                                <i class="fas fa-home mr-2"></i>Dashboard
+                            </a>
+                            <a href="{% url 'insurance:assessment_dashboard' %}" class="nav-item">
+                                <i class="fas fa-chart-line mr-2"></i>Assessments
+                            </a>
+                            <a href="{% url 'insurance:book_assessment' %}" class="nav-item">
+                                <i class="fas fa-plus-circle mr-2"></i>New Booking
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh Data
-                    </button>
-                    <div class="flex items-center text-sm text-gray-600">
+                
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative" id="notificationBell">
+                        <!-- Notification system will be initialized here by JavaScript -->
+                    </div>
+                    
+                    <!-- Agent Profile -->
+                    <div class="flex items-center space-x-2 md:space-x-3">
+                        <div class="hidden sm:flex flex-col text-right">
+                            <span class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="text-xs text-gray-500">Claims Agent</span>
+                        </div>
+                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden lg:flex items-center text-sm text-gray-500">
                         <i class="fas fa-clock mr-1"></i>
-                        Last updated: <span id="lastUpdated">2 minutes ago</span>
+                        Last login: <span id="lastLogin">{{ user.last_login|date:"M d, H:i" }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Key Metrics Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <!-- Portfolio Compliance Rate -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-success bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-check-circle text-success"></i>
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="flex flex-col h-full">
+            <!-- Mobile Menu Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
+                <button class="mobile-icon-button text-gray-600 hover:text-gray-900" id="mobileMenuClose">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Items -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="py-2">
+                    <a href="{% url 'insurance:dashboard' %}" class="mobile-nav-item flex items-center text-primary font-medium">
+                        <i class="fas fa-home mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'insurance:assessment_dashboard' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Assessments
+                    </a>
+                    <a href="{% url 'insurance:book_assessment' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-plus-circle mr-3"></i>
+                        New Booking
+                    </a>
+                </div>
+                
+                <!-- Mobile Quick Stats -->
+                <div class="border-t border-gray-200 p-4">
+                    <h3 class="text-sm font-medium text-gray-900 mb-3">Quick Stats</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Active Claims</span>
+                            <span class="text-sm font-medium text-gray-900">24</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Pending Reviews</span>
+                            <span class="text-sm font-medium text-yellow-600">8</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Urgent Items</span>
+                            <span class="text-sm font-medium text-red-600">3</span>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Portfolio Compliance</p>
-                        <p class="text-2xl font-semibold text-gray-900" id="portfolioCompliance">{{ avg_compliance_rate|floatformat:1 }}%</p>
-                        <p class="text-xs text-success">Updated daily</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Average Vehicle Health Index -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-car text-primary"></i>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Avg. Vehicle Health</p>
-                        <p class="text-2xl font-semibold text-gray-900" id="avgHealthIndex">{{ avg_health_index|floatformat:1 }}</p>
-                        <p class="text-xs text-warning">Out of 100</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- High Risk Vehicles -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-danger bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-exclamation-triangle text-danger"></i>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">High Risk Vehicles</p>
-                        <p class="text-2xl font-semibold text-gray-900" id="highRiskCount">{{ high_risk_vehicles }}</p>
-                        <p class="text-xs text-danger">Risk score ≥ 7.0</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Active Alerts -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-warning bg-opacity-20 rounded-lg flex items-center justify-center">
-                            <i class="fas fa-bell text-warning"></i>
-                        </div>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-500">Active Alerts</p>
-                        <p class="text-2xl font-semibold text-gray-900" id="activeAlerts">{{ active_alerts.count }}</p>
-                        <p class="text-xs text-gray-500">12 critical</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- Maintenance Compliance Trend -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Maintenance Compliance Trend</h3>
-                    <div class="flex space-x-2">
-                        <button class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 hover:bg-gray-200">7D</button>
-                        <button class="text-xs bg-primary px-2 py-1 rounded text-white">30D</button>
-                        <button class="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600 hover:bg-gray-200">90D</button>
-                    </div>
-                </div>
-                <div class="relative h-64 w-full">
-                    <canvas id="complianceChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Vehicle Condition Distribution -->
-            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Vehicle Condition Distribution</h3>
-                <div class="flex justify-center mb-4 h-48">
-                    <canvas id="conditionChart"></canvas>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-success rounded-full mr-2"></div>
-                        <span>Excellent: <strong>145</strong></span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-primary rounded-full mr-2"></div>
-                        <span>Good: <strong>289</strong></span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-warning rounded-full mr-2"></div>
-                        <span>Fair: <strong>67</strong></span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-3 h-3 bg-danger rounded-full mr-2"></div>
-                        <span>Poor: <strong>23</strong></span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tables Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <!-- High Risk Vehicles Table -->
-            <div class="bg-white rounded-lg shadow border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">High Risk Vehicles</h3>
-                    <p class="text-sm text-gray-500">Vehicles requiring immediate attention</p>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Risk Score</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Primary Issue</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            {% for vehicle in high_risk_vehicles_list %}
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</div>
-                                    <div class="text-sm text-gray-500">VIN: {{ vehicle.vin }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
-                                        {% if vehicle.risk_score >= 8 %}bg-red-500 text-white
-                                        {% elif vehicle.risk_score >= 7 %}bg-orange-500 text-white
-                                        {% else %}bg-yellow-500 text-white{% endif %}">
-                                        {{ vehicle.risk_score }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {% if vehicle.overdue_maintenance_count > 0 %}
-                                        {{ vehicle.overdue_maintenance_count }} overdue maintenance
-                                    {% elif vehicle.recent_accidents_count > 0 %}
-                                        {{ vehicle.recent_accidents_count }} recent accidents
-                                    {% else %}
-                                        Poor condition score
-                                    {% endif %}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <a href="{% url 'insurance:vehicle_detail' vehicle.pk %}" class="text-primary hover:text-blue-700">View Details</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">
-                                    No high-risk vehicles found
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Recent Alerts -->
-            <div class="bg-white rounded-lg shadow border border-gray-200">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Recent Risk Alerts</h3>
-                    <p class="text-sm text-gray-500">Latest system-generated alerts</p>
-                </div>
-                <div class="p-6">
-                    <div class="space-y-4">
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="w-2 h-2 bg-danger rounded-full mt-2"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900">Critical maintenance overdue</p>
-                                <p class="text-sm text-gray-500">2018 Honda Civic - Brake service overdue by 45 days</p>
-                                <p class="text-xs text-gray-400">2 hours ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="w-2 h-2 bg-warning rounded-full mt-2"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900">Vehicle condition deterioration</p>
-                                <p class="text-sm text-gray-500">2019 Toyota Camry - Health index dropped to 65</p>
-                                <p class="text-xs text-gray-400">4 hours ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="w-2 h-2 bg-warning rounded-full mt-2"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900">Compliance rate drop</p>
-                                <p class="text-sm text-gray-500">Policy #INS-2024-001 - Compliance dropped below 80%</p>
-                                <p class="text-xs text-gray-400">6 hours ago</p>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-start space-x-3">
-                            <div class="flex-shrink-0">
-                                <div class="w-2 h-2 bg-primary rounded-full mt-2"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-900">High mileage alert</p>
-                                <p class="text-sm text-gray-500">2017 Ford F-150 - Mileage exceeds 150,000 miles</p>
-                                <p class="text-xs text-gray-400">8 hours ago</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <button class="w-full text-center text-sm text-primary hover:text-blue-700 font-medium">
-                            View All Alerts
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Accident Correlation Analysis -->
-        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-lg font-medium text-gray-900">Accident Correlation with Maintenance History</h3>
-                    <p class="text-sm text-gray-500">Analysis of maintenance-related accidents over time</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-sm">
-                        <span class="text-gray-500">Correlation Rate:</span>
-                        <span class="font-semibold text-danger ml-1">34.7%</span>
-                    </div>
-                    <button class="bg-primary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
-                        Generate Report
-                    </button>
                 </div>
             </div>
             
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2">
-                    <div class="relative h-64 w-full">
-                        <canvas id="accidentChart"></canvas>
+            <!-- Mobile Menu Footer -->
+            <div class="border-t border-gray-200 p-4">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-xs text-gray-500">Claims Agent</div>
                     </div>
                 </div>
+                <button class="w-full mobile-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto mobile-dashboard px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <!-- Welcome Section -->
+        <div class="mb-6 md:mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+                <div class="mb-4 lg:mb-0">
+                    <h2 class="mobile-title text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                        Welcome back, <span class="block sm:inline">{{ user.get_full_name|default:user.username }}</span>
+                    </h2>
+                    <p class="mobile-subtitle text-gray-600">Choose an action to get started with your insurance claims management.</p>
+                </div>
+                <div class="hidden lg:block">
+                    <div class="bg-white rounded-lg shadow p-4 border border-gray-200">
+                        <div class="flex items-center space-x-4">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-primary">{{ user.date_joined|timesince|floatformat:0 }}</div>
+                                <div class="text-xs text-gray-500">Days Active</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600">98.5%</div>
+                                <div class="text-xs text-gray-500">Accuracy Rate</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats Bar -->
+        <div class="stats-grid mobile-stats-grid grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8" data-animate="fade">
+            <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 card-hover transition-all duration-200 status-indicator">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                        <i class="fas fa-clipboard-list text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs md:text-sm text-gray-500 font-medium">Active Claims</p>
+                        <p class="text-lg md:text-xl font-bold text-gray-900">24</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-arrow-up text-green-500 text-xs mr-1"></i>
+                            <span class="text-xs text-green-500">+2 today</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 card-hover transition-all duration-200 warning-indicator">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                        <i class="fas fa-clock text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs md:text-sm text-gray-500 font-medium">Pending Reviews</p>
+                        <p class="text-lg md:text-xl font-bold text-gray-900">8</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-exclamation-circle text-yellow-500 text-xs mr-1"></i>
+                            <span class="text-xs text-yellow-500">2 overdue</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 card-hover transition-all duration-200 urgent-indicator">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                        <i class="fas fa-exclamation-triangle text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs md:text-sm text-gray-500 font-medium">Urgent Items</p>
+                        <p class="text-lg md:text-xl font-bold text-gray-900">3</p>
+                        <div class="flex items-center mt-1">
+                            <div class="pulse-dot w-2 h-2 bg-red-500 rounded-full mr-1"></div>
+                            <span class="text-xs text-red-500">Needs attention</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl shadow-md p-4 border border-gray-200 card-hover transition-all duration-200 status-indicator">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                        <i class="fas fa-check-circle text-white"></i>
+                    </div>
+                    <div class="flex-1">
+                        <p class="text-xs md:text-sm text-gray-500 font-medium">Completed Today</p>
+                        <p class="text-lg md:text-xl font-bold text-gray-900">12</p>
+                        <div class="flex items-center mt-1">
+                            <i class="fas fa-trophy text-green-500 text-xs mr-1"></i>
+                            <span class="text-xs text-green-500">Above target</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Action Cards -->
+        <div class="mobile-action-cards grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 lg:gap-8 mb-6 md:mb-8" data-animate="slide" data-slide-direction="up">
+            <!-- View Vehicle Assessments Card -->
+            <div class="action-card bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl shadow-lg border border-blue-200 hover:shadow-xl transition-all duration-300 cursor-pointer" data-url="{% url 'insurance:assessment_dashboard' %}">
+                <div class="p-6 lg:p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                            <i class="fas fa-chart-line text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl lg:text-2xl font-bold text-gray-900 mb-1">View Vehicle Assessments</h3>
+                            <p class="text-gray-600 text-sm lg:text-base">Access comprehensive assessment dashboard</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-gray-700 mb-4 text-sm lg:text-base">Manage and review vehicle damage assessments with detailed analytics, KPI tracking, and decision support tools.</p>
+                        <div class="grid grid-cols-3 gap-2 lg:gap-4 text-sm">
+                            <div class="text-center bg-white rounded-lg p-2 lg:p-3 shadow-sm">
+                                <div class="text-lg lg:text-xl font-bold text-blue-600">24</div>
+                                <div class="text-gray-500 text-xs lg:text-sm">Active</div>
+                            </div>
+                            <div class="text-center bg-white rounded-lg p-2 lg:p-3 shadow-sm">
+                                <div class="text-lg lg:text-xl font-bold text-yellow-600">8</div>
+                                <div class="text-gray-500 text-xs lg:text-sm">Pending</div>
+                            </div>
+                            <div class="text-center bg-white rounded-lg p-2 lg:p-3 shadow-sm">
+                                <div class="text-lg lg:text-xl font-bold text-red-600">3</div>
+                                <div class="text-gray-500 text-xs lg:text-sm">Urgent</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-button bg-blue-600 text-white text-center py-3 px-6 rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-arrow-right mr-2"></i>Go to Assessment Dashboard
+                    </div>
+                </div>
+            </div>
+
+            <!-- Book New Assessment Card -->
+            <div class="action-card bg-gradient-to-br from-green-50 to-green-100 rounded-xl shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 cursor-pointer" data-url="{% url 'insurance:book_assessment' %}">
+                <div class="p-6 lg:p-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-16 h-16 bg-green-600 rounded-xl flex items-center justify-center mr-4 shadow-lg">
+                            <i class="fas fa-plus-circle text-white text-2xl"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-xl lg:text-2xl font-bold text-gray-900 mb-1">Book New Assessment</h3>
+                            <p class="text-gray-600 text-sm lg:text-base">Submit documents for new claims</p>
+                        </div>
+                    </div>
+                    <div class="mb-6">
+                        <p class="text-gray-700 mb-4 text-sm lg:text-base">Upload insurance documents and create new assessment requests with our streamlined booking process.</p>
+                        <div class="grid grid-cols-2 gap-3 text-sm">
+                            <div class="flex items-center bg-white rounded-lg p-2 shadow-sm">
+                                <i class="fas fa-upload text-green-600 mr-2"></i>
+                                <span class="text-xs lg:text-sm">Document Upload</span>
+                            </div>
+                            <div class="flex items-center bg-white rounded-lg p-2 shadow-sm">
+                                <i class="fas fa-file-alt text-green-600 mr-2"></i>
+                                <span class="text-xs lg:text-sm">Quick Forms</span>
+                            </div>
+                            <div class="flex items-center bg-white rounded-lg p-2 shadow-sm">
+                                <i class="fas fa-clock text-green-600 mr-2"></i>
+                                <span class="text-xs lg:text-sm">Fast Processing</span>
+                            </div>
+                            <div class="flex items-center bg-white rounded-lg p-2 shadow-sm">
+                                <i class="fas fa-check text-green-600 mr-2"></i>
+                                <span class="text-xs lg:text-sm">Auto Validation</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-button bg-green-600 text-white text-center py-3 px-6 rounded-lg font-medium hover:bg-green-700 transition-colors duration-200 flex items-center justify-center">
+                        <i class="fas fa-arrow-right mr-2"></i>Start New Booking
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Panel -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 mb-8">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Recent Activity</h3>
+                <p class="text-sm text-gray-500">Latest claims and assessment updates</p>
+            </div>
+            <div class="p-6">
                 <div class="space-y-4">
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-gray-900">Total Accidents (12 months)</div>
-                        <div class="text-2xl font-bold text-gray-900">156</div>
-                        <div class="text-sm text-gray-500">54 maintenance-related</div>
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-file-alt text-blue-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">New assessment completed</p>
+                            <p class="text-sm text-gray-500">2019 Toyota Camry - Assessment #ASS-2024-156</p>
+                            <p class="text-xs text-gray-400">15 minutes ago</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Completed
+                            </span>
+                        </div>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-gray-900">Most Common Factor</div>
-                        <div class="text-lg font-semibold text-gray-900">Brake Issues</div>
-                        <div class="text-sm text-gray-500">23 incidents</div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">SLA warning triggered</p>
+                            <p class="text-sm text-gray-500">2018 Honda Civic - Review deadline in 2 hours</p>
+                            <p class="text-xs text-gray-400">1 hour ago</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Urgent
+                            </span>
+                        </div>
                     </div>
-                    <div class="bg-gray-50 p-4 rounded-lg">
-                        <div class="text-sm font-medium text-gray-900">Prevention Potential</div>
-                        <div class="text-lg font-semibold text-success">$2.3M</div>
-                        <div class="text-sm text-gray-500">Claims avoided</div>
+                    
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-upload text-green-600 text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900">New documents uploaded</p>
+                            <p class="text-sm text-gray-500">Claim #CLM-2024-789 - 3 new photos added</p>
+                            <p class="text-xs text-gray-400">2 hours ago</p>
+                        </div>
+                        <div class="flex-shrink-0">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                Updated
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <a href="{% url 'insurance:assessment_dashboard' %}" class="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium block">
+                        View All Activity
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status and Help -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- System Status -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">System Status</h3>
+                    <p class="text-sm text-gray-500">Platform health and performance</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm font-medium text-gray-900">Assessment Engine</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Operational</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="text-sm font-medium text-gray-900">Document Processing</span>
+                            </div>
+                            <span class="text-sm text-green-600 font-medium">Operational</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                <span class="text-sm font-medium text-gray-900">External APIs</span>
+                            </div>
+                            <span class="text-sm text-yellow-600 font-medium">Degraded</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help & Support -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Help & Support</h3>
+                    <p class="text-sm text-gray-500">Quick access to resources</p>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-book text-blue-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">User Guide</div>
+                                <div class="text-xs text-gray-500">Complete documentation</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-headset text-green-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Contact Support</div>
+                                <div class="text-xs text-gray-500">Get help from our team</div>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+                            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-video text-purple-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Training Videos</div>
+                                <div class="text-xs text-gray-500">Learn best practices</div>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -334,173 +891,646 @@
     </div>
 
     <script>
-        // Initialize charts when page loads
+        // Landing page functionality
         document.addEventListener('DOMContentLoaded', function() {
-            initializeCharts();
-            updateMetrics();
+            initializeLandingPage();
+            initializeMobileNavigation();
+            initializeTouchGestures();
         });
-
-        function initializeCharts() {
-            // Compliance Trend Chart
-            const complianceCtx = document.getElementById('complianceChart').getContext('2d');
-            new Chart(complianceCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                        label: 'Overall Compliance',
-                        data: [85.2, 86.1, 87.8, 87.3],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Critical Maintenance',
-                        data: [92.1, 91.8, 93.2, 94.1],
-                        borderColor: '#1e40af',
-                        backgroundColor: 'rgba(30, 64, 175, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            min: 80,
-                            max: 100
+        
+        function initializeLandingPage() {
+            // Initialize action card click handlers
+            setupActionCardNavigation();
+            
+            // Wait for notification system to initialize before setting up interactive elements
+            setTimeout(() => {
+                setupInteractiveElements();
+            }, 100);
+            
+            // Initialize dynamic content loading
+            loadDynamicContent();
+            
+            // Initialize real-time updates
+            startRealTimeUpdates();
+            
+            // Initialize responsive behavior
+            setupResponsiveBehavior();
+        }
+        
+        function initializeMobileNavigation() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileMenuClose = document.getElementById('mobileMenuClose');
+            const mobileNavMenu = document.getElementById('mobileNavMenu');
+            const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+            
+            if (mobileMenuToggle && mobileNavMenu && mobileNavOverlay) {
+                // Open mobile menu
+                mobileMenuToggle.addEventListener('click', function() {
+                    mobileNavMenu.classList.add('active');
+                    mobileNavOverlay.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+                
+                // Close mobile menu
+                function closeMobileMenu() {
+                    mobileNavMenu.classList.remove('active');
+                    mobileNavOverlay.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+                
+                if (mobileMenuClose) {
+                    mobileMenuClose.addEventListener('click', closeMobileMenu);
+                }
+                
+                mobileNavOverlay.addEventListener('click', closeMobileMenu);
+                
+                // Close on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && mobileNavMenu.classList.contains('active')) {
+                        closeMobileMenu();
+                    }
+                });
+                
+                // Close menu when clicking nav links
+                const navLinks = mobileNavMenu.querySelectorAll('a');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', closeMobileMenu);
+                });
+            }
+        }
+        
+        function initializeTouchGestures() {
+            // Add swipe gesture support for action cards
+            const actionCards = document.querySelectorAll('.action-card');
+            
+            actionCards.forEach(card => {
+                let startX = 0;
+                let startY = 0;
+                let isScrolling = false;
+                
+                card.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                    startY = e.touches[0].clientY;
+                    isScrolling = false;
+                }, { passive: true });
+                
+                card.addEventListener('touchmove', function(e) {
+                    if (!startX || !startY) return;
+                    
+                    const diffX = Math.abs(e.touches[0].clientX - startX);
+                    const diffY = Math.abs(e.touches[0].clientY - startY);
+                    
+                    if (diffY > diffX) {
+                        isScrolling = true;
+                    }
+                }, { passive: true });
+                
+                card.addEventListener('touchend', function(e) {
+                    if (!startX || !startY || isScrolling) return;
+                    
+                    const endX = e.changedTouches[0].clientX;
+                    const diffX = startX - endX;
+                    
+                    // Swipe left to navigate
+                    if (Math.abs(diffX) > 50) {
+                        const url = card.getAttribute('data-url');
+                        if (url) {
+                            navigateToPage(url);
                         }
                     }
-                }
+                    
+                    startX = 0;
+                    startY = 0;
+                }, { passive: true });
             });
-
-            // Vehicle Condition Pie Chart
-            const conditionCtx = document.getElementById('conditionChart').getContext('2d');
-            new Chart(conditionCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Excellent', 'Good', 'Fair', 'Poor'],
-                    datasets: [{
-                        data: [145, 289, 67, 23],
-                        backgroundColor: ['#10b981', '#1e40af', '#f59e0b', '#ef4444'],
-                        borderWidth: 2,
-                        borderColor: '#fff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
+            
+            // Add pull-to-refresh functionality
+            let startY = 0;
+            let pullDistance = 0;
+            const refreshThreshold = 100;
+            
+            document.addEventListener('touchstart', function(e) {
+                if (window.scrollY === 0) {
+                    startY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+            
+            document.addEventListener('touchmove', function(e) {
+                if (startY && window.scrollY === 0) {
+                    pullDistance = e.touches[0].clientY - startY;
+                    
+                    if (pullDistance > 0) {
+                        // Visual feedback for pull-to-refresh
+                        const refreshIndicator = document.getElementById('refreshIndicator');
+                        if (refreshIndicator) {
+                            refreshIndicator.style.transform = `translateY(${Math.min(pullDistance / 2, 50)}px)`;
+                            refreshIndicator.style.opacity = Math.min(pullDistance / refreshThreshold, 1);
                         }
                     }
                 }
+            }, { passive: true });
+            
+            document.addEventListener('touchend', function(e) {
+                if (pullDistance > refreshThreshold) {
+                    // Trigger refresh
+                    refreshDashboard();
+                }
+                
+                // Reset pull state
+                startY = 0;
+                pullDistance = 0;
+                
+                const refreshIndicator = document.getElementById('refreshIndicator');
+                if (refreshIndicator) {
+                    refreshIndicator.style.transform = '';
+                    refreshIndicator.style.opacity = '';
+                }
+            }, { passive: true });
+        }
+        
+        function setupActionCardNavigation() {
+            const actionCards = document.querySelectorAll('.action-card');
+            
+            actionCards.forEach(card => {
+                const url = card.getAttribute('data-url');
+                
+                // Add click handler for entire card
+                card.addEventListener('click', function(e) {
+                    // Prevent navigation if clicking on the button directly
+                    if (!e.target.closest('.action-button')) {
+                        navigateToPage(url);
+                    }
+                });
+                
+                // Add keyboard navigation
+                card.setAttribute('tabindex', '0');
+                card.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigateToPage(url);
+                    }
+                });
+                
+                // Enhanced hover effects
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-4px)';
+                    this.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '';
+                });
             });
-
-            // Accident Correlation Chart
-            const accidentCtx = document.getElementById('accidentChart').getContext('2d');
-            new Chart(accidentCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-                    datasets: [{
-                        label: 'Total Accidents',
-                        data: [12, 8, 15, 11, 9, 14, 16, 13, 10, 18, 15, 15],
-                        backgroundColor: 'rgba(156, 163, 175, 0.6)',
-                        borderColor: '#9ca3af',
-                        borderWidth: 1
-                    }, {
-                        label: 'Maintenance Related',
-                        data: [4, 3, 5, 4, 3, 5, 6, 4, 3, 6, 5, 6],
-                        backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                        borderColor: '#ef4444',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
+            
+            // Setup action button handlers
+            const actionButtons = document.querySelectorAll('.action-button');
+            actionButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const card = this.closest('.action-card');
+                    const url = card.getAttribute('data-url');
+                    
+                    // Add loading state
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Loading...';
+                    
+                    // Navigate after brief delay for visual feedback
+                    setTimeout(() => {
+                        navigateToPage(url);
+                    }, 300);
+                });
             });
         }
-
-        function updateMetrics() {
-            // Simulate real-time updates
-            setInterval(() => {
-                const compliance = document.getElementById('portfolioCompliance');
-                const health = document.getElementById('avgHealthIndex');
-                const risk = document.getElementById('highRiskCount');
-                const alerts = document.getElementById('activeAlerts');
-                
-                // Add small random variations to simulate real updates
-                const currentCompliance = parseFloat(compliance.textContent);
-                const newCompliance = (currentCompliance + (Math.random() - 0.5) * 0.2).toFixed(1);
-                compliance.textContent = newCompliance + '%';
-                
-                const currentHealth = parseFloat(health.textContent);
-                const newHealth = (currentHealth + (Math.random() - 0.5) * 0.5).toFixed(1);
-                health.textContent = newHealth;
-                
-                // Update timestamp
-                document.getElementById('lastUpdated').textContent = 'Just now';
-                setTimeout(() => {
-                    document.getElementById('lastUpdated').textContent = '1 minute ago';
-                }, 60000);
-                
-            }, 86400000); // Update every 24 hours (24 * 60 * 60 * 1000 ms)
-        }
-
-        // API integration functions
-        async function fetchMetrics() {
+        
+        function setupInteractiveElements() {
             try {
-                const response = await fetch('{% url "insurance:calculate_metrics" %}');
-                const data = await response.json();
-                updateDashboardMetrics(data);
+                // Stats cards hover effects
+                const statsCards = document.querySelectorAll('.card-hover');
+                statsCards.forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'scale(1.02)';
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'scale(1)';
+                    });
+                });
+                
+                // Notification bell interaction - check if notification system has created the bell
+                const notificationBellIcon = document.querySelector('.fa-bell, .bell-icon');
+                if (notificationBellIcon) {
+                    const notificationBell = notificationBellIcon.closest('button');
+                    if (notificationBell) {
+                        notificationBell.addEventListener('click', function() {
+                            // Use the notification system's toggle method if available
+                            if (window.notificationSystem && typeof window.notificationSystem.toggleDropdown === 'function') {
+                                window.notificationSystem.toggleDropdown();
+                            } else {
+                                showNotificationDropdown();
+                            }
+                        });
+                    }
+                } else {
+                    // If bell icon doesn't exist yet, try again later
+                    setTimeout(() => {
+                        const retryBellIcon = document.querySelector('.fa-bell, .bell-icon');
+                        if (retryBellIcon) {
+                            const retryBell = retryBellIcon.closest('button');
+                            if (retryBell) {
+                                retryBell.addEventListener('click', function() {
+                                    if (window.notificationSystem && typeof window.notificationSystem.toggleDropdown === 'function') {
+                                        window.notificationSystem.toggleDropdown();
+                                    } else {
+                                        showNotificationDropdown();
+                                    }
+                                });
+                            }
+                        }
+                    }, 500);
+                }
+                
+                // Recent activity interactions
+                const activityItems = document.querySelectorAll('.space-y-4 > div');
+                activityItems.forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Add click feedback
+                        this.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                        setTimeout(() => {
+                            this.style.backgroundColor = '';
+                        }, 200);
+                    });
+                });
             } catch (error) {
-                console.error('Error fetching metrics:', error);
+                console.error('Error setting up interactive elements:', error);
+                // Continue execution even if some interactive elements fail
             }
         }
-
-        function updateDashboardMetrics(data) {
-            if (data.metrics) {
-                document.getElementById('portfolioCompliance').textContent = 
-                    data.metrics.maintenance_compliance.overall_rate + '%';
-                document.getElementById('avgHealthIndex').textContent = 
-                    data.metrics.vehicle_condition.avg_health_index;
-                document.getElementById('highRiskCount').textContent = 
-                    data.metrics.risk_identification.high_risk_vehicles;
-                document.getElementById('activeAlerts').textContent = 
-                    data.metrics.risk_identification.active_alerts;
-            }
+        
+        function loadDynamicContent() {
+            // Simulate loading recent activity
+            updateRecentActivity();
+            
+            // Update quick stats with animation
+            animateStatsCounters();
+            
+            // Load system status
+            updateSystemStatus();
         }
-
-        // Refresh button functionality
-        document.querySelector('button[class*="bg-primary"]').addEventListener('click', function() {
-            this.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Refreshing...';
-            fetchMetrics().finally(() => {
-                this.innerHTML = '<i class="fas fa-sync-alt mr-2"></i>Refresh Data';
+        
+        function updateRecentActivity() {
+            // Simulate real-time activity updates
+            const activities = [
+                {
+                    icon: 'fas fa-file-alt',
+                    iconColor: 'blue',
+                    title: 'New assessment completed',
+                    description: '2019 Toyota Camry - Assessment #ASS-2024-156',
+                    time: '15 minutes ago',
+                    status: 'Completed',
+                    statusColor: 'green'
+                },
+                {
+                    icon: 'fas fa-clock',
+                    iconColor: 'yellow',
+                    title: 'SLA warning triggered',
+                    description: '2018 Honda Civic - Review deadline in 2 hours',
+                    time: '1 hour ago',
+                    status: 'Urgent',
+                    statusColor: 'yellow'
+                },
+                {
+                    icon: 'fas fa-upload',
+                    iconColor: 'green',
+                    title: 'New documents uploaded',
+                    description: 'Claim #CLM-2024-789 - 3 new photos added',
+                    time: '2 hours ago',
+                    status: 'Updated',
+                    statusColor: 'blue'
+                }
+            ];
+            
+            // Update activity timestamps dynamically
+            setInterval(() => {
+                const timeElements = document.querySelectorAll('.text-xs.text-gray-400');
+                timeElements.forEach((element, index) => {
+                    if (activities[index]) {
+                        const minutes = 15 + (index * 45) + Math.floor(Date.now() / 60000) % 60;
+                        element.textContent = `${minutes} minutes ago`;
+                    }
+                });
+            }, 60000);
+        }
+        
+        function animateStatsCounters() {
+            const counters = document.querySelectorAll('.text-lg.font-bold, .text-xl.font-bold');
+            
+            counters.forEach(counter => {
+                const target = parseInt(counter.textContent);
+                let current = 0;
+                const increment = target / 20;
+                
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 50);
             });
-        });
+        }
+        
+        function updateSystemStatus() {
+            // Simulate system status updates
+            const statusIndicators = document.querySelectorAll('.w-3.h-3');
+            
+            setInterval(() => {
+                statusIndicators.forEach(indicator => {
+                    // Randomly update status (simulation)
+                    const statuses = ['bg-green-500', 'bg-yellow-500', 'bg-red-500'];
+                    const currentStatus = statuses[Math.floor(Math.random() * 3)];
+                    
+                    // Remove existing status classes
+                    indicator.classList.remove('bg-green-500', 'bg-yellow-500', 'bg-red-500');
+                    indicator.classList.add(currentStatus);
+                });
+            }, 30000); // Update every 30 seconds
+        }
+        
+        function startRealTimeUpdates() {
+            // Update timestamps
+            updateTimestamp();
+            setInterval(updateTimestamp, 60000);
+            
+            // Simulate real-time stat updates
+            setInterval(() => {
+                updateQuickStats();
+            }, 120000); // Update every 2 minutes
+        }
+        
+        function updateQuickStats() {
+            const stats = [
+                { selector: '.stats-grid > div:nth-child(1) .text-lg', value: Math.floor(Math.random() * 5) + 22 },
+                { selector: '.stats-grid > div:nth-child(2) .text-lg', value: Math.floor(Math.random() * 3) + 6 },
+                { selector: '.stats-grid > div:nth-child(3) .text-lg', value: Math.floor(Math.random() * 2) + 2 },
+                { selector: '.stats-grid > div:nth-child(4) .text-lg', value: Math.floor(Math.random() * 5) + 10 }
+            ];
+            
+            stats.forEach(stat => {
+                const element = document.querySelector(stat.selector);
+                if (element) {
+                    element.textContent = stat.value;
+                }
+            });
+        }
+        
+        function setupResponsiveBehavior() {
+            // Handle mobile menu toggle if needed
+            const mobileMenuButton = document.querySelector('[data-mobile-menu]');
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', toggleMobileMenu);
+            }
+            
+            // Handle window resize
+            window.addEventListener('resize', handleResize);
+        }
+        
+        function navigateToPage(url) {
+            if (url) {
+                // Add page transition effect
+                document.body.style.opacity = '0.8';
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 150);
+            }
+        }
+        
+        function showNotificationDropdown() {
+            // Create notification dropdown if it doesn't exist
+            let dropdown = document.querySelector('#notification-dropdown');
+            
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.id = 'notification-dropdown';
+                dropdown.className = 'absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50';
+                dropdown.innerHTML = `
+                    <div class="p-4 border-b border-gray-200">
+                        <h3 class="text-sm font-medium text-gray-900">Notifications</h3>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto">
+                        <div class="p-3 hover:bg-gray-50 border-b border-gray-100">
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 mr-3"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Urgent: SLA breach warning</p>
+                                    <p class="text-xs text-gray-500">Assessment #ASS-2024-145 - 30 minutes overdue</p>
+                                    <p class="text-xs text-gray-400">5 minutes ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 hover:bg-gray-50 border-b border-gray-100">
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">New assessment assigned</p>
+                                    <p class="text-xs text-gray-500">2020 BMW X3 - High priority claim</p>
+                                    <p class="text-xs text-gray-400">15 minutes ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 hover:bg-gray-50">
+                            <div class="flex items-start">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2 mr-3"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Assessment completed</p>
+                                    <p class="text-xs text-gray-500">2018 Audi A4 - Ready for review</p>
+                                    <p class="text-xs text-gray-400">1 hour ago</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-3 border-t border-gray-200">
+                        <a href="#" class="text-sm text-blue-600 hover:text-blue-700">View all notifications</a>
+                    </div>
+                `;
+                
+                const notificationBellIcon = document.querySelector('.fa-bell, .bell-icon');
+                if (notificationBellIcon) {
+                    const notificationContainer = notificationBellIcon.closest('div');
+                    if (notificationContainer) {
+                        notificationContainer.appendChild(dropdown);
+                    } else {
+                        // Fallback: append to notification bell container
+                        const fallbackContainer = document.getElementById('notificationBell');
+                        if (fallbackContainer) {
+                            fallbackContainer.appendChild(dropdown);
+                        }
+                    }
+                } else {
+                    // If no bell icon found, don't create dropdown
+                    console.warn('Notification bell not found, cannot create dropdown');
+                    return;
+                }
+            }
+            
+            // Toggle dropdown visibility
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+            
+            // Close dropdown when clicking outside
+            setTimeout(() => {
+                document.addEventListener('click', function closeDropdown(e) {
+                    if (!dropdown.contains(e.target) && !e.target.closest('.fa-bell, .bell-icon')) {
+                        dropdown.style.display = 'none';
+                        document.removeEventListener('click', closeDropdown);
+                    }
+                });
+            }, 100);
+        }
+        
+        function updateTimestamp() {
+            const now = new Date();
+            const timeString = now.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            const lastLoginElement = document.getElementById('lastLogin');
+            if (lastLoginElement) {
+                // Keep original login time, don't update it
+                // This function can be used for other timestamp updates
+            }
+            
+            // Update any other timestamp elements
+            const timestampElements = document.querySelectorAll('[data-timestamp]');
+            timestampElements.forEach(element => {
+                element.textContent = timeString;
+            });
+        }
+        
+        function handleResize() {
+            // Handle responsive behavior on window resize
+            const width = window.innerWidth;
+            
+            if (width < 768) {
+                // Mobile adjustments
+                document.body.classList.add('mobile-view');
+            } else {
+                document.body.classList.remove('mobile-view');
+            }
+        }
+        
+        function toggleMobileMenu() {
+            const mobileMenu = document.querySelector('[data-mobile-menu-content]');
+            if (mobileMenu) {
+                mobileMenu.classList.toggle('hidden');
+            }
+        }
+        
+        function handleResponsiveChanges() {
+            const isMobile = window.innerWidth < 768;
+            const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+            
+            // Adjust layout based on screen size
+            if (isMobile) {
+                enableMobileLayout();
+            } else if (isTablet) {
+                enableTabletLayout();
+            } else {
+                enableDesktopLayout();
+            }
+        }
+        
+        function enableMobileLayout() {
+            // Mobile-specific adjustments
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.className = 'stats-grid mobile-stats-grid grid grid-cols-2 gap-3 mb-6';
+            }
+            
+            const actionCards = document.querySelector('.mobile-action-cards');
+            if (actionCards) {
+                actionCards.className = 'mobile-action-cards grid grid-cols-1 gap-4 mb-6';
+            }
+        }
+        
+        function enableTabletLayout() {
+            // Tablet-specific adjustments
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.className = 'stats-grid tablet-grid grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8';
+            }
+        }
+        
+        function enableDesktopLayout() {
+            // Desktop-specific adjustments
+            const statsGrid = document.querySelector('.stats-grid');
+            if (statsGrid) {
+                statsGrid.className = 'stats-grid grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8';
+            }
+        }
+        
+        function refreshDashboard() {
+            // Show loading state
+            showMobileLoading();
+            
+            // Simulate refresh (in real implementation, this would fetch new data)
+            setTimeout(() => {
+                hideMobileLoading();
+                showToast('Dashboard refreshed', 'success');
+            }, 1500);
+        }
+        
+        function showMobileLoading() {
+            const loadingElement = document.createElement('div');
+            loadingElement.id = 'mobileLoading';
+            loadingElement.className = 'mobile-loading fixed top-0 left-0 w-full h-full bg-white bg-opacity-90 z-50';
+            loadingElement.innerHTML = `
+                <div class="mobile-spinner"></div>
+            `;
+            document.body.appendChild(loadingElement);
+        }
+        
+        function hideMobileLoading() {
+            const loadingElement = document.getElementById('mobileLoading');
+            if (loadingElement) {
+                loadingElement.remove();
+            }
+        }
+        
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-auto bg-${type === 'success' ? 'green' : 'blue'}-600 text-white px-4 py-3 rounded-lg shadow-lg z-50 transform translate-y-full transition-transform duration-300`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateY(0)';
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.transform = 'translateY(full)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
     </script>
+    
+    <!-- Dashboard Interactivity Scripts -->
+    <script src="{% static 'js/performance-optimizer.js' %}"></script>
+    <script src="{% static 'js/dashboard-interactivity.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/notifications.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/dashboard-navigation.js' %}"></script>
+    <script src="{% static 'js/dashboard-animations.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/dashboard-integration.js' %}"></script>
 </body>
 </html>
 

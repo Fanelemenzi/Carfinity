@@ -17,6 +17,8 @@ urlpatterns = [
     path('', views.DashboardView.as_view(), name='insurance_dashboard'),
     path('dashboard/', views.DashboardView.as_view(), name='dashboard'),
     path('dashboard-view/', views.insurance_dashboard_view, name='insurance_dashboard_function'),
+    path('assessments/', views.AssessmentDashboardView.as_view(), name='assessment_dashboard'),
+    path('book-assessment/', views.BookAssessmentView.as_view(), name='book_assessment'),
     path('vehicle/<int:pk>/', views.VehicleDetailView.as_view(), name='vehicle_detail'),
     path('vehicle/<int:pk>/detail/', views.VehicleDetailView.as_view(), name='insurance_vehicle_detail'),
     

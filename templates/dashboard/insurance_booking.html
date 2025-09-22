@@ -1,0 +1,1639 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book New Assessment - Insurance Claims</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
+    <link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Tablet and Mobile Responsive Design for Booking Page */
+        
+        /* Touch-Friendly Interface Elements */
+        .touch-friendly {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 0.75rem;
+        }
+        
+        .touch-button {
+            min-height: 48px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            touch-action: manipulation;
+        }
+        
+        /* Adaptive Grid Layouts */
+        .adaptive-form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        
+        /* Tablet Breakpoint (768px - 1024px) */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .tablet-form-container {
+                max-width: 100%;
+                padding: 1rem;
+            }
+            
+            .tablet-form-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .tablet-form-single {
+                grid-template-columns: 1fr;
+            }
+            
+            .tablet-upload-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            
+            .tablet-progress {
+                padding: 1rem;
+            }
+            
+            .tablet-header {
+                padding: 0.75rem 1rem;
+            }
+            
+            .tablet-card {
+                padding: 1rem;
+                border-radius: 0.75rem;
+            }
+            
+            .tablet-button {
+                padding: 0.625rem 1.25rem;
+                font-size: 0.875rem;
+            }
+        }
+        
+        /* Mobile Breakpoint (max-width: 768px) */
+        @media (max-width: 768px) {
+            .mobile-form-container {
+                padding: 0.75rem;
+            }
+            
+            .mobile-form-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .mobile-upload-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .mobile-progress {
+                padding: 0.75rem;
+            }
+            
+            .mobile-header {
+                padding: 0.5rem 0.75rem;
+            }
+            
+            .mobile-card {
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+            
+            .mobile-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+                width: 100%;
+            }
+            
+            .mobile-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+            
+            .mobile-subtitle {
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+            
+            /* Mobile Form Adjustments */
+            .mobile-form-section {
+                margin-bottom: 1rem;
+            }
+            
+            .mobile-input {
+                padding: 0.75rem;
+                font-size: 1rem;
+            }
+            
+            .mobile-label {
+                font-size: 0.875rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            /* Mobile Upload Zone */
+            .mobile-upload-zone {
+                padding: 2rem 1rem;
+                border-radius: 0.75rem;
+            }
+            
+            .mobile-upload-text {
+                font-size: 1rem;
+            }
+            
+            .mobile-upload-subtext {
+                font-size: 0.75rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            .mobile-single {
+                grid-template-columns: 1fr;
+            }
+            
+            .mobile-compact {
+                padding: 0.5rem;
+            }
+            
+            .mobile-progress-compact {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .mobile-progress-step {
+                margin-bottom: 0.5rem;
+            }
+        }
+        
+        /* Touch Gesture Support */
+        .swipe-container {
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .swipe-item {
+            scroll-snap-align: start;
+            flex-shrink: 0;
+        }
+        
+        /* File Upload Enhancements for Touch */
+        .touch-upload-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .touch-upload-zone:hover,
+        .touch-upload-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .touch-upload-zone.dragover {
+            transform: scale(1.02);
+        }
+        
+        /* Loading States */
+        .mobile-loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+        
+        .mobile-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header Navigation -->
+    <nav class="dashboard-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="dashboard-nav">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'insurance:dashboard' %}" class="dashboard-logo">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="hidden sm:inline">Insurance Claims Portal</span>
+                            <span class="sm:hidden">Claims</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Desktop Navigation Menu -->
+                    <div class="desktop-nav hidden md:block ml-10">
+                        <div class="nav-menu">
+                            <a href="{% url 'insurance:dashboard' %}" class="nav-item">
+                                <i class="fas fa-home mr-2"></i>Dashboard
+                            </a>
+                            <a href="{% url 'insurance:assessment_dashboard' %}" class="nav-item">
+                                <i class="fas fa-chart-line mr-2"></i>Assessments
+                            </a>
+                            <a href="{% url 'insurance:book_assessment' %}" class="nav-item active">
+                                <i class="fas fa-plus-circle mr-2"></i>New Booking
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Agent Profile -->
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user-circle text-lg mr-2"></i>
+                        <span class="font-medium">{{ user.get_full_name|default:user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="breadcrumb-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="flex" aria-label="Breadcrumb">
+                <ol class="breadcrumb-list flex items-center space-x-4">
+                    <!-- Breadcrumbs will be populated by JavaScript -->
+                </ol>
+            </nav>
+        </div>
+    </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto tablet-form-container mobile-form-container px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <!-- Page Header -->
+        <div class="mb-6 md:mb-8">
+            <h1 class="mobile-title text-2xl md:text-3xl font-bold text-gray-900 mb-2">Book New Assessment</h1>
+            <p class="mobile-subtitle text-gray-600">Submit insurance documents and create a new vehicle assessment request.</p>
+        </div>
+
+        <!-- Progress Indicator -->
+        <div class="tablet-progress mobile-progress mb-6 md:mb-8">
+            <div class="mobile-progress-compact flex items-center">
+                <div class="mobile-progress-step flex items-center text-blue-600">
+                    <div class="flex items-center justify-center w-8 h-8 bg-blue-600 text-white rounded-full text-sm font-medium">1</div>
+                    <span class="ml-2 text-sm font-medium">Documents</span>
+                </div>
+                <div class="flex-1 mx-2 md:mx-4 h-1 bg-gray-200 rounded">
+                    <div class="h-1 bg-blue-600 rounded" style="width: 33%"></div>
+                </div>
+                <div class="mobile-progress-step flex items-center text-gray-400">
+                    <div class="flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-600 rounded-full text-sm font-medium">2</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline">Details</span>
+                </div>
+                <div class="flex-1 mx-2 md:mx-4 h-1 bg-gray-200 rounded"></div>
+                <div class="mobile-progress-step flex items-center text-gray-400">
+                    <div class="flex items-center justify-center w-8 h-8 bg-gray-200 text-gray-600 rounded-full text-sm font-medium">3</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline">Review</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-8" data-validate>
+            {% csrf_token %}
+            
+            <!-- Document Upload Section -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Document Upload</h2>
+                    <p class="text-sm text-gray-500">Upload required insurance documents for the assessment</p>
+                </div>
+                <div class="p-6">
+                    <!-- Organized Upload Sections -->
+                    <div class="mb-8">
+                        <h3 class="text-sm font-medium text-gray-900 mb-4">Upload by Category</h3>
+                        <div class="tablet-upload-grid mobile-upload-grid grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                            <div class="tablet-card mobile-card border border-gray-200 rounded-lg p-3 md:p-4 hover:border-blue-300 transition-colors duration-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-file-contract text-blue-600 mr-2"></i>
+                                        <h4 class="text-sm font-medium text-gray-900">Policy Documents</h4>
+                                    </div>
+                                    <button type="button" class="category-upload-btn touch-friendly text-xs text-blue-600 hover:text-blue-800" data-category="policy">
+                                        <i class="fas fa-plus mr-1"></i><span class="hidden sm:inline">Add Files</span>
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-2">Insurance policy, certificates, declarations</p>
+                                <div class="text-xs text-gray-400">Accepted: PDF, DOC, DOCX</div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors duration-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                                        <h4 class="text-sm font-medium text-gray-900">Incident Reports</h4>
+                                    </div>
+                                    <button type="button" class="category-upload-btn text-xs text-green-600 hover:text-green-800" data-category="incident">
+                                        <i class="fas fa-plus mr-1"></i>Add Files
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-2">Police reports, accident statements</p>
+                                <div class="text-xs text-gray-400">Accepted: PDF, DOC, DOCX</div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors duration-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-car text-purple-600 mr-2"></i>
+                                        <h4 class="text-sm font-medium text-gray-900">Vehicle Documents</h4>
+                                    </div>
+                                    <button type="button" class="category-upload-btn text-xs text-purple-600 hover:text-purple-800" data-category="vehicle">
+                                        <i class="fas fa-plus mr-1"></i>Add Files
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-2">Registration, service history, invoices</p>
+                                <div class="text-xs text-gray-400">Accepted: PDF, DOC, DOCX</div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-orange-300 transition-colors duration-200">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-camera text-orange-600 mr-2"></i>
+                                        <h4 class="text-sm font-medium text-gray-900">Photos & Evidence</h4>
+                                    </div>
+                                    <button type="button" class="category-upload-btn text-xs text-orange-600 hover:text-orange-800" data-category="photos">
+                                        <i class="fas fa-plus mr-1"></i>Add Files
+                                    </button>
+                                </div>
+                                <p class="text-xs text-gray-500 mb-2">Damage photos, scene images</p>
+                                <div class="text-xs text-gray-400">Accepted: JPG, PNG, PDF</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Drag and Drop Zone -->
+                    <div class="touch-upload-zone mobile-upload-zone border-2 border-dashed border-gray-300 rounded-lg p-4 md:p-8 text-center hover:border-gray-400 transition-all duration-200" id="dropZone">
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="flex justify-center">
+                                <i class="fas fa-cloud-upload-alt text-3xl md:text-4xl text-gray-400 transition-colors duration-200" id="uploadIcon"></i>
+                            </div>
+                            <div>
+                                <p class="mobile-upload-text text-base md:text-lg font-medium text-gray-900" id="uploadText">Drop files here or click to upload</p>
+                                <p class="mobile-upload-subtext text-xs md:text-sm text-gray-500">Supports PDF, JPG, PNG, DOC, DOCX files up to 10MB each</p>
+                            </div>
+                            <div>
+                                <input type="file" id="fileInput" name="documents" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="hidden">
+                                <button type="button" onclick="document.getElementById('fileInput').click()" class="mobile-button tablet-button touch-button inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                                    <i class="fas fa-folder-open mr-2"></i>
+                                    Choose Files
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Upload Progress Indicator -->
+                        <div id="uploadProgress" class="hidden mt-6">
+                            <div class="bg-gray-200 rounded-full h-2">
+                                <div id="progressBar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-2">
+                                <span id="progressText">Uploading files...</span>
+                                <span id="progressPercent" class="font-medium">0%</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- File List -->
+                    <div id="fileList" class="mt-6 space-y-3 hidden">
+                        <h3 class="text-sm font-medium text-gray-900">Uploaded Files</h3>
+                        <div id="fileItems" class="space-y-2"></div>
+                    </div>
+
+                    <!-- Document Categories with Enhanced Counters -->
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors duration-200" data-category="Policy Documents">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-file-contract text-blue-600 mr-2"></i>
+                                <h4 class="text-sm font-medium text-gray-900">Policy Documents</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Insurance policy papers and amendments</p>
+                            <div class="flex items-center justify-between">
+                                <span class="file-counter inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    0 files
+                                </span>
+                                <i class="fas fa-check-circle text-gray-300" id="policy-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition-colors duration-200" data-category="Incident Reports">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-clipboard-list text-green-600 mr-2"></i>
+                                <h4 class="text-sm font-medium text-gray-900">Incident Reports</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Police reports and incident documentation</p>
+                            <div class="flex items-center justify-between">
+                                <span class="file-counter inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    0 files
+                                </span>
+                                <i class="fas fa-check-circle text-gray-300" id="incident-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-purple-300 transition-colors duration-200" data-category="Vehicle Documents">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-car text-purple-600 mr-2"></i>
+                                <h4 class="text-sm font-medium text-gray-900">Vehicle Documents</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Registration and service history</p>
+                            <div class="flex items-center justify-between">
+                                <span class="file-counter inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    0 files
+                                </span>
+                                <i class="fas fa-check-circle text-gray-300" id="vehicle-check"></i>
+                            </div>
+                        </div>
+
+                        <div class="border border-gray-200 rounded-lg p-4 hover:border-orange-300 transition-colors duration-200" data-category="Photos">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-camera text-orange-600 mr-2"></i>
+                                <h4 class="text-sm font-medium text-gray-900">Photos</h4>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">Damage photos and evidence</p>
+                            <div class="flex items-center justify-between">
+                                <span class="file-counter inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    0 files
+                                </span>
+                                <i class="fas fa-check-circle text-gray-300" id="photos-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Form -->
+            <div class="bg-white rounded-lg shadow border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Assessment Details</h2>
+                    <p class="text-sm text-gray-500">Provide information about the claim and incident</p>
+                </div>
+                <div class="p-6 space-y-6">
+                    <!-- Customer Information -->
+                    <div class="tablet-form-grid mobile-form-grid adaptive-form-grid grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                        <div>
+                            <label for="policy_number" class="block text-sm font-medium text-gray-700 mb-2">Policy Number *</label>
+                            <input type="text" id="policy_number" name="policy_number" required 
+                                   data-pattern="^[A-Z0-9]{6,20}$" 
+                                   data-pattern-message="Policy number must be 6-20 characters, letters and numbers only"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="claim_number" class="block text-sm font-medium text-gray-700 mb-2">Claim Number</label>
+                            <input type="text" id="claim_number" name="claim_number" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="customer_name" class="block text-sm font-medium text-gray-700 mb-2">Customer Name *</label>
+                            <input type="text" id="customer_name" name="customer_name" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="customer_phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+                            <input type="tel" id="customer_phone" name="customer_phone" required placeholder="(123) 456-7890" 
+                                   data-pattern="^[\+]?[1-9][\d]{0,15}$"
+                                   data-pattern-message="Please enter a valid phone number"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="customer_email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="customer_email" name="customer_email" placeholder="customer@example.com" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="customer_address" class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                            <input type="text" id="customer_address" name="customer_address" placeholder="Street address" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+
+                    <!-- Incident Details -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Incident Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="incident_date" class="block text-sm font-medium text-gray-700 mb-2">Incident Date *</label>
+                                <input type="date" id="incident_date" name="incident_date" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="incident_time" class="block text-sm font-medium text-gray-700 mb-2">Incident Time</label>
+                                <input type="time" id="incident_time" name="incident_time" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="incident_location" class="block text-sm font-medium text-gray-700 mb-2">Incident Location *</label>
+                                <input type="text" id="incident_location" name="incident_location" required placeholder="Street address, city, postcode" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="incident_description" class="block text-sm font-medium text-gray-700 mb-2">Incident Description *</label>
+                                <textarea id="incident_description" name="incident_description" rows="4" required placeholder="Describe what happened during the incident..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Vehicle Information</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="vehicle_make" class="block text-sm font-medium text-gray-700 mb-2">Make *</label>
+                                <input type="text" id="vehicle_make" name="vehicle_make" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="vehicle_model" class="block text-sm font-medium text-gray-700 mb-2">Model *</label>
+                                <input type="text" id="vehicle_model" name="vehicle_model" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="vehicle_year" class="block text-sm font-medium text-gray-700 mb-2">Year *</label>
+                                <input type="number" id="vehicle_year" name="vehicle_year" required min="1900" max="2025" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="vehicle_vin" class="block text-sm font-medium text-gray-700 mb-2">VIN Number</label>
+                                <input type="text" id="vehicle_vin" name="vehicle_vin" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="vehicle_mileage" class="block text-sm font-medium text-gray-700 mb-2">Mileage</label>
+                                <input type="number" id="vehicle_mileage" name="vehicle_mileage" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="vehicle_color" class="block text-sm font-medium text-gray-700 mb-2">Color</label>
+                                <input type="text" id="vehicle_color" name="vehicle_color" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assessment Preferences and Scheduling -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4">Assessment Preferences & Scheduling</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="preferred_assessor" class="block text-sm font-medium text-gray-700 mb-2">Preferred Assessor</label>
+                                <select id="preferred_assessor" name="preferred_assessor" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Any Available</option>
+                                    <option value="john_smith">John Smith - Senior Assessor</option>
+                                    <option value="sarah_johnson">Sarah Johnson - Vehicle Specialist</option>
+                                    <option value="mike_wilson">Mike Wilson - Claims Expert</option>
+                                    <option value="emma_davis">Emma Davis - Damage Analyst</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="urgency_level" class="block text-sm font-medium text-gray-700 mb-2">Urgency Level *</label>
+                                <select id="urgency_level" name="urgency_level" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select urgency level</option>
+                                    <option value="standard">Standard (5-7 business days)</option>
+                                    <option value="priority">Priority (2-3 business days)</option>
+                                    <option value="urgent">Urgent (Within 24 hours)</option>
+                                    <option value="emergency">Emergency (Same day)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="preferred_date" class="block text-sm font-medium text-gray-700 mb-2">Preferred Assessment Date</label>
+                                <input type="date" id="preferred_date" name="preferred_date" min="" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="preferred_time" class="block text-sm font-medium text-gray-700 mb-2">Preferred Time</label>
+                                <select id="preferred_time" name="preferred_time" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Any time</option>
+                                    <option value="morning">Morning (8:00 AM - 12:00 PM)</option>
+                                    <option value="afternoon">Afternoon (12:00 PM - 5:00 PM)</option>
+                                    <option value="evening">Evening (5:00 PM - 8:00 PM)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="assessment_location" class="block text-sm font-medium text-gray-700 mb-2">Assessment Location *</label>
+                                <select id="assessment_location" name="assessment_location" required class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Select assessment location</option>
+                                    <option value="customer_location">Customer's Location</option>
+                                    <option value="repair_shop">Repair Shop</option>
+                                    <option value="assessment_center">Assessment Center</option>
+                                    <option value="mobile_unit">Mobile Assessment Unit</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="special_instructions" class="block text-sm font-medium text-gray-700 mb-2">Special Instructions</label>
+                                <textarea id="special_instructions" name="special_instructions" rows="3" placeholder="Any special requirements or instructions for the assessor..." class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-between">
+                <a href="{% url 'insurance:insurance_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+                <div class="flex space-x-3">
+                    <button type="button" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Save as Draft
+                    </button>
+                    <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Submit Assessment Request
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Document upload functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeFileUpload();
+            initializeFormValidation();
+            initializeDateFields();
+            initializeConditionalFields();
+        });
+        
+        function initializeDateFields() {
+            // Set minimum date for preferred assessment date (tomorrow)
+            const preferredDateField = document.getElementById('preferred_date');
+            if (preferredDateField) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                preferredDateField.min = tomorrow.toISOString().split('T')[0];
+            }
+            
+            // Set maximum date for incident date (today)
+            const incidentDateField = document.getElementById('incident_date');
+            if (incidentDateField) {
+                const today = new Date();
+                incidentDateField.max = today.toISOString().split('T')[0];
+            }
+        }
+        
+        function initializeConditionalFields() {
+            // Update preferred date based on urgency level
+            const urgencyField = document.getElementById('urgency_level');
+            const preferredDateField = document.getElementById('preferred_date');
+            
+            if (urgencyField && preferredDateField) {
+                urgencyField.addEventListener('change', function() {
+                    const urgency = this.value;
+                    const today = new Date();
+                    let minDate = new Date(today);
+                    
+                    switch (urgency) {
+                        case 'emergency':
+                            minDate = today;
+                            break;
+                        case 'urgent':
+                            minDate.setDate(today.getDate() + 1);
+                            break;
+                        case 'priority':
+                            minDate.setDate(today.getDate() + 1);
+                            break;
+                        case 'standard':
+                            minDate.setDate(today.getDate() + 2);
+                            break;
+                        default:
+                            minDate.setDate(today.getDate() + 1);
+                    }
+                    
+                    preferredDateField.min = minDate.toISOString().split('T')[0];
+                    
+                    // Clear the date if it's now invalid
+                    if (preferredDateField.value && new Date(preferredDateField.value) < minDate) {
+                        preferredDateField.value = '';
+                    }
+                });
+            }
+            
+            // Show/hide location-specific fields
+            const locationField = document.getElementById('assessment_location');
+            if (locationField) {
+                locationField.addEventListener('change', function() {
+                    updateLocationFields(this.value);
+                });
+            }
+        }
+        
+        function updateLocationFields(locationType) {
+            // Remove existing location-specific fields
+            const existingFields = document.querySelectorAll('.location-specific-field');
+            existingFields.forEach(field => field.remove());
+            
+            const container = document.getElementById('assessment_location').closest('.md\\:col-span-2');
+            
+            if (locationType === 'customer_location') {
+                const addressField = createLocationField('assessment_address', 'Assessment Address', 'text', 'Enter the address where assessment should take place');
+                container.parentNode.insertBefore(addressField, container.nextSibling);
+            } else if (locationType === 'repair_shop') {
+                const shopField = createLocationField('repair_shop_name', 'Repair Shop Name', 'text', 'Name of the repair shop');
+                container.parentNode.insertBefore(shopField, container.nextSibling);
+            }
+        }
+        
+        function createLocationField(id, label, type, placeholder) {
+            const fieldDiv = document.createElement('div');
+            fieldDiv.className = 'location-specific-field md:col-span-2 mt-4';
+            fieldDiv.innerHTML = `
+                <label for="${id}" class="block text-sm font-medium text-gray-700 mb-2">${label}</label>
+                <input type="${type}" id="${id}" name="${id}" placeholder="${placeholder}" 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+            `;
+            return fieldDiv;
+        }
+        
+        function initializeFileUpload() {
+            const dropZone = document.getElementById('dropZone');
+            const fileInput = document.getElementById('fileInput');
+            const fileList = document.getElementById('fileList');
+            const fileItems = document.getElementById('fileItems');
+            const uploadProgress = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const progressPercent = document.getElementById('progressPercent');
+            const uploadIcon = document.getElementById('uploadIcon');
+            const uploadText = document.getElementById('uploadText');
+            
+            let uploadedFiles = [];
+            const maxFileSize = 10 * 1024 * 1024; // 10MB
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 
+                                'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            
+            // Enhanced drag and drop functionality
+            dropZone.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.add('border-blue-400', 'bg-blue-50');
+                uploadIcon.classList.add('text-blue-500');
+                uploadText.textContent = 'Drop files here to upload';
+            });
+            
+            dropZone.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                // Only remove styles if we're leaving the dropZone entirely
+                if (!dropZone.contains(e.relatedTarget)) {
+                    dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+                    uploadIcon.classList.remove('text-blue-500');
+                    uploadText.textContent = 'Drop files here or click to upload';
+                }
+            });
+            
+            dropZone.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropZone.classList.remove('border-blue-400', 'bg-blue-50');
+                uploadIcon.classList.remove('text-blue-500');
+                uploadText.textContent = 'Drop files here or click to upload';
+                
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+            
+            // Click to upload
+            dropZone.addEventListener('click', function(e) {
+                if (e.target === dropZone || e.target.closest('#dropZone')) {
+                    fileInput.click();
+                }
+            });
+            
+            fileInput.addEventListener('change', function(e) {
+                handleFiles(e.target.files);
+            });
+            
+            // Category-specific upload buttons
+            document.querySelectorAll('.category-upload-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const category = this.dataset.category;
+                    openCategoryUpload(category);
+                });
+            });
+            
+            function handleFiles(files) {
+                const validFiles = [];
+                const errors = [];
+                
+                Array.from(files).forEach(file => {
+                    // File type validation
+                    if (!allowedTypes.includes(file.type)) {
+                        errors.push(`${file.name}: Unsupported file type. Please use PDF, JPG, PNG, DOC, or DOCX files.`);
+                        return;
+                    }
+                    
+                    // File size validation
+                    if (file.size > maxFileSize) {
+                        errors.push(`${file.name}: File too large. Maximum size is 10MB.`);
+                        return;
+                    }
+                    
+                    // Check for duplicates
+                    if (uploadedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                        errors.push(`${file.name}: File already uploaded.`);
+                        return;
+                    }
+                    
+                    validFiles.push(file);
+                });
+                
+                // Show errors if any
+                if (errors.length > 0) {
+                    showValidationErrors(errors);
+                }
+                
+                // Process valid files
+                if (validFiles.length > 0) {
+                    simulateFileUpload(validFiles);
+                }
+            }
+            
+            function simulateFileUpload(files) {
+                uploadProgress.classList.remove('hidden');
+                let progress = 0;
+                const increment = 100 / files.length;
+                
+                progressText.textContent = `Uploading ${files.length} file(s)...`;
+                
+                files.forEach((file, index) => {
+                    setTimeout(() => {
+                        progress += increment;
+                        progressBar.style.width = progress + '%';
+                        progressPercent.textContent = Math.round(progress) + '%';
+                        
+                        // Add file to uploaded list
+                        uploadedFiles.push(file);
+                        addFileToList(file);
+                        updateCategoryCounters(file);
+                        
+                        // Hide progress when complete
+                        if (index === files.length - 1) {
+                            setTimeout(() => {
+                                uploadProgress.classList.add('hidden');
+                                progressBar.style.width = '0%';
+                                progressPercent.textContent = '0%';
+                                showSuccessMessage(`Successfully uploaded ${files.length} file(s)`);
+                            }, 500);
+                        }
+                    }, (index + 1) * 800); // Stagger uploads for demo
+                });
+                
+                if (uploadedFiles.length > 0) {
+                    fileList.classList.remove('hidden');
+                }
+            }
+            
+            function addFileToList(file) {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors duration-200';
+                fileItem.dataset.fileName = file.name;
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.className = 'flex items-center flex-1';
+                
+                const fileIcon = getFileIcon(file.type);
+                const fileDetails = document.createElement('div');
+                fileDetails.className = 'ml-3 flex-1';
+                
+                const fileName = document.createElement('span');
+                fileName.className = 'text-sm font-medium text-gray-900 block';
+                fileName.textContent = file.name;
+                
+                const fileSize = document.createElement('span');
+                fileSize.className = 'text-xs text-gray-500';
+                fileSize.textContent = formatFileSize(file.size);
+                
+                const fileCategory = document.createElement('span');
+                fileCategory.className = 'text-xs text-blue-600 ml-2';
+                fileCategory.textContent = categorizeFile(file);
+                
+                fileDetails.appendChild(fileName);
+                const metaDiv = document.createElement('div');
+                metaDiv.appendChild(fileSize);
+                metaDiv.appendChild(fileCategory);
+                fileDetails.appendChild(metaDiv);
+                
+                fileInfo.appendChild(fileIcon);
+                fileInfo.appendChild(fileDetails);
+                
+                // Status indicator
+                const statusIcon = document.createElement('i');
+                statusIcon.className = 'fas fa-check-circle text-green-600 mr-3';
+                
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors duration-200';
+                removeButton.innerHTML = '<i class="fas fa-times"></i>';
+                removeButton.title = 'Remove file';
+                removeButton.addEventListener('click', function() {
+                    removeFile(file, fileItem);
+                });
+                
+                fileItem.appendChild(fileInfo);
+                fileItem.appendChild(statusIcon);
+                fileItem.appendChild(removeButton);
+                fileItems.appendChild(fileItem);
+            }
+            
+            function removeFile(file, fileItem) {
+                // Remove from uploaded files array
+                uploadedFiles = uploadedFiles.filter(f => !(f.name === file.name && f.size === file.size));
+                
+                // Remove from DOM
+                fileItem.remove();
+                
+                // Update category counters
+                updateCategoryCounters();
+                
+                // Hide file list if empty
+                if (fileItems.children.length === 0) {
+                    fileList.classList.add('hidden');
+                }
+            }
+            
+            function updateCategoryCounters(newFile = null) {
+                const categories = {
+                    'Policy Documents': 0,
+                    'Incident Reports': 0,
+                    'Vehicle Documents': 0,
+                    'Photos': 0
+                };
+                
+                uploadedFiles.forEach(file => {
+                    const category = categorizeFile(file);
+                    if (categories.hasOwnProperty(category)) {
+                        categories[category]++;
+                    }
+                });
+                
+                // Update counter displays and validation status
+                Object.keys(categories).forEach(category => {
+                    const categoryElement = document.querySelector(`[data-category="${category}"]`);
+                    const counter = categoryElement.querySelector('.file-counter');
+                    const checkIcon = categoryElement.querySelector('i[id$="-check"]');
+                    
+                    if (counter) {
+                        counter.textContent = `${categories[category]} files`;
+                        counter.className = categories[category] > 0 ? 
+                            'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800' :
+                            'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800';
+                    }
+                    
+                    // Update validation check icons
+                    if (checkIcon) {
+                        if (categories[category] > 0) {
+                            checkIcon.className = 'fas fa-check-circle text-green-500';
+                            categoryElement.classList.add('border-green-200', 'bg-green-50');
+                        } else {
+                            checkIcon.className = 'fas fa-check-circle text-gray-300';
+                            categoryElement.classList.remove('border-green-200', 'bg-green-50');
+                        }
+                    }
+                });
+                
+                // Update overall validation status
+                updateValidationStatus(categories);
+            }
+            
+            function categorizeFile(file) {
+                // Use suggested category if available (from category-specific upload)
+                if (file.suggestedCategory) {
+                    return file.suggestedCategory;
+                }
+                
+                const fileName = file.name.toLowerCase();
+                const fileType = file.type;
+                
+                // Enhanced categorization logic with multiple keywords
+                const categoryKeywords = {
+                    'Policy Documents': [
+                        'policy', 'insurance', 'coverage', 'premium', 'certificate', 
+                        'declaration', 'schedule', 'endorsement', 'amendment', 'quote'
+                    ],
+                    'Incident Reports': [
+                        'report', 'incident', 'police', 'accident', 'crash', 'collision', 
+                        'statement', 'witness', 'traffic', 'citation', 'ticket', 'claim'
+                    ],
+                    'Vehicle Documents': [
+                        'registration', 'service', 'vehicle', 'maintenance', 'repair', 
+                        'invoice', 'receipt', 'title', 'vin', 'logbook', 'mot', 'service_history',
+                        'warranty', 'manual'
+                    ],
+                    'Photos': [
+                        'photo', 'image', 'picture', 'damage', 'evidence', 'scene', 'img'
+                    ]
+                };
+                
+                // Check file type first for images
+                if (fileType.includes('image')) {
+                    return 'Photos';
+                }
+                
+                // Check filename against category keywords with scoring
+                let bestMatch = { category: 'Policy Documents', score: 0 };
+                
+                for (const [category, keywords] of Object.entries(categoryKeywords)) {
+                    const matches = keywords.filter(keyword => fileName.includes(keyword));
+                    if (matches.length > bestMatch.score) {
+                        bestMatch = { category, score: matches.length };
+                    }
+                }
+                
+                if (bestMatch.score > 0) {
+                    return bestMatch.category;
+                }
+                
+                // Advanced pattern matching
+                if (fileName.match(/\b(pol|ins|cert)\d+/)) {
+                    return 'Policy Documents';
+                }
+                
+                if (fileName.match(/\b(acc|inc|rep|clm)\d+/)) {
+                    return 'Incident Reports';
+                }
+                
+                if (fileName.match(/\b(reg|vin|mot|srv)\d+/)) {
+                    return 'Vehicle Documents';
+                }
+                
+                // File extension based categorization
+                const extension = fileName.split('.').pop();
+                if (['jpg', 'jpeg', 'png', 'gif', 'bmp'].includes(extension)) {
+                    return 'Photos';
+                }
+                
+                // Default to Policy Documents for unmatched files
+                return 'Policy Documents';
+            }
+            
+            function getFileIcon(fileType) {
+                const icon = document.createElement('i');
+                icon.className = 'fas text-lg';
+                
+                if (fileType.includes('pdf')) {
+                    icon.classList.add('fa-file-pdf', 'text-red-600');
+                } else if (fileType.includes('image')) {
+                    icon.classList.add('fa-file-image', 'text-green-600');
+                } else if (fileType.includes('word') || fileType.includes('document')) {
+                    icon.classList.add('fa-file-word', 'text-blue-600');
+                } else {
+                    icon.classList.add('fa-file', 'text-gray-600');
+                }
+                
+                return icon;
+            }
+            
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+            
+            function showValidationErrors(errors) {
+                const errorContainer = document.createElement('div');
+                errorContainer.className = 'mt-4 p-4 bg-red-50 border border-red-200 rounded-lg';
+                errorContainer.innerHTML = `
+                    <div class="flex">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-2 mt-0.5"></i>
+                        <div>
+                            <h4 class="text-sm font-medium text-red-800">Upload Errors:</h4>
+                            <ul class="mt-2 text-sm text-red-700 list-disc list-inside">
+                                ${errors.map(error => `<li>${error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                
+                // Remove existing error messages
+                const existingErrors = dropZone.parentNode.querySelectorAll('.error-container');
+                existingErrors.forEach(el => el.remove());
+                
+                errorContainer.classList.add('error-container');
+                dropZone.parentNode.insertBefore(errorContainer, dropZone.nextSibling);
+                
+                // Auto-remove after 10 seconds
+                setTimeout(() => {
+                    errorContainer.remove();
+                }, 10000);
+            }
+            
+            function showSuccessMessage(message) {
+                const successContainer = document.createElement('div');
+                successContainer.className = 'mt-4 p-4 bg-green-50 border border-green-200 rounded-lg';
+                successContainer.innerHTML = `
+                    <div class="flex">
+                        <i class="fas fa-check-circle text-green-600 mr-2 mt-0.5"></i>
+                        <p class="text-sm font-medium text-green-800">${message}</p>
+                    </div>
+                `;
+                
+                // Remove existing success messages
+                const existingSuccess = dropZone.parentNode.querySelectorAll('.success-container');
+                existingSuccess.forEach(el => el.remove());
+                
+                successContainer.classList.add('success-container');
+                dropZone.parentNode.insertBefore(successContainer, dropZone.nextSibling);
+                
+                // Auto-remove after 5 seconds
+                setTimeout(() => {
+                    successContainer.remove();
+                }, 5000);
+            }
+            
+            function updateValidationStatus(categories) {
+                const totalFiles = Object.values(categories).reduce((sum, count) => sum + count, 0);
+                const hasRequiredDocs = categories['Policy Documents'] > 0 || categories['Incident Reports'] > 0;
+                
+                // Update submit button state
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    if (totalFiles > 0 && hasRequiredDocs) {
+                        submitButton.disabled = false;
+                        submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                        submitButton.classList.add('hover:bg-blue-700');
+                    } else {
+                        submitButton.disabled = true;
+                        submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                        submitButton.classList.remove('hover:bg-blue-700');
+                    }
+                }
+                
+                // Show validation summary
+                showValidationSummary(categories, totalFiles, hasRequiredDocs);
+            }
+            
+            function showValidationSummary(categories, totalFiles, hasRequiredDocs) {
+                // Remove existing validation summary
+                const existingSummary = document.querySelector('.validation-summary');
+                if (existingSummary) {
+                    existingSummary.remove();
+                }
+                
+                if (totalFiles === 0) return;
+                
+                const summaryContainer = document.createElement('div');
+                summaryContainer.className = 'validation-summary mt-6 p-4 rounded-lg border';
+                
+                if (hasRequiredDocs) {
+                    summaryContainer.classList.add('bg-green-50', 'border-green-200');
+                    summaryContainer.innerHTML = `
+                        <div class="flex items-start">
+                            <i class="fas fa-check-circle text-green-600 mr-3 mt-0.5"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-green-800">Document Upload Complete</h4>
+                                <p class="text-sm text-green-700 mt-1">
+                                    ${totalFiles} file(s) uploaded successfully. You can proceed with the assessment request.
+                                </p>
+                                <div class="mt-2 text-xs text-green-600">
+                                    ${Object.entries(categories).filter(([cat, count]) => count > 0)
+                                        .map(([cat, count]) => `${cat}: ${count}`)
+                                        .join(' • ')}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    summaryContainer.classList.add('bg-yellow-50', 'border-yellow-200');
+                    summaryContainer.innerHTML = `
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-yellow-600 mr-3 mt-0.5"></i>
+                            <div>
+                                <h4 class="text-sm font-medium text-yellow-800">Additional Documents Required</h4>
+                                <p class="text-sm text-yellow-700 mt-1">
+                                    Please upload at least one policy document or incident report to proceed.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                fileList.appendChild(summaryContainer);
+            }
+            
+            function processDocumentContent(file) {
+                // Simulate document processing (OCR, content analysis, etc.)
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const mockProcessedData = {
+                            extractedText: `Processed content from ${file.name}`,
+                            confidence: Math.random() * 0.3 + 0.7, // 70-100% confidence
+                            detectedFields: generateMockFields(file),
+                            category: categorizeFile(file)
+                        };
+                        resolve(mockProcessedData);
+                    }, 1000);
+                });
+            }
+            
+            function generateMockFields(file) {
+                const category = categorizeFile(file);
+                const fields = {};
+                
+                switch (category) {
+                    case 'Policy Documents':
+                        fields.policyNumber = 'POL' + Math.random().toString().substr(2, 8);
+                        fields.coverageType = 'Comprehensive';
+                        fields.expiryDate = '2025-12-31';
+                        break;
+                    case 'Incident Reports':
+                        fields.reportNumber = 'RPT' + Math.random().toString().substr(2, 8);
+                        fields.incidentDate = '2024-01-15';
+                        fields.location = 'Sample Location';
+                        break;
+                    case 'Vehicle Documents':
+                        fields.registrationNumber = 'ABC123';
+                        fields.vehicleMake = 'Toyota';
+                        fields.vehicleModel = 'Camry';
+                        break;
+                }
+                
+                return fields;
+            }
+            
+            function openCategoryUpload(category) {
+                // Create a temporary file input for category-specific uploads
+                const categoryInput = document.createElement('input');
+                categoryInput.type = 'file';
+                categoryInput.multiple = true;
+                
+                // Set appropriate file filters based on category
+                switch (category) {
+                    case 'policy':
+                    case 'incident':
+                    case 'vehicle':
+                        categoryInput.accept = '.pdf,.doc,.docx';
+                        break;
+                    case 'photos':
+                        categoryInput.accept = '.jpg,.jpeg,.png,.pdf';
+                        break;
+                    default:
+                        categoryInput.accept = '.pdf,.jpg,.jpeg,.png,.doc,.docx';
+                }
+                
+                categoryInput.addEventListener('change', function(e) {
+                    const files = Array.from(e.target.files);
+                    
+                    // Pre-categorize files based on the selected category
+                    files.forEach(file => {
+                        file.suggestedCategory = getCategoryFromType(category);
+                    });
+                    
+                    handleFiles(files);
+                });
+                
+                categoryInput.click();
+            }
+            
+            function getCategoryFromType(categoryType) {
+                const categoryMap = {
+                    'policy': 'Policy Documents',
+                    'incident': 'Incident Reports',
+                    'vehicle': 'Vehicle Documents',
+                    'photos': 'Photos'
+                };
+                return categoryMap[categoryType] || 'Policy Documents';
+            }
+        }
+        
+        function initializeFormValidation() {
+            const form = document.querySelector('form');
+            const requiredFields = form.querySelectorAll('[required]');
+            
+            // Real-time validation for individual fields
+            requiredFields.forEach(field => {
+                field.addEventListener('blur', function() {
+                    validateField(this);
+                });
+                
+                field.addEventListener('input', function() {
+                    clearFieldError(this);
+                    if (this.value.trim()) {
+                        validateField(this);
+                    }
+                });
+            });
+            
+            // Enhanced form submission validation
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const validationResults = validateForm();
+                
+                if (validationResults.isValid) {
+                    // Check if documents are uploaded
+                    if (uploadedFiles.length === 0) {
+                        showFormError('Please upload at least one document before submitting.');
+                        return;
+                    }
+                    
+                    // Show confirmation dialog
+                    showSubmissionConfirmation();
+                } else {
+                    showFormError('Please correct the errors below and try again.');
+                    scrollToFirstError();
+                }
+            });
+            
+            // Initialize field-specific validation
+            initializeFieldValidation();
+        }
+        
+        function validateForm() {
+            const form = document.querySelector('form');
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            const errors = [];
+            
+            requiredFields.forEach(field => {
+                if (!validateField(field)) {
+                    isValid = false;
+                }
+            });
+            
+            // Additional business logic validation
+            const incidentDate = document.getElementById('incident_date').value;
+            if (incidentDate && new Date(incidentDate) > new Date()) {
+                showFieldError(document.getElementById('incident_date'), 'Incident date cannot be in the future');
+                isValid = false;
+            }
+            
+            const vehicleYear = document.getElementById('vehicle_year').value;
+            if (vehicleYear && (vehicleYear < 1900 || vehicleYear > new Date().getFullYear() + 1)) {
+                showFieldError(document.getElementById('vehicle_year'), 'Please enter a valid vehicle year');
+                isValid = false;
+            }
+            
+            return { isValid, errors };
+        }
+        
+        function validateField(field) {
+            const value = field.value.trim();
+            const fieldType = field.type;
+            const fieldName = field.name;
+            
+            // Required field validation
+            if (field.hasAttribute('required') && !value) {
+                showFieldError(field, 'This field is required');
+                return false;
+            }
+            
+            if (!value) return true; // Skip validation for empty optional fields
+            
+            // Field-specific validation
+            switch (fieldType) {
+                case 'email':
+                    if (!isValidEmail(value)) {
+                        showFieldError(field, 'Please enter a valid email address');
+                        return false;
+                    }
+                    break;
+                    
+                case 'tel':
+                    if (!isValidPhone(value)) {
+                        showFieldError(field, 'Please enter a valid phone number');
+                        return false;
+                    }
+                    break;
+                    
+                case 'date':
+                    if (!isValidDate(value)) {
+                        showFieldError(field, 'Please enter a valid date');
+                        return false;
+                    }
+                    break;
+                    
+                case 'number':
+                    if (isNaN(value) || value < 0) {
+                        showFieldError(field, 'Please enter a valid number');
+                        return false;
+                    }
+                    break;
+            }
+            
+            // Field name specific validation
+            switch (fieldName) {
+                case 'policy_number':
+                    if (value.length < 5) {
+                        showFieldError(field, 'Policy number must be at least 5 characters');
+                        return false;
+                    }
+                    break;
+                    
+                case 'vehicle_vin':
+                    if (value && value.length !== 17) {
+                        showFieldError(field, 'VIN must be exactly 17 characters');
+                        return false;
+                    }
+                    break;
+                    
+                case 'customer_name':
+                    if (value.length < 2) {
+                        showFieldError(field, 'Name must be at least 2 characters');
+                        return false;
+                    }
+                    break;
+            }
+            
+            clearFieldError(field);
+            return true;
+        }
+        
+        function showFieldError(field, message) {
+            clearFieldError(field);
+            
+            field.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error text-red-600 text-xs mt-1';
+            errorDiv.textContent = message;
+            
+            field.parentNode.appendChild(errorDiv);
+        }
+        
+        function clearFieldError(field) {
+            field.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-500');
+            
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+        }
+        
+        function showFormError(message) {
+            // Remove existing form errors
+            const existingErrors = document.querySelectorAll('.form-error');
+            existingErrors.forEach(error => error.remove());
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'form-error mb-6 p-4 bg-red-50 border border-red-200 rounded-lg';
+            errorDiv.innerHTML = `
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-red-600 mr-2 mt-0.5"></i>
+                    <p class="text-sm font-medium text-red-800">${message}</p>
+                </div>
+            `;
+            
+            const form = document.querySelector('form');
+            form.insertBefore(errorDiv, form.firstChild);
+        }
+        
+        function scrollToFirstError() {
+            const firstError = document.querySelector('.border-red-500');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstError.focus();
+            }
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        function isValidPhone(phone) {
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''));
+        }
+        
+        function isValidDate(date) {
+            const dateObj = new Date(date);
+            return dateObj instanceof Date && !isNaN(dateObj);
+        }
+        
+        function initializeFieldValidation() {
+            // Auto-format phone numbers
+            const phoneField = document.getElementById('customer_phone');
+            if (phoneField) {
+                phoneField.addEventListener('input', function() {
+                    let value = this.value.replace(/\D/g, '');
+                    if (value.length >= 6) {
+                        value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                    } else if (value.length >= 3) {
+                        value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
+                    }
+                    this.value = value;
+                });
+            }
+            
+            // Auto-uppercase VIN
+            const vinField = document.getElementById('vehicle_vin');
+            if (vinField) {
+                vinField.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                });
+            }
+            
+            // Auto-format policy number
+            const policyField = document.getElementById('policy_number');
+            if (policyField) {
+                policyField.addEventListener('input', function() {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                });
+            }
+        }
+        
+        function showSubmissionConfirmation() {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50';
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="flex items-center mb-4">
+                        <i class="fas fa-check-circle text-green-600 text-2xl mr-3"></i>
+                        <h3 class="text-lg font-medium text-gray-900">Confirm Submission</h3>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-6">
+                        Are you ready to submit this assessment request? Once submitted, you will receive a confirmation email and the assessment will be scheduled.
+                    </p>
+                    <div class="flex space-x-3">
+                        <button type="button" onclick="this.closest('.fixed').remove()" 
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="submitForm()" 
+                                class="flex-1 px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Submit Request
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        function submitForm() {
+            // Remove confirmation modal
+            document.querySelector('.fixed.inset-0').remove();
+            
+            // Show loading state
+            const submitButton = document.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Submitting...';
+            submitButton.disabled = true;
+            
+            // Simulate form submission
+            setTimeout(() => {
+                showSuccessSubmission();
+            }, 2000);
+        }
+        
+        function showSuccessSubmission() {
+            const successModal = document.createElement('div');
+            successModal.className = 'fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50';
+            successModal.innerHTML = `
+                <div class="bg-white rounded-lg p-6 max-w-md mx-4">
+                    <div class="text-center">
+                        <i class="fas fa-check-circle text-green-600 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Assessment Request Submitted</h3>
+                        <p class="text-sm text-gray-600 mb-6">
+                            Your assessment request has been successfully submitted. You will receive a confirmation email shortly with your reference number: <strong>ASS-${Date.now().toString().slice(-6)}</strong>
+                        </p>
+                        <button type="button" onclick="window.location.href='{% url 'insurance:insurance_dashboard' %}'" 
+                                class="w-full px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                            Return to Dashboard
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(successModal);
+        }
+    </script>
+    
+    <!-- Dashboard Interactivity Scripts -->
+    <script src="{% static 'js/performance-optimizer.js' %}"></script>
+    <script src="{% static 'js/dashboard-interactivity.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/notifications.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/dashboard-navigation.js' %}"></script>
+    <script src="{% static 'js/dashboard-animations.js' %}" data-critical="false"></script>
+    <script src="{% static 'js/dashboard-integration.js' %}"></script>
+</body>
+</html>
+
+{%else%}
+  {% include "dashboard/login_dashboard.html"%}
+{%endif%}
+{% endblock %}

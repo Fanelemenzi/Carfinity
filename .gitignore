@@ -28,3 +28,13 @@ test_organization_service_simple.py
 test_public_views.py
 test_template_tag.py
 test_template_tags_simple.py
+
+# JavaScript/Dashboard test files and documentation
+test_js_fixes.html
+test_dashboard_integration.html
+test_complete_dashboard.html
+test_dashboard_minimal.html
+dashboard_diagnostics.js
+JAVASCRIPT_FIXES_SUMMARY.md
+DASHBOARD_INTEGRATION_FIXES.md
+DASHBOARD_ERROR_FIXES.md
