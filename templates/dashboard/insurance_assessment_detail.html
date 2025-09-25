@@ -1,0 +1,607 @@
+{% extends 'base/base.html'%}
+{% load static %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'css/responsive-claims-dashboard.css' %}" data-critical="true">
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+<link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
+<link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
+<link rel="stylesheet" href="{% static 'css/assessment-detail.css' %}">
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#1e40af',
+                    secondary: '#374151',
+                    accent: '#f59e0b',
+                    success: '#10b981',
+                    warning: '#f59e0b',
+                    danger: '#ef4444'
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="bg-gray-50 min-h-screen">
+{% if user.is_authenticated %}
+    <!-- Load essential JavaScript files -->
+    <script src="{% static 'js/essential-ui-components.js' %}" defer></script>
+    <script src="{% static 'js/claims-table-interactivity.js' %}" defer></script>
+    <script src="{% static 'js/workflow-integration-test.js' %}" defer></script>
+    <script src="{% static 'js/assessment-detail.js' %}" defer></script>
+    
+    <!-- Header Navigation -->
+    <nav class="dashboard-header mobile-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="dashboard-nav">
+                <div class="flex items-center">
+                    <!-- Mobile Menu Toggle -->
+                    <button class="mobile-nav-toggle mobile-icon-button mr-3 text-gray-600 hover:text-gray-900 focus:outline-none md:hidden" id="mobileMenuToggle">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    
+                    <div class="flex-shrink-0">
+                        <a href="{% url 'insurance:assessment_dashboard' %}" class="dashboard-logo">
+                            <i class="fas fa-arrow-left mr-2"></i>
+                            <span class="hidden sm:inline">Back to Assessments</span>
+                            <span class="sm:hidden">Back</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Desktop Navigation Menu -->
+                    <div class="desktop-nav hidden md:block ml-10">
+                        <div class="nav-menu">
+                            <a href="{% url 'insurance:dashboard' %}" class="nav-item">
+                                <i class="fas fa-home mr-2"></i>Dashboard
+                            </a>
+                            <a href="{% url 'insurance:assessment_dashboard' %}" class="nav-item">
+                                <i class="fas fa-chart-line mr-2"></i>Assessments
+                            </a>
+                            <span class="nav-item active">
+                                <i class="fas fa-file-alt mr-2"></i>Assessment Detail
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <!-- Assessment Status -->
+                    <div class="hidden sm:flex items-center space-x-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                            <i class="fas fa-clock mr-1"></i>IN PROGRESS
+                        </span>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="relative" id="notificationBell">
+                        <!-- Notification system will be initialized here by JavaScript -->
+                    </div>
+                    
+                    <!-- Agent Profile -->
+                    <div class="flex items-center space-x-2 md:space-x-3">
+                        <div class="hidden sm:flex flex-col text-right">
+                            <span class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</span>
+                            <span class="text-xs text-gray-500">Assessment Specialist</span>
+                        </div>
+                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden lg:flex items-center text-sm text-gray-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        Last login: <span id="lastLogin">{{ user.last_login|date:"M d, H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+    
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav-menu" id="mobileNavMenu">
+        <div class="flex flex-col h-full">
+            <!-- Mobile Menu Header -->
+            <div class="flex items-center justify-between p-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
+                <button class="mobile-icon-button text-gray-600 hover:text-gray-900" id="mobileMenuClose">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu Items -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="py-2">
+                    <a href="{% url 'insurance:dashboard' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-home mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="{% url 'insurance:assessment_dashboard' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        Assessments
+                    </a>
+                    <span class="mobile-nav-item flex items-center text-primary font-medium">
+                        <i class="fas fa-file-alt mr-3"></i>
+                        Assessment Detail
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Mobile Menu Footer -->
+            <div class="border-t border-gray-200 p-4">
+                <div class="flex items-center space-x-3 mb-3">
+                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-xs text-gray-500">Assessment Specialist</div>
+                    </div>
+                </div>
+                <button class="w-full mobile-button bg-gray-100 text-gray-700 hover:bg-gray-200">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto mobile-dashboard px-4 sm:px-6 lg:px-8 py-4 md:py-8">
+        <!-- Assessment Header Card -->
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 md:mb-8 card-hover assessment-detail-card">
+            <div class="p-6 lg:p-8">
+                <!-- Assessment Title & Status -->
+                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+                    <div class="mb-4 lg:mb-0">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 mobile-title">Assessment INS-2024-8847</h1>
+                        <p class="text-gray-600 mobile-subtitle">2019 BMW 320i • VIN: WBA8E9G50KNU12345</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 assessment-status-urgent">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>TOTAL LOSS CANDIDATE
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 assessment-status-pending">
+                            <i class="fas fa-tools mr-1"></i>STRUCTURAL DAMAGE
+                        </span>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                            <i class="fas fa-clock mr-1"></i>18h 42m SLA
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Assessment Information Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stats-grid mobile-stats-grid">
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 mobile-card card-hover">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">Customer Information</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.customer_name }}</p>
+                        <p class="text-sm text-gray-600">Claim: {{ assessment_data.claim_id }}</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 mobile-card card-hover">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">Incident Details</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.location }}</p>
+                        <p class="text-sm text-gray-600">{{ assessment_data.incident_date }}</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 mobile-card card-hover">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">Assessor</h3>
+                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.assessor }}</p>
+                        <p class="text-sm text-gray-600">Level 3 • Assigned: {{ assessment_data.incident_date }}</p>
+                    </div>
+                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 mobile-card card-hover">
+                        <h3 class="text-sm font-medium text-gray-500 mb-2">Assessment Progress</h3>
+                        <p class="text-lg font-semibold text-green-600">{{ assessment_data.assessment_progress }}% Complete</p>
+                        <!-- CSS classes defined in assessment-detail.css -->
+                        <div class="assessment-progress-bar mt-2">
+                            <div class="assessment-progress-fill" style="width: {{ assessment_data.assessment_progress }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+            <!-- Assessment Summary Panel -->
+            <div class="lg:col-span-2">
+                        <!-- Assessment Summary Card -->
+                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 md:mb-8 card-hover action-card">
+                            <div class="p-6 lg:p-8">
+                                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                                        <i class="fas fa-chart-bar text-white"></i>
+                                    </div>
+                                    Assessment Summary
+                                </h2>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="text-sm font-medium text-gray-500 mb-2 block">Overall Severity</label>
+                                            <div class="flex items-center">
+                                                <div class="flex-1 bg-gray-200 rounded-full h-3 mr-3">
+                                                    <div class="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full transition-all duration-1000" style="width: 85%"></div>
+                                                </div>
+                                                <span class="text-sm font-medium text-red-600">{{ assessment_data.damage_type }}</span>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mobile-card-compact">
+                                                <label class="text-sm font-medium text-gray-500">Estimated Cost</label>
+                                                <p class="text-lg font-semibold text-gray-900">{{ assessment_data.estimated_repair_cost }}</p>
+                                            </div>
+                                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mobile-card-compact">
+                                                <label class="text-sm font-medium text-gray-500">Claim Value</label>
+                                                <p class="text-lg font-semibold text-gray-900">{{ assessment_data.claim_value }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="space-y-4">
+                                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+                                            <label class="text-sm font-medium text-gray-500">Cost Ratio</label>
+                                            <p class="text-lg font-semibold text-red-600">152% (Exceeds total loss threshold)</p>
+                                        </div>
+                                        
+                                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
+                                            <label class="text-sm font-medium text-gray-500">UK Classification</label>
+                                            <p class="text-lg font-semibold text-orange-600">Category S (Structural Damage)</p>
+                                        </div>
+                                        
+                                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
+                                            <label class="text-sm font-medium text-gray-500">SA 70% Rule</label>
+                                            <p class="text-lg font-semibold text-red-600">✓ EXCEEDED</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-6 p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0">
+                                            <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-exclamation-triangle text-white text-lg"></i>
+                                            </div>
+                                        </div>
+                                        <div class="ml-3">
+                                            <h3 class="text-sm font-medium text-red-800">Recommendation: TOTAL LOSS</h3>
+                                            <p class="text-sm text-red-700 mt-1">Settlement Range: £16,200 - £18,750</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                <!-- Detailed Assessment Sections -->
+                <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover" x-data="assessmentData()">
+                    <div class="p-6 lg:p-8">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                            <i class="fas fa-clipboard-list mr-3 text-emerald-600"></i>Detailed Assessment
+                        </h2>
+                        <p class="text-gray-600 mb-6">Click any section below for detailed component breakdown:</p>
+                        
+                        <div class="space-y-4">
+                            {% for section in assessment_data.sections %}
+                                <div class="assessment-detail-card bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-all duration-200 interactive-hover" 
+                                     onclick="viewSection('{{ section.id }}')"
+                                     data-section-id="{{ section.id }}"
+                                     data-status="{{ section.status }}">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <span class="text-2xl mr-3">{{ section.icon }}</span>
+                                            <h3 class="text-lg font-semibold text-gray-900">{{ section.name }}</h3>
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium {% if section.status == 'Complete' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ section.status }}</span>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-3 gap-4 mb-4">
+                                        <div>
+                                            <p class="text-sm text-gray-500">Damage Level</p>
+                                            <p class="font-medium">{{ section.damageLevel }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Estimated Cost</p>
+                                            <p class="font-medium">{{ section.estimatedCost }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm text-gray-500">Components</p>
+                                            <p class="font-medium">{{ section.componentCount }} items</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-gray-500">Progress:</span>
+                                            <span class="text-sm font-medium">{{ section.points }}</span>
+                                        </div>
+                                        <span class="text-blue-600 text-sm font-medium transition-all duration-200 flex items-center">
+                                            <i class="fas fa-arrow-right mr-1"></i>View Details
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-medium text-blue-900">Total Assessment Points: 117/120 Complete</p>
+                                    <p class="text-sm text-blue-700">Missing: Emissions sticker verification</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-semibold text-blue-900">Total Cost: £39,150</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="space-y-6">
+                    <!-- Quick Actions Card -->
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
+                            </h3>
+                            
+                            <div class="space-y-3">
+                                <button class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-check mr-2"></i>Approve Settlement
+                                </button>
+                                <button class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-times mr-2"></i>Reject Claim
+                                </button>
+                                <button class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-info-circle mr-2"></i>Request More Info
+                                </button>
+                            </div>
+                            
+                            <hr class="my-4">
+                            
+                            <div class="space-y-2">
+                                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-comment mr-2"></i>Send Message
+                                </button>
+                                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-phone mr-2"></i>Schedule Call
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Assessment Photos Card -->
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <i class="fas fa-camera mr-2 text-indigo-500"></i>Assessment Photos (47 total)
+                            </h3>
+                            
+                            <div class="grid grid-cols-2 gap-2 mb-4">
+                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
+                                    <span class="text-xs text-gray-500">Overall View</span>
+                                </div>
+                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
+                                    <span class="text-xs text-gray-500">Damage Detail</span>
+                                </div>
+                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
+                                    <span class="text-xs text-gray-500">Front View</span>
+                                </div>
+                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
+                                    <span class="text-xs text-gray-500">Side View</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-images mr-2"></i>View All Photos
+                                </button>
+                                <button class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                    <i class="fas fa-upload mr-2"></i>Upload More
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settlement Calculator Card -->
+                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
+                        <div class="p-6">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <i class="fas fa-calculator mr-2 text-green-500"></i>Settlement Calculation
+                            </h3>
+                            
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="text-gray-600">Vehicle Agreed Value:</span>
+                                    <span class="font-medium">£18,750</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="text-gray-600">Less: Policy Excess:</span>
+                                    <span class="font-medium text-red-600">-£500</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="text-gray-600">Less: Outstanding Finance:</span>
+                                    <span class="font-medium text-red-600">-£12,400</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                    <span class="text-gray-600">Add: Salvage Recovery:</span>
+                                    <span class="font-medium text-green-600">+£3,200</span>
+                                </div>
+                                <div class="flex justify-between items-center py-2 font-semibold border-t border-gray-200 pt-3">
+                                    <span>Net Settlement:</span>
+                                    <span class="text-green-600">£9,050</span>
+                                </div>
+                                <div class="flex justify-between items-center py-1 text-xs text-gray-500">
+                                    <span>Additional allowances:</span>
+                                    <span>+£430</span>
+                                </div>
+                                <div class="flex justify-between items-center py-3 font-bold text-lg bg-green-50 px-3 rounded-lg border border-green-200">
+                                    <span>TOTAL PAYMENT:</span>
+                                    <span class="text-green-600">£9,480</span>
+                                </div>
+                            </div>
+                            
+                            <button class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
+                                <i class="fas fa-file-contract mr-2"></i>Generate Settlement Letter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+function assessmentData() {
+    return {
+        assessmentSections: [
+            {
+                id: 'exterior',
+                name: 'EXTERIOR DAMAGE',
+                icon: '🚗',
+                points: '38/38 ✓',
+                status: 'Complete',
+                severity: 'Severe',
+                cost: '£15,200',
+                damageLevel: 'Major',
+                estimatedCost: '£10,000',
+                componentCount: 12
+            },
+            {
+                id: 'wheels',
+                name: 'WHEELS & TIRES',
+                icon: '🛞',
+                points: '12/12 ✓',
+                status: 'Complete',
+                severity: 'Major',
+                cost: '£3,800',
+                damageLevel: 'Moderate',
+                estimatedCost: '£2,000',
+                componentCount: 8
+            },
+            {
+                id: 'interior',
+                name: 'INTERIOR DAMAGE',
+                icon: '🪑',
+                points: '19/19 ✓',
+                status: 'Complete',
+                severity: 'Moderate',
+                cost: '£2,400',
+                damageLevel: 'Minor',
+                estimatedCost: '£1,500',
+                componentCount: 10
+            },
+            {
+                id: 'mechanical',
+                name: 'MECHANICAL SYSTEMS',
+                icon: '⚙️',
+                points: '18/20 ⚠️',
+                status: '90% Complete',
+                severity: 'Minor',
+                cost: '£4,200',
+                damageLevel: 'Moderate',
+                estimatedCost: '£3,000',
+                componentCount: 15
+            },
+            {
+                id: 'electrical',
+                name: 'ELECTRICAL SYSTEMS',
+                icon: '🔌',
+                points: '9/9 ✓',
+                status: 'Complete',
+                severity: 'Moderate',
+                cost: '£1,900',
+                damageLevel: 'Minor',
+                estimatedCost: '£1,200',
+                componentCount: 6
+            },
+            {
+                id: 'safety',
+                name: 'SAFETY SYSTEMS',
+                icon: '🛡️',
+                points: '6/6 ✓',
+                status: 'Complete',
+                severity: 'Major',
+                cost: '£2,800',
+                damageLevel: 'Major',
+                estimatedCost: '£2,500',
+                componentCount: 8
+            },
+            {
+                id: 'structural',
+                name: 'FRAME & STRUCTURAL',
+                icon: '🏗️',
+                points: '6/6 ✓',
+                status: 'Complete',
+                severity: 'Severe',
+                cost: '£8,400',
+                damageLevel: 'Severe',
+                estimatedCost: '£8,000',
+                componentCount: 12
+            },
+            {
+                id: 'fluids',
+                name: 'FLUID SYSTEMS',
+                icon: '💧',
+                points: '6/6 ✓',
+                status: 'Complete',
+                severity: 'Minor',
+                cost: '£450',
+                damageLevel: 'Minor',
+                estimatedCost: '£400',
+                componentCount: 4
+            }
+        ],
+        
+        getSectionStatusBadge(status) {
+            const badges = {
+                'Complete': 'bg-green-100 text-green-800',
+                '90% Complete': 'bg-yellow-100 text-yellow-800',
+                'In Progress': 'bg-blue-100 text-blue-800',
+                'Pending': 'bg-gray-100 text-gray-800'
+            };
+            return badges[status] || 'bg-gray-100 text-gray-800';
+        },
+        
+        viewSection(sectionId) {
+            // Navigate to component detail view with proper URL structure
+            const claimId = '{{ assessment_data.claim_id|default:"INS-8847" }}';
+            window.location.href = `/insurance/assessments/${claimId}/section/${sectionId}/`;
+        }
+    }
+}
+
+// Initialize JavaScript components when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize claims table interactivity (for any table elements)
+    if (typeof initializeClaimsTable === 'function') {
+        initializeClaimsTable();
+    }
+    
+    // Initialize essential UI components
+    if (typeof initializeEssentialUIComponents === 'function') {
+        initializeEssentialUIComponents();
+    }
+    
+    // Initialize loading states for buttons
+    if (typeof initializeLoadingStates === 'function') {
+        initializeLoadingStates();
+    }
+    
+    // Initialize photo gallery functionality
+    if (typeof initializePhotoGallery === 'function') {
+        initializePhotoGallery();
+    }
+});
+</script>
+
+{% endblock %}

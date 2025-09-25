@@ -12,6 +12,7 @@
     <title>Insurance Claims Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/responsive-claims-dashboard.css' %}" data-critical="true">
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
     <link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
@@ -445,6 +446,10 @@
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Load essential JavaScript files -->
+    <script src="{% static 'js/essential-ui-components.js' %}" defer></script>
+    <script src="{% static 'js/claims-table-interactivity.js' %}" defer></script>
+    <script src="{% static 'js/workflow-integration-test.js' %}" defer></script>
     <!-- Header Navigation -->
     <nav class="dashboard-header mobile-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -681,7 +686,7 @@
                         </div>
                     </div>
                     <div class="mb-6">
-                        <p class="text-gray-700 mb-4 text-sm lg:text-base">Manage and review vehicle damage assessments with detailed analytics, KPI tracking, and decision support tools.</p>
+                        <p class="text-gray-700 mb-4 text-sm lg:text-base">Manage and review vehicle damage assessments with simplified Claims overview interface.</p>
                         <div class="grid grid-cols-3 gap-2 lg:gap-4 text-sm">
                             <div class="text-center bg-white rounded-lg p-2 lg:p-3 shadow-sm">
                                 <div class="text-lg lg:text-xl font-bold text-blue-600">24</div>
@@ -1531,6 +1536,70 @@
     <script src="{% static 'js/dashboard-navigation.js' %}"></script>
     <script src="{% static 'js/dashboard-animations.js' %}" data-critical="false"></script>
     <script src="{% static 'js/dashboard-integration.js' %}"></script>
+
+    <!-- JavaScript for Landing Page Integration -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Setup action card navigation
+        const actionCards = document.querySelectorAll('.action-card[data-url]');
+        actionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                const url = this.getAttribute('data-url');
+                if (url) {
+                    window.location.href = url;
+                }
+            });
+            
+            // Add keyboard support
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    const url = this.getAttribute('data-url');
+                    if (url) {
+                        window.location.href = url;
+                    }
+                }
+            });
+            
+            // Make cards focusable
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('role', 'button');
+        });
+        
+        // Mobile navigation functionality
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileNavMenu = document.getElementById('mobileNavMenu');
+        const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+        const mobileMenuClose = document.getElementById('mobileMenuClose');
+        
+        if (mobileMenuToggle && mobileNavMenu) {
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileNavMenu.classList.add('active');
+                mobileNavOverlay.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+            
+            function closeMobileMenu() {
+                mobileNavMenu.classList.remove('active');
+                mobileNavOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            
+            if (mobileMenuClose) {
+                mobileMenuClose.addEventListener('click', closeMobileMenu);
+            }
+            
+            if (mobileNavOverlay) {
+                mobileNavOverlay.addEventListener('click', closeMobileMenu);
+            }
+        }
+        
+        // Initialize essential UI components
+        if (window.initializeEssentialUIComponents) {
+            window.initializeEssentialUIComponents();
+        }
+    });
+    </script>
 </body>
 </html>
 

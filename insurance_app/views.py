@@ -1,7 +1,7 @@
 # views.py
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Avg, Count, Q, F
 from django.utils import timezone
@@ -236,6 +236,275 @@ class BookAssessmentView(LoginRequiredMixin, ListView):
         # This will be implemented in later tasks
         messages.success(request, 'Assessment request submitted successfully!')
         return self.get(request, *args, **kwargs)
+
+@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+class AssessmentDetailView(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard/insurance_assessment_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        claim_id = kwargs.get('claim_id', 'CLM-2024-001')
+        
+        # Hardcoded assessment data for the first two claims
+        assessment_data = self.get_assessment_data(claim_id)
+        
+        context.update({
+            'claim_id': claim_id,
+            'assessment_data': assessment_data,
+        })
+        
+        return context
+    
+    def get_assessment_data(self, claim_id):
+        """
+        Get hardcoded assessment data for specific claims
+        """
+        assessments = {
+            'INS-8847': {
+                'claim_id': 'INS-8847',
+                'customer_name': 'Smith, J.',
+                'vehicle': '2019 BMW 320i',
+                'vin': 'WBA8E9G50KNU12345',
+                'incident_date': 'Sep 15, 2024',
+                'claim_value': '£35,000',
+                'status': 'URGENT',
+                'damage_type': 'Total Loss',
+                'assessment_progress': 95,
+                'estimated_repair_cost': '£32,400',
+                'assessor': 'David Wilson',
+                'location': 'London, UK',
+                'incident_description': 'High-speed collision with barrier on M25. Severe front-end damage, airbag deployment, and structural compromise.',
+                'sections': [
+                    {
+                        'id': 'exterior',
+                        'name': 'EXTERIOR DAMAGE',
+                        'icon': '🚗',
+                        'points': '38/38 ✓',
+                        'status': 'Complete',
+                        'severity': 'Severe',
+                        'cost': '£15,200',
+                        'damageLevel': 'Major',
+                        'estimatedCost': '£15,200',
+                        'componentCount': 12
+                    },
+                    {
+                        'id': 'wheels',
+                        'name': 'WHEELS & TIRES',
+                        'icon': '🛞',
+                        'points': '12/12 ✓',
+                        'status': 'Complete',
+                        'severity': 'Major',
+                        'cost': '£3,800',
+                        'damageLevel': 'Moderate',
+                        'estimatedCost': '£3,800',
+                        'componentCount': 8
+                    },
+                    {
+                        'id': 'interior',
+                        'name': 'INTERIOR DAMAGE',
+                        'icon': '🪑',
+                        'points': '19/19 ✓',
+                        'status': 'Complete',
+                        'severity': 'Moderate',
+                        'cost': '£2,400',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£2,400',
+                        'componentCount': 10
+                    },
+                    {
+                        'id': 'mechanical',
+                        'name': 'MECHANICAL SYSTEMS',
+                        'icon': '⚙️',
+                        'points': '18/20 ⚠️',
+                        'status': '90% Complete',
+                        'severity': 'Minor',
+                        'cost': '£4,200',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£4,200',
+                        'componentCount': 15
+                    },
+                    {
+                        'id': 'electrical',
+                        'name': 'ELECTRICAL SYSTEMS',
+                        'icon': '🔌',
+                        'points': '9/9 ✓',
+                        'status': 'Complete',
+                        'severity': 'Moderate',
+                        'cost': '£1,900',
+                        'damageLevel': 'Moderate',
+                        'estimatedCost': '£1,900',
+                        'componentCount': 9
+                    },
+                    {
+                        'id': 'safety',
+                        'name': 'SAFETY SYSTEMS',
+                        'icon': '🛡️',
+                        'points': '6/6 ✓',
+                        'status': 'Complete',
+                        'severity': 'Major',
+                        'cost': '£2,800',
+                        'damageLevel': 'Major',
+                        'estimatedCost': '£2,800',
+                        'componentCount': 6
+                    },
+                    {
+                        'id': 'structural',
+                        'name': 'FRAME & STRUCTURAL',
+                        'icon': '🏗️',
+                        'points': '6/6 ✓',
+                        'status': 'Complete',
+                        'severity': 'Severe',
+                        'cost': '£8,400',
+                        'damageLevel': 'Severe',
+                        'estimatedCost': '£8,400',
+                        'componentCount': 6
+                    },
+                    {
+                        'id': 'fluids',
+                        'name': 'FLUID SYSTEMS',
+                        'icon': '💧',
+                        'points': '6/6 ✓',
+                        'status': 'Complete',
+                        'severity': 'Minor',
+                        'cost': '£450',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£450',
+                        'componentCount': 6
+                    }
+                ]
+            },
+            'INS-8848': {
+                'claim_id': 'INS-8848',
+                'customer_name': 'Brown, M.',
+                'vehicle': '2021 Audi A4',
+                'vin': 'WAUZZZF25MA123456',
+                'incident_date': 'Sep 16, 2024',
+                'claim_value': '£12,500',
+                'status': 'REVIEW',
+                'damage_type': 'Moderate',
+                'assessment_progress': 78,
+                'estimated_repair_cost': '£9,800',
+                'assessor': 'Sarah Mitchell',
+                'location': 'Manchester, UK',
+                'incident_description': 'Rear-end collision in parking lot. Moderate damage to rear bumper and trunk area.',
+                'sections': [
+                    {
+                        'id': 'exterior',
+                        'name': 'EXTERIOR DAMAGE',
+                        'icon': '🚗',
+                        'points': '28/32 ⚠️',
+                        'status': '87% Complete',
+                        'severity': 'Moderate',
+                        'cost': '£4,200',
+                        'damageLevel': 'Moderate',
+                        'estimatedCost': '£4,200',
+                        'componentCount': 8
+                    },
+                    {
+                        'id': 'wheels',
+                        'name': 'WHEELS & TIRES',
+                        'icon': '🛞',
+                        'points': '8/8 ✓',
+                        'status': 'Complete',
+                        'severity': 'None',
+                        'cost': '£0',
+                        'damageLevel': 'None',
+                        'estimatedCost': '£0',
+                        'componentCount': 8
+                    },
+                    {
+                        'id': 'interior',
+                        'name': 'INTERIOR DAMAGE',
+                        'icon': '🪑',
+                        'points': '15/18 ⚠️',
+                        'status': '83% Complete',
+                        'severity': 'Minor',
+                        'cost': '£800',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£800',
+                        'componentCount': 10
+                    },
+                    {
+                        'id': 'mechanical',
+                        'name': 'MECHANICAL SYSTEMS',
+                        'icon': '⚙️',
+                        'points': '12/15 ⚠️',
+                        'status': '80% Complete',
+                        'severity': 'Minor',
+                        'cost': '£1,200',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£1,200',
+                        'componentCount': 15
+                    },
+                    {
+                        'id': 'electrical',
+                        'name': 'ELECTRICAL SYSTEMS',
+                        'icon': '🔌',
+                        'points': '7/9 ⚠️',
+                        'status': '78% Complete',
+                        'severity': 'Minor',
+                        'cost': '£600',
+                        'damageLevel': 'Minor',
+                        'estimatedCost': '£600',
+                        'componentCount': 9
+                    },
+                    {
+                        'id': 'safety',
+                        'name': 'SAFETY SYSTEMS',
+                        'icon': '🛡️',
+                        'points': '6/6 ✓',
+                        'status': 'Complete',
+                        'severity': 'None',
+                        'cost': '£0',
+                        'damageLevel': 'None',
+                        'estimatedCost': '£0',
+                        'componentCount': 6
+                    },
+                    {
+                        'id': 'structural',
+                        'name': 'FRAME & STRUCTURAL',
+                        'icon': '🏗️',
+                        'points': '4/6 ⚠️',
+                        'status': '67% Complete',
+                        'severity': 'Moderate',
+                        'cost': '£3,000',
+                        'damageLevel': 'Moderate',
+                        'estimatedCost': '£3,000',
+                        'componentCount': 6
+                    },
+                    {
+                        'id': 'fluids',
+                        'name': 'FLUID SYSTEMS',
+                        'icon': '💧',
+                        'points': '6/6 ✓',
+                        'status': 'Complete',
+                        'severity': 'None',
+                        'cost': '£0',
+                        'damageLevel': 'None',
+                        'estimatedCost': '£0',
+                        'componentCount': 6
+                    }
+                ]
+            }
+        }
+        
+        # Return default data if claim not found
+        return assessments.get(claim_id, {
+            'claim_id': claim_id,
+            'customer_name': 'Unknown Customer',
+            'vehicle': 'Unknown Vehicle',
+            'vin': 'Unknown VIN',
+            'incident_date': 'Unknown Date',
+            'claim_value': '£0',
+            'status': 'Unknown',
+            'damage_type': 'Unknown',
+            'assessment_progress': 0,
+            'estimated_repair_cost': '£0',
+            'assessor': 'Unassigned',
+            'location': 'Unknown Location',
+            'incident_description': 'No description available.',
+            'sections': []
+        })
 
 # API ViewSets
 class MaintenanceScheduleViewSet(viewsets.ModelViewSet):
@@ -749,3 +1018,206 @@ def insurance_dashboard_view(request):
     }
     
     return render(request, 'dashboard/insurance_dashboard.html', context)
+
+
+class AssessmentSectionDetailView(TemplateView):
+    """
+    View for detailed assessment section breakdown
+    """
+    template_name = 'dashboard/insurance_assessment_section_detail.html'
+    
+    def get_context_data(self, **kwargs):
+        import json
+        context = super().get_context_data(**kwargs)
+        claim_id = kwargs.get('claim_id')
+        section_id = kwargs.get('section_id')
+        
+        # Mock data for section details - in production this would come from database
+        section_data = self.get_section_data(section_id, claim_id)
+        
+        context.update({
+            'claim_id': claim_id,
+            'section_id': section_id,
+            'section_data': json.dumps(section_data),
+        })
+        
+        return context
+    
+    def get_section_data(self, section_id, claim_id):
+        """
+        Get detailed data for a specific assessment section
+        In production, this would query the database
+        """
+        sections_data = {
+            'exterior': {
+                'name': 'EXTERIOR DAMAGE',
+                'icon': '🚗',
+                'status': 'Complete',
+                'damage_level': 'Major',
+                'estimated_cost': '£10,000',
+                'component_count': 12,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Front Bumper', 'status': 'Damaged', 'cost': '£850', 'severity': 'Major'},
+                    {'name': 'Hood', 'status': 'Damaged', 'cost': '£1,200', 'severity': 'Severe'},
+                    {'name': 'Front Left Fender', 'status': 'Damaged', 'cost': '£650', 'severity': 'Major'},
+                    {'name': 'Front Right Fender', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Driver Side Door', 'status': 'Damaged', 'cost': '£900', 'severity': 'Major'},
+                    {'name': 'Passenger Side Door', 'status': 'Scratched', 'cost': '£300', 'severity': 'Minor'},
+                    {'name': 'Rear Bumper', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Trunk/Boot', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Roof', 'status': 'Dented', 'cost': '£1,500', 'severity': 'Moderate'},
+                    {'name': 'Side Mirrors', 'status': 'Damaged', 'cost': '£400', 'severity': 'Major'},
+                    {'name': 'Headlights', 'status': 'Cracked', 'cost': '£800', 'severity': 'Major'},
+                    {'name': 'Taillights', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            },
+            'wheels': {
+                'name': 'WHEELS & TIRES',
+                'icon': '🛞',
+                'status': 'Complete',
+                'damage_level': 'Moderate',
+                'estimated_cost': '£2,000',
+                'component_count': 8,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Front Left Tire', 'status': 'Damaged', 'cost': '£150', 'severity': 'Major'},
+                    {'name': 'Front Right Tire', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Rear Left Tire', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Rear Right Tire', 'status': 'Worn', 'cost': '£120', 'severity': 'Minor'},
+                    {'name': 'Front Left Wheel', 'status': 'Damaged', 'cost': '£450', 'severity': 'Major'},
+                    {'name': 'Front Right Wheel', 'status': 'Scratched', 'cost': '£200', 'severity': 'Minor'},
+                    {'name': 'Rear Left Wheel', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Rear Right Wheel', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            },
+            'interior': {
+                'name': 'INTERIOR DAMAGE',
+                'icon': '🪑',
+                'status': 'Complete',
+                'damage_level': 'Minor',
+                'estimated_cost': '£1,500',
+                'component_count': 10,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Driver Seat', 'status': 'Torn', 'cost': '£400', 'severity': 'Moderate'},
+                    {'name': 'Passenger Seat', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Rear Seats', 'status': 'Stained', 'cost': '£200', 'severity': 'Minor'},
+                    {'name': 'Dashboard', 'status': 'Cracked', 'cost': '£600', 'severity': 'Major'},
+                    {'name': 'Steering Wheel', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Center Console', 'status': 'Scratched', 'cost': '£150', 'severity': 'Minor'},
+                    {'name': 'Door Panels', 'status': 'Scuffed', 'cost': '£100', 'severity': 'Minor'},
+                    {'name': 'Carpet/Flooring', 'status': 'Stained', 'cost': '£50', 'severity': 'Minor'},
+                    {'name': 'Headliner', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Airbags', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            },
+            'mechanical': {
+                'name': 'MECHANICAL SYSTEMS',
+                'icon': '⚙️',
+                'status': '90% Complete',
+                'damage_level': 'Minor',
+                'estimated_cost': '£800',
+                'component_count': 15,
+                'completion_percentage': 90,
+                'components': [
+                    {'name': 'Engine', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Transmission', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Brakes', 'status': 'Worn', 'cost': '£300', 'severity': 'Moderate'},
+                    {'name': 'Suspension', 'status': 'Damaged', 'cost': '£500', 'severity': 'Major'},
+                    {'name': 'Exhaust System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Cooling System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Fuel System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Power Steering', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Air Conditioning', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Clutch', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Drive Belt', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Oil System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Timing Belt', 'status': 'Pending', 'cost': '£0', 'severity': 'Unknown'},
+                    {'name': 'Spark Plugs', 'status': 'Pending', 'cost': '£0', 'severity': 'Unknown'},
+                    {'name': 'Air Filter', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            },
+            'electrical': {
+                'name': 'ELECTRICAL SYSTEMS',
+                'icon': '🔌',
+                'status': 'Complete',
+                'damage_level': 'Moderate',
+                'estimated_cost': '£600',
+                'component_count': 9,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Battery', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Alternator', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Starter Motor', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Wiring Harness', 'status': 'Damaged', 'cost': '£400', 'severity': 'Major'},
+                    {'name': 'Fuses', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'ECU/PCM', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Ignition System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Lighting System', 'status': 'Damaged', 'cost': '£200', 'severity': 'Moderate'},
+                    {'name': 'Audio System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            },
+            'safety': {
+                'name': 'SAFETY SYSTEMS',
+                'icon': '🛡️',
+                'status': 'Complete',
+                'damage_level': 'Major',
+                'estimated_cost': '£1,200',
+                'component_count': 6,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Airbag System', 'status': 'Deployed', 'cost': '£800', 'severity': 'Severe'},
+                    {'name': 'Seatbelts', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'ABS System', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Stability Control', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Parking Sensors', 'status': 'Damaged', 'cost': '£300', 'severity': 'Moderate'},
+                    {'name': 'Backup Camera', 'status': 'Damaged', 'cost': '£100', 'severity': 'Minor'},
+                ]
+            },
+            'structural': {
+                'name': 'FRAME & STRUCTURAL',
+                'icon': '🏗️',
+                'status': 'Complete',
+                'damage_level': 'Severe',
+                'estimated_cost': '£5,000',
+                'component_count': 6,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Frame/Chassis', 'status': 'Bent', 'cost': '£3,000', 'severity': 'Severe'},
+                    {'name': 'A-Pillar', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'B-Pillar', 'status': 'Damaged', 'cost': '£1,200', 'severity': 'Major'},
+                    {'name': 'C-Pillar', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Roof Structure', 'status': 'Dented', 'cost': '£600', 'severity': 'Moderate'},
+                    {'name': 'Floor Pan', 'status': 'Damaged', 'cost': '£200', 'severity': 'Minor'},
+                ]
+            },
+            'fluids': {
+                'name': 'FLUID SYSTEMS',
+                'icon': '💧',
+                'status': 'Complete',
+                'damage_level': 'Minor',
+                'estimated_cost': '£150',
+                'component_count': 6,
+                'completion_percentage': 100,
+                'components': [
+                    {'name': 'Engine Oil', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Coolant', 'status': 'Low', 'cost': '£50', 'severity': 'Minor'},
+                    {'name': 'Brake Fluid', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Power Steering Fluid', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                    {'name': 'Transmission Fluid', 'status': 'Dirty', 'cost': '£100', 'severity': 'Minor'},
+                    {'name': 'Windshield Washer Fluid', 'status': 'Good', 'cost': '£0', 'severity': 'None'},
+                ]
+            }
+        }
+        
+        return sections_data.get(section_id, {
+            'name': 'UNKNOWN SECTION',
+            'icon': '❓',
+            'status': 'Unknown',
+            'damage_level': 'Unknown',
+            'estimated_cost': '£0',
+            'component_count': 0,
+            'completion_percentage': 0,
+            'components': []
+        })
