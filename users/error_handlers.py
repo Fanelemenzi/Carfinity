@@ -24,8 +24,6 @@ class ErrorType:
     """Constants for different error types"""
     NO_AUTHENTICATION = 'no_authentication'
     NO_GROUPS = 'no_groups'
-    NO_ORGANIZATION = 'no_organization'
-    GROUP_ORG_MISMATCH = 'group_org_mismatch'
     ACCESS_DENIED = 'access_denied'
     INVALID_PERMISSIONS = 'invalid_permissions'
     SYSTEM_ERROR = 'system_error'
@@ -96,24 +94,6 @@ class ErrorMessageGenerator:
                 'Contact your administrator to assign you to the appropriate group',
                 'If you believe this is an error, please contact support',
                 'Check if your account setup is complete'
-            ]
-        },
-        ErrorType.NO_ORGANIZATION: {
-            'title': 'No Organization Assignment',
-            'message': 'Your account is not associated with any organization.',
-            'suggestions': [
-                'Contact your administrator to assign you to an organization',
-                'Complete your profile setup if you haven\'t already',
-                'Verify your organization membership with your administrator'
-            ]
-        },
-        ErrorType.GROUP_ORG_MISMATCH: {
-            'title': 'Permission Configuration Issue',
-            'message': 'There\'s a mismatch between your group assignment and organization type.',
-            'suggestions': [
-                'Contact your administrator to resolve the permission conflict',
-                'This issue has been logged and will be reviewed',
-                'You may have limited access until this is resolved'
             ]
         },
         ErrorType.ACCESS_DENIED: {
@@ -220,7 +200,6 @@ class AuthenticationErrorHandler:
             'requested_path': request.path,
             'can_retry': error_type in [ErrorType.SYSTEM_ERROR, ErrorType.SESSION_EXPIRED],
             'show_login_button': not (user and user.is_authenticated),
-            'show_contact_admin': error_type in [ErrorType.NO_GROUPS, ErrorType.NO_ORGANIZATION, ErrorType.GROUP_ORG_MISMATCH],
         })
         
         # Return appropriate response
@@ -254,23 +233,6 @@ class AuthenticationErrorHandler:
         return render(request, 'errors/system_error.html', context, status=500)
     
     @staticmethod
-    def handle_permission_conflict(request, user: User, groups: List[str], 
-                                 org_type: str, conflict_details: str) -> HttpResponse:
-        """Handle permission conflicts between groups and organization"""
-        # Log the conflict
-        SecurityEventLogger.log_permission_conflict(user, groups, org_type, conflict_details)
-        
-        # Generate custom message
-        custom_message = (
-            f"Your group assignments ({', '.join(groups)}) don't match your organization type ({org_type}). "
-            f"This has been logged for administrator review."
-        )
-        
-        return AuthenticationErrorHandler.handle_access_denied(
-            request, ErrorType.GROUP_ORG_MISMATCH, custom_message, log_event=False
-        )
-    
-    @staticmethod
     def _get_client_ip(request) -> str:
         """Get client IP address from request"""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -280,10 +242,6 @@ class AuthenticationErrorHandler:
             ip = request.META.get('REMOTE_ADDR')
         return ip or 'unknown'
 
-
-class UserGuidanceProvider:
-    """Provides guidance for users with specific permission issues"""
-    
     @staticmethod
     def get_guidance_for_user(user: User) -> Dict:
         """Get specific guidance based on user's current state"""

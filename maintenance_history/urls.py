@@ -1,10 +1,23 @@
 from django.urls import path
 from . import views
 from . import api_views
+from . import dashboard_views
 
 app_name = 'maintenance_history'
 
 urlpatterns = [
+    # AutoCare Dashboard URLs (matching AutoAssess pattern)
+    path('maintenance/dashboard/', 
+         dashboard_views.AutoCareDashboardView.as_view(), 
+         name='autocare_dashboard'),
+    path('maintenance/detail/<str:maintenance_id>/', 
+         dashboard_views.MaintenanceDetailView.as_view(), 
+         name='maintenance_detail'),
+    path('maintenance/booking/', 
+         dashboard_views.BookMaintenanceView.as_view(), 
+         name='book_maintenance'),
+    
+    # Legacy technician dashboard (keep for backward compatibility)
     path('technician-dashboard/', 
          views.TechnicianDashboardView.as_view(), 
          name='technician_dashboard'),

@@ -16,11 +16,49 @@ from django.views.generic.edit import CreateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 from django.http import HttpResponseForbidden
-from .permissions import require_group, require_organization_type, require_any_group, require_dashboard_access, check_permission_conflicts
+from django.contrib.auth.decorators import user_passes_test
+from .services import AuthenticationService
+
+# Helper decorators for 3-group authentication system
+def require_staff(view_func):
+    """Decorator to require Staff group membership"""
+    def check_staff(user):
+        return AuthenticationService.check_group_access(user, 'Staff')
+    return user_passes_test(check_staff)(view_func)
+
+def require_autocare(view_func):
+    """Decorator to require AutoCare group membership"""
+    def check_autocare(user):
+        return AuthenticationService.check_group_access(user, 'AutoCare')
+    return user_passes_test(check_autocare)(view_func)
+
+def require_autoassess(view_func):
+    """Decorator to require AutoAssess group membership"""
+    def check_autoassess(user):
+        return AuthenticationService.check_group_access(user, 'AutoAssess')
+    return user_passes_test(check_autoassess)(view_func)
+
+def require_any_group_simple(groups):
+    """Decorator to require membership in any of the specified groups"""
+    def decorator(view_func):
+        def check_groups(user):
+            for group in groups:
+                if AuthenticationService.check_group_access(user, group):
+                    return True
+            return False
+        return user_passes_test(check_groups)(view_func)
+    return decorator
 
 # Create your views here.
 
 def home(request):
+    """
+    Home/Landing page view.
+    Redirects authenticated users to dashboard, shows landing page to unauthenticated users.
+    """
+    if request.user.is_authenticated:
+        # Redirect authenticated users to dashboard
+        return redirect('dashboard')
     return render(request, 'public/index.html', {})
 
 def about(request):
@@ -74,8 +112,8 @@ def login_user(request):
                 
                 # Convert URL to view name if needed for Django redirect
                 if redirect_url.startswith('/'):
-                    # Use the helper function to convert URL to view name
-                    redirect_target = get_post_login_redirect(user)
+                    # Convert URL to view name for Django redirect using the calculated URL
+                    redirect_target = get_post_login_redirect(user, redirect_url)
                 else:
                     redirect_target = redirect_url
                 
@@ -107,316 +145,45 @@ def logout_user(request):
 
 def dashboard(request):
     """
-    Smart dashboard view that handles authentication and routing at the template level.
-    This approach is more flexible and handles edge cases better.
+    Dashboard view that redirects users to their appropriate dashboard based on group membership.
+    Matches the AutoAssess implementation pattern.
     """
     import logging
+    from django.shortcuts import redirect
     logger = logging.getLogger(__name__)
-    
-    # Always render the smart dashboard template - it will handle authentication logic
-    context = {}
-    
-    # If user is authenticated, get their data for the customer dashboard
+
+    logger.info(f"Dashboard access - User: {request.user.id if request.user.is_authenticated else 'Anonymous'}")
+
+    # Use AuthenticationService to determine dashboard access
     if request.user.is_authenticated:
         try:
-            context = render_customer_dashboard_context(request)
-        except Exception as e:
-            logger.error(f"Error getting dashboard context for user {request.user.id}: {str(e)}")
-            # Continue with empty context - template will handle the error
-    
-    return render(request, 'dashboard/smart_dashboard.html', context)
+            permissions = AuthenticationService.get_user_permissions(request.user)
+            logger.info(f"User permissions: {permissions}")
 
-
-def render_customer_dashboard_context(request):
-    """
-    Get the context data for the customer dashboard.
-    """
-    from django.db.models import Count, Sum, Avg, Q
-    from django.utils import timezone
-    from datetime import datetime, timedelta
-    from maintenance.models import ScheduledMaintenance, Part
-    from maintenance_history.models import Inspection, MaintenanceRecord, PartUsage
-    from decimal import Decimal
-    import logging
-    
-    logger = logging.getLogger(__name__)
-    
-    # Initialize default values
-    owned_vehicles = []
-    scheduled_maintenance = []
-    inspections = []
-    selected_vehicle = None
-    
-    # Initialize onboarding variables
-    onboarding_completed = False
-    user_onboarding = None
-    
-    # Initialize dashboard metrics
-    dashboard_metrics = {
-        'total_vehicles': 0,
-        'upcoming_maintenance': 0,
-        'overdue_maintenance': 0,
-        'average_health': 0,
-        'monthly_cost': 0,
-    }
-    
-    vehicle_health_data = []
-    upcoming_maintenance_data = []
-    recent_inspections = []
-    recent_maintenance = []
-    low_stock_parts = []
-    
-    # Error handling context
-    error_context = {
-        'has_errors': False,
-        'error_messages': [],
-        'warning_messages': []
-    }
-    
-    if request.user.is_authenticated:
-        # Check if user has completed onboarding
-        from onboarding.models import CustomerOnboarding
-        try:
-            user_onboarding = CustomerOnboarding.objects.get(user=request.user)
-            onboarding_completed = True
-        except CustomerOnboarding.DoesNotExist:
-            user_onboarding = None
-            onboarding_completed = False
-            error_context['warning_messages'].append("Complete your onboarding to access all dashboard features.")
-        except Exception as e:
-            logger.error(f"Error checking onboarding status for user {request.user.id}: {str(e)}")
-            error_context['warning_messages'].append("Unable to verify onboarding status. Some features may be limited.")
-        
-        # Get user's vehicles with error handling
-        try:
-            owned_vehicles = VehicleOwnership.objects.filter(
-                user=request.user, 
-                is_current_owner=True
-            ).select_related('vehicle')
+            # Check if user has AutoCare dashboard access
+            if 'autocare' in permissions.available_dashboards:
+                logger.info(f"AutoCare user {request.user.id} ({request.user.username}) redirecting to AutoCare dashboard")
+                return redirect('maintenance_history:autocare_dashboard')
             
-            user_vehicles = [ownership.vehicle for ownership in owned_vehicles]
+            # Check if user has AutoAssess dashboard access
+            elif 'autoassess' in permissions.available_dashboards:
+                logger.info(f"AutoAssess user {request.user.id} ({request.user.username}) redirecting to AutoAssess dashboard")
+                return redirect('insurance_app:assessment_dashboard')
             
-            if not user_vehicles:
-                error_context['warning_messages'].append("No vehicles found. Add a vehicle to see dashboard data.")
-                
+            # Staff users get redirected to admin or smart dashboard
+            elif 'staff' in permissions.available_dashboards:
+                logger.info(f"Staff user {request.user.id} ({request.user.username}) using smart dashboard")
+                return render(request, 'dashboard/smart_dashboard.html', {})
+
         except Exception as e:
-            logger.error(f"Error retrieving vehicles for user {request.user.id}: {str(e)}")
-            error_context['has_errors'] = True
-            error_context['error_messages'].append("Unable to load vehicle data. Please try again later.")
-            user_vehicles = []
-        
-        # Calculate Key Metrics with error handling
-        try:
-            dashboard_metrics['total_vehicles'] = len(user_vehicles)
-            
-            if user_vehicles:
-                # Get current date for calculations
-                today = timezone.now().date()
-                thirty_days_from_now = today + timedelta(days=30)
-                current_month_start = today.replace(day=1)
-                
-                # Upcoming and Overdue Maintenance
-                all_scheduled = ScheduledMaintenance.objects.filter(
-                    assigned_plan__vehicle__in=user_vehicles,
-                    status__in=['PENDING', 'OVERDUE']
-                )
-                
-                upcoming_count = all_scheduled.filter(
-                    due_date__lte=thirty_days_from_now,
-                    due_date__gte=today
-                ).count()
-                
-                overdue_count = all_scheduled.filter(
-                    due_date__lt=today
-                ).count()
-                
-                dashboard_metrics['upcoming_maintenance'] = upcoming_count
-                dashboard_metrics['overdue_maintenance'] = overdue_count
-                
-                # Update overdue status
-                all_scheduled.filter(due_date__lt=today).update(status='OVERDUE')
-                
-                # Average Vehicle Health (from latest inspections)
-                health_scores = []
-                for vehicle in user_vehicles:
-                    latest_inspection = Inspection.objects.filter(
-                        vehicle=vehicle
-                    ).order_by('-inspection_date').first()
-                    
-                    if latest_inspection and latest_inspection.vehicle_health_index:
-                        try:
-                            # Extract numeric value from health index string
-                            health_str = latest_inspection.vehicle_health_index
-                            if '%' in health_str:
-                                health_value = float(health_str.replace('%', ''))
-                            elif 'Excellent' in health_str:
-                                health_value = 95.0
-                            elif 'Good' in health_str:
-                                health_value = 80.0
-                            elif 'Fair' in health_str:
-                                health_value = 65.0
-                            elif 'Poor' in health_str:
-                                health_value = 40.0
-                            else:
-                                # Try to extract number from string
-                                import re
-                                numbers = re.findall(r'\d+\.?\d*', health_str)
-                                health_value = float(numbers[0]) if numbers else 75.0
-                            
-                            health_scores.append(health_value)
-                            
-                            # Add to vehicle health data
-                            vehicle_health_data.append({
-                                'vehicle': vehicle,
-                                'health_score': health_value,
-                                'health_category': get_health_category(health_value),
-                                'last_inspection': latest_inspection.inspection_date,
-                            })
-                        except (ValueError, AttributeError):
-                            # Default health score if parsing fails
-                            health_scores.append(75.0)
-                            vehicle_health_data.append({
-                                'vehicle': vehicle,
-                                'health_score': 75.0,
-                                'health_category': 'Good',
-                                'last_inspection': latest_inspection.inspection_date if latest_inspection else None,
-                            })
-                    else:
-                        # No inspection data available
-                        vehicle_health_data.append({
-                            'vehicle': vehicle,
-                            'health_score': None,
-                            'health_category': 'No Data',
-                            'last_inspection': None,
-                        })
-                
-                if health_scores:
-                    dashboard_metrics['average_health'] = round(sum(health_scores) / len(health_scores), 1)
-                
-                # Monthly Maintenance Cost
-                current_month_maintenance = MaintenanceRecord.objects.filter(
-                    vehicle__in=user_vehicles,
-                    date_performed__gte=current_month_start
-                )
-                
-                # Calculate total cost from parts used
-                monthly_cost = 0
-                for record in current_month_maintenance:
-                    parts_cost = PartUsage.objects.filter(
-                        maintenance_record=record,
-                        unit_cost__isnull=False
-                    ).aggregate(
-                        total=Sum('unit_cost')
-                    )['total'] or 0
-                    monthly_cost += float(parts_cost)
-                
-                dashboard_metrics['monthly_cost'] = round(monthly_cost, 2)
-                
-                # Get Upcoming Maintenance Data (next 30 days)
-                upcoming_maintenance_data = ScheduledMaintenance.objects.filter(
-                    assigned_plan__vehicle__in=user_vehicles,
-                    due_date__lte=thirty_days_from_now,
-                    status__in=['PENDING', 'OVERDUE']
-                ).select_related(
-                    'assigned_plan__vehicle',
-                    'task'
-                ).order_by('due_date')[:10]  # Limit to 10 most urgent
-                
-                # Get Recent Inspections
-                recent_inspections = Inspection.objects.filter(
-                    vehicle__in=user_vehicles
-                ).select_related('vehicle').order_by('-inspection_date')[:5]
-                
-                # Get Recent Maintenance Records
-                recent_maintenance = MaintenanceRecord.objects.filter(
-                    vehicle__in=user_vehicles
-                ).select_related(
-                    'vehicle', 'technician'
-                ).prefetch_related(
-                    'parts_used__part'
-                ).order_by('-date_performed')[:5]
-                
-                # Get Low Stock Parts (if user has access to parts inventory)
-                try:
-                    low_stock_parts = Part.objects.filter(
-                        stock_quantity__lte=models.F('minimum_stock_level')
-                    ).order_by('stock_quantity')[:5]
-                except Exception as e:
-                    logger.warning(f"Error retrieving low stock parts for user {request.user.id}: {str(e)}")
-                    low_stock_parts = []
-                
-        except Exception as e:
-            logger.error(f"Error calculating dashboard metrics for user {request.user.id}: {str(e)}")
-            error_context['has_errors'] = True
-            error_context['error_messages'].append("Unable to calculate dashboard metrics. Please try again later.")
-        
-        # Handle vehicle selection for detailed view with error handling
-        vehicle_id = request.GET.get('vehicle_id')
-        if vehicle_id:
-            try:
-                selected_vehicle = Vehicle.objects.get(id=vehicle_id)
-                # Verify user owns this vehicle
-                if not VehicleOwnership.objects.filter(user=request.user, vehicle=selected_vehicle, is_current_owner=True).exists():
-                    messages.error(request, "You don't have access to view details for this vehicle.")
-                    selected_vehicle = None
-                else:
-                    # Scheduled Maintenance for selected vehicle
-                    scheduled_maintenance = ScheduledMaintenance.objects.filter(
-                        assigned_plan__vehicle=selected_vehicle
-                    ).select_related('task').order_by('due_date')
-                    
-                    # Inspections for selected vehicle
-                    inspections = Inspection.objects.filter(
-                        vehicle=selected_vehicle
-                    ).order_by('-inspection_date')
-            except Vehicle.DoesNotExist:
-                messages.error(request, "The selected vehicle was not found.")
-                selected_vehicle = None
-            except Exception as e:
-                logger.error(f"Error loading vehicle details for user {request.user.id}, vehicle {vehicle_id}: {str(e)}")
-                messages.error(request, "Unable to load vehicle details. Please try again.")
-                selected_vehicle = None
-    else:
-        # User is not authenticated - set default values
-        onboarding_completed = False
-        user_onboarding = None
-    
-    # Add error context to messages if there are any
-    if error_context['has_errors']:
-        for error_msg in error_context['error_messages']:
-            messages.error(request, error_msg)
-    
-    if error_context['warning_messages']:
-        for warning_msg in error_context['warning_messages']:
-            messages.warning(request, warning_msg)
-    
-    return {
-        'owned_vehicles': owned_vehicles,
-        'scheduled_maintenance': scheduled_maintenance,
-        'inspections': inspections,
-        'selected_vehicle': selected_vehicle,
-        'dashboard_metrics': dashboard_metrics,
-        'vehicle_health_data': vehicle_health_data,
-        'upcoming_maintenance_data': upcoming_maintenance_data,
-        'recent_inspections': recent_inspections,
-        'recent_maintenance': recent_maintenance,
-        'low_stock_parts': low_stock_parts,
-        'onboarding_completed': onboarding_completed,
-        'user_onboarding': user_onboarding,
-        'error_context': error_context,
-    }
+            logger.error(f"Error getting user permissions for dashboard: {str(e)}")
+
+    # For unauthenticated users or users without specific group access, use smart dashboard
+    logger.info(f"User accessing smart dashboard")
+    return render(request, 'dashboard/smart_dashboard.html', {})
 
 
-def get_health_category(health_score):
-    """Convert health score to category"""
-    if health_score >= 90:
-        return 'Excellent'
-    elif health_score >= 75:
-        return 'Good'
-    elif health_score >= 60:
-        return 'Fair'
-    else:
-        return 'Needs Attention'
+# Removed render_customer_dashboard_context function - no longer needed with simplified dashboard routing
 
 def login_dashboard(request):
     return render(request, 'dashboard/login_dashboard.html', {})
@@ -627,7 +394,7 @@ def check_onboarding_status(request):
         return redirect('customer_vehicle_survey')
 
 
-def get_post_login_redirect(user):
+def get_post_login_redirect(user, redirect_url=None):
     """
     Determine the appropriate redirect URL after login based on user groups and organization.
     Uses the DashboardRouter for intelligent routing logic.
@@ -636,13 +403,25 @@ def get_post_login_redirect(user):
     """
     from .services import DashboardRouter
     
+    # If redirect_url is provided, use it directly for URL-to-view conversion
+    if redirect_url:
+        return _convert_url_to_view_name(redirect_url)
+    
     # Use the new DashboardRouter for intelligent routing
     redirect_url = DashboardRouter.get_post_login_redirect(user)
     
     # Convert absolute URLs to view names for Django redirect compatibility
+    return _convert_url_to_view_name(redirect_url)
+
+
+def _convert_url_to_view_name(redirect_url):
+    """
+    Convert absolute URL to Django view name for redirect compatibility.
+    """
     url_to_view_mapping = {
         '/dashboard/': 'dashboard',
-        '/insurance-dashboard/': 'insurance:insurance_dashboard',
+        '/maintenance/dashboard/': 'maintenance_history:autocare_dashboard',
+        '/insurance/': 'insurance:insurance_dashboard',
         '/dashboard-selector/': 'dashboard_selector',
         '/access-denied/': 'access_denied',
         '/': 'home'
@@ -654,7 +433,7 @@ def get_post_login_redirect(user):
     
     # Check for URL patterns with query parameters
     for url_pattern, view_name in url_to_view_mapping.items():
-        if redirect_url.startswith(url_pattern):
+        if redirect_url.startswith(url_pattern) and redirect_url != '/':
             return view_name
     
     # If no mapping found, return the URL as-is
@@ -663,41 +442,34 @@ def get_post_login_redirect(user):
 
 def access_denied(request):
     """
-    View for handling access denied scenarios.
-    Uses the new error handling system for consistent user feedback.
+    Simplified access denied view for 3-group authentication system.
     """
-    from .error_handlers import AuthenticationErrorHandler, ErrorType
+    context = {
+        'error_type': 'access_denied',
+        'error_message': 'You do not have permission to access this resource.',
+        'user_authenticated': request.user.is_authenticated,
+        'user_groups': [],
+        'available_dashboards': []
+    }
     
-    # Determine the specific error type
-    if not request.user.is_authenticated:
-        return AuthenticationErrorHandler.handle_access_denied(
-            request, ErrorType.NO_AUTHENTICATION
-        )
+    if request.user.is_authenticated:
+        # Get user's groups and available dashboards
+        permissions = AuthenticationService.get_user_permissions(request.user)
+        context.update({
+            'user_groups': permissions.groups,
+            'available_dashboards': permissions.available_dashboards,
+            'has_access': permissions.has_access
+        })
+        
+        # Determine specific error message
+        if not permissions.groups:
+            context['error_message'] = 'You are not assigned to any groups. Please contact an administrator.'
+        elif not permissions.has_access:
+            context['error_message'] = 'You do not have access to any dashboards. Please contact an administrator.'
+    else:
+        context['error_message'] = 'You must be logged in to access this resource.'
     
-    # User is authenticated, check for specific issues
-    user_groups = list(request.user.groups.values_list('name', flat=True))
-    
-    if not user_groups:
-        return AuthenticationErrorHandler.handle_access_denied(
-            request, ErrorType.NO_GROUPS
-        )
-    
-    # Check organization status
-    try:
-        from organizations.models import OrganizationUser
-        org_user = OrganizationUser.objects.filter(user=request.user, is_active=True).first()
-        if not org_user:
-            return AuthenticationErrorHandler.handle_access_denied(
-                request, ErrorType.NO_ORGANIZATION
-            )
-    except ImportError:
-        # Organization app not available, continue with generic access denied
-        pass
-    
-    # Generic access denied
-    return AuthenticationErrorHandler.handle_access_denied(
-        request, ErrorType.ACCESS_DENIED
-    )
+    return render(request, 'errors/access_denied.html', context)
 
 
 def no_groups_error(request):
@@ -722,8 +494,7 @@ def system_error(request):
     return AuthenticationErrorHandler.handle_system_error(request)
 
 
-@require_any_group(['customers', 'insurance_company'])
-@check_permission_conflicts
+@require_any_group_simple(['Staff', 'AutoCare', 'AutoAssess'])
 def dashboard_selector(request):
     """
     View for users who have access to multiple dashboards.
@@ -764,39 +535,16 @@ def dashboard_selector(request):
                 messages.error(request, "Dashboard configuration error. Please contact support.")
                 return redirect('access_denied')
         
-        # Get available dashboards using DashboardRouter
-        try:
-            available_dashboards = DashboardRouter.get_available_dashboards(request.user)
-        except Exception as e:
-            logger.error(f"Error getting available dashboards for user {request.user.id}: {str(e)}")
-            messages.error(request, "Unable to load dashboard options. Please try again later.")
-            return redirect('access_denied')
+        # Prepare dashboard options for template using simplified system
+        from .services import get_available_dashboards
+        dashboard_options = get_available_dashboards(request.user)
         
-        # Prepare dashboard options for template
-        dashboard_options = []
-        for dashboard_info in available_dashboards:
-            dashboard_options.append({
-                'name': dashboard_info.name,
-                'display_name': dashboard_info.display_name,
-                'url': dashboard_info.url,
-                'description': f'Access your {dashboard_info.display_name.lower()} features',
-                'required_groups': dashboard_info.required_groups,
-                'required_org_types': dashboard_info.required_org_types
-            })
-        
-        # Get conflict resolution information
-        try:
-            conflict_resolution = DashboardRouter.resolve_dashboard_conflicts(request.user)
-            default_dashboard = DashboardRouter.get_default_dashboard(request.user)
-        except Exception as e:
-            logger.warning(f"Error getting conflict resolution for user {request.user.id}: {str(e)}")
-            conflict_resolution = None
-            default_dashboard = None
+        # Get default dashboard
+        default_dashboard = permissions.default_dashboard
         
         context = {
             'dashboard_options': dashboard_options,
             'user_permissions': permissions,
-            'conflict_resolution': conflict_resolution,
             'default_dashboard': default_dashboard
         }
         
@@ -808,8 +556,7 @@ def dashboard_selector(request):
         return redirect('access_denied')
 
 
-@require_any_group(['customers', 'insurance_company'])
-@check_permission_conflicts
+@require_any_group_simple(['Staff', 'AutoCare', 'AutoAssess'])
 def switch_dashboard(request, dashboard_name):
     """
     View for switching between dashboards for multi-access users.
@@ -826,15 +573,9 @@ def switch_dashboard(request, dashboard_name):
             messages.error(request, "Invalid dashboard name provided.")
             return redirect('dashboard_selector')
         
-        # Validate that user has access to the requested dashboard
-        try:
-            has_access = DashboardRouter.validate_dashboard_access(request.user, dashboard_name)
-        except Exception as e:
-            logger.error(f"Error validating dashboard access for user {request.user.id}, dashboard {dashboard_name}: {str(e)}")
-            messages.error(request, "Unable to validate dashboard access. Please try again.")
-            return redirect('dashboard_selector')
-        
-        if not has_access:
+        # Validate that user has access to the requested dashboard using simplified system
+        permissions = AuthenticationService.get_user_permissions(request.user)
+        if dashboard_name not in permissions.available_dashboards:
             logger.warning(f"User {request.user.id} attempted to access unauthorized dashboard: {dashboard_name}")
             messages.error(request, f"You don't have access to the {dashboard_name} dashboard.")
             return redirect('access_denied')
@@ -856,7 +597,7 @@ def switch_dashboard(request, dashboard_name):
         return redirect('dashboard_selector')
 
 
-@require_any_group(['customers', 'insurance_company'])
+@require_any_group_simple(['Staff', 'AutoCare', 'AutoAssess'])
 def dashboard_switch_api(request):
     """
     API endpoint for getting dashboard switching options.

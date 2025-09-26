@@ -3,8 +3,8 @@
 {% load dashboard_extras %}
 
 {% comment %}
-Get user's dashboard configuration from Authentication Group Management
-This replaces hardcoded group checks with dynamic configuration
+Get user's dashboard configuration from 3-Group Authentication System
+This uses the simplified Staff, AutoCare, AutoAssess group system
 {% endcomment %}
 {% get_user_dashboard_access user as dashboard_access %}
 
@@ -76,8 +76,8 @@ This replaces hardcoded group checks with dynamic configuration
         </div>
 
         {% else %}
-        <!-- User has groups - use dynamic dashboard configuration -->
-        {% comment %}Use Authentication Group Management configuration instead of hardcoded checks{% endcomment %}
+        <!-- User has groups - use 3-Group Authentication System -->
+        {% comment %}Use 3-Group Authentication System for dashboard routing{% endcomment %}
 
         {% if not dashboard_access.available_dashboards %}
         <!-- User has groups but no dashboard access configured -->
@@ -90,7 +90,7 @@ This replaces hardcoded group checks with dynamic configuration
             </div>
             <h1 class="text-3xl font-bold text-gray-900 mb-4">Dashboard Configuration Required</h1>
             <p class="text-lg text-gray-600 mb-8">Your groups don't have dashboard access configured in the
-                Authentication Group Management system.</p>
+                3-Group Authentication System.</p>
             <div class="bg-white shadow rounded-lg p-6 mb-8 max-w-md mx-auto">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
                 <div class="space-y-2 text-left">
@@ -107,15 +107,14 @@ This replaces hardcoded group checks with dynamic configuration
                         </span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Organization:</span>
-                        <span class="font-medium">{{ dashboard_access.organization|default:"None" }}</span>
+                        <span class="text-gray-600">Dashboard Access:</span>
+                        <span class="text-orange-600 font-medium">{{ dashboard_access.available_dashboards|length }} dashboard{{ dashboard_access.available_dashboards|pluralize }}</span>
                     </div>
                 </div>
             </div>
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8 max-w-lg mx-auto">
                 <h4 class="font-medium text-blue-900 mb-2">For Administrators:</h4>
-                <p class="text-sm text-blue-800">Configure dashboard access for these groups in the Authentication Group
-                    Management system.</p>
+                <p class="text-sm text-blue-800">Configure dashboard access for these groups in the 3-Group Authentication System. The system supports three groups: Staff, AutoCare, and AutoAssess with automatic dashboard routing.</p>
             </div>
             <div class="space-x-4">
                 <a href="{% url 'contact' %}"
@@ -191,7 +190,7 @@ This replaces hardcoded group checks with dynamic configuration
         {% with single_dashboard=dashboard_access.available_dashboards.0 %}
         {% get_dashboard_info single_dashboard as dashboard_info %}
 
-        {% if single_dashboard == 'customer' %}
+        {% if single_dashboard == 'autocare' %}
         <!-- Show customer dashboard content -->
         {% include 'dashboard/customer_dashboard_content.html' %}
         {% else %}

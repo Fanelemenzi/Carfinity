@@ -1,0 +1,179 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Maintenance Detail - {{ maintenance_data.maintenance_id }} - Carfinity{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center space-x-4">
+          <a href="{% url 'maintenance_history:autocare_dashboard' %}" class="text-gray-600 hover:text-gray-900">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+          </a>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Maintenance Record: {{ maintenance_data.maintenance_id }}</h1>
+            <p class="mt-1 text-sm text-gray-600">{{ maintenance_data.vehicle }} • {{ maintenance_data.customer_name }}</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-3">
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+            {% if maintenance_data.status == 'COMPLETED' %}bg-green-100 text-green-800
+            {% elif maintenance_data.status == 'IN_PROGRESS' %}bg-yellow-100 text-yellow-800
+            {% else %}bg-blue-100 text-blue-800{% endif %}">
+            {{ maintenance_data.status|title }}
+          </span>
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            <i class="fas fa-print mr-2"></i>Print Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-car text-blue-600"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Vehicle</p>
+            <p class="text-lg font-semibold text-gray-900">{{ maintenance_data.vehicle }}</p>
+            <p class="text-xs text-gray-500">{{ maintenance_data.vin }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-calendar text-green-600"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Service Date</p>
+            <p class="text-lg font-semibold text-gray-900">{{ maintenance_data.service_date }}</p>
+            <p class="text-xs text-gray-500">{{ maintenance_data.service_type }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-user text-purple-600"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Technician</p>
+            <p class="text-lg font-semibold text-gray-900">{{ maintenance_data.technician }}</p>
+            <p class="text-xs text-gray-500">{{ maintenance_data.location }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <div class="flex items-center">
+          <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+            <i class="fas fa-pound-sign text-indigo-600"></i>
+          </div>
+          <div class="ml-4">
+            <p class="text-sm font-medium text-gray-500">Total Cost</p>
+            <p class="text-lg font-semibold text-gray-900">{{ maintenance_data.service_value }}</p>
+            <p class="text-xs text-gray-500">Service charges</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Service Progress</h3>
+        <span class="text-sm font-medium text-gray-600">{{ maintenance_data.progress }}% Complete</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: {{ maintenance_data.progress }}%"></div>
+      </div>
+      <p class="mt-2 text-sm text-gray-600">{{ maintenance_data.service_description }}</p>
+    </div>
+
+    <!-- Service Sections -->
+    <div class="bg-white rounded-lg shadow border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fas fa-clipboard-list mr-2 text-blue-600"></i>
+          Service Breakdown
+        </h3>
+      </div>
+      
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {% for section in maintenance_data.sections %}
+          <div class="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center">
+                <span class="text-2xl mr-3">{{ section.icon }}</span>
+                <div>
+                  <h4 class="text-lg font-medium text-gray-900">{{ section.name }}</h4>
+                  <p class="text-sm text-gray-500">{{ section.items_checked }} items checked</p>
+                </div>
+              </div>
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                {% if section.status == 'Complete' %}bg-green-100 text-green-800
+                {% elif section.status == 'In Progress' %}bg-yellow-100 text-yellow-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {{ section.status }}
+              </span>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Cost:</span>
+                <span class="text-sm font-medium text-gray-900">{{ section.cost }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Time Spent:</span>
+                <span class="text-sm font-medium text-gray-900">{{ section.time_spent }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-sm text-gray-600">Items:</span>
+                <span class="text-sm font-medium text-gray-900">{{ section.items_checked }}</span>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mt-8 flex justify-end space-x-4">
+      <button class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+        <i class="fas fa-download mr-2"></i>Download Report
+      </button>
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+        <i class="fas fa-edit mr-2"></i>Edit Record
+      </button>
+      {% if maintenance_data.status != 'COMPLETED' %}
+      <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md text-sm font-medium">
+        <i class="fas fa-check mr-2"></i>Mark Complete
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+// Add any JavaScript for maintenance detail functionality
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Maintenance detail page loaded for: {{ maintenance_data.maintenance_id }}');
+});
+</script>
+
+{% endblock %}

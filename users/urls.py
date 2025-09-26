@@ -18,7 +18,6 @@ urlpatterns = [
     path('check-onboarding/', views.check_onboarding_status, name='check_onboarding_status'),
     path('access-denied/', views.access_denied, name='access_denied'),
     path('no-groups/', views.no_groups_error, name='no_groups_error'),
-    path('no-organization/', views.no_organization_error, name='no_organization_error'),
     path('system-error/', views.system_error, name='system_error'),
     path('dashboard-selector/', views.dashboard_selector, name='dashboard_selector'),
     path('switch-dashboard/<str:dashboard_name>/', views.switch_dashboard, name='switch_dashboard'),

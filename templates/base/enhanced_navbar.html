@@ -1,5 +1,6 @@
 {% load static %}
 {% load dashboard_extras %}
+{% load users.services as auth_utils %}
 
 <nav class="px-10 py-7">
   <div class="relative flex items-center justify-between">
@@ -23,13 +24,17 @@
           {% if dashboard_access.available_dashboards|length == 1 %}
             <!-- Single dashboard access -->
             {% for dashboard in dashboard_access.available_dashboards %}
-              {% if dashboard == 'customer' %}
-                <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">
-                  <i class="fas fa-tachometer-alt mr-2"></i>Dashboard
+              {% if dashboard == 'staff' %}
+                <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="/admin/">
+                  <i class="fas fa-cog mr-2"></i>Staff Dashboard
                 </a>
-              {% elif dashboard == 'insurance' %}
+              {% elif dashboard == 'autocare' %}
+                <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">
+                  <i class="fas fa-tachometer-alt mr-2"></i>AutoCare Dashboard
+                </a>
+              {% elif dashboard == 'autoassess' %}
                 <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'insurance:insurance_dashboard' %}">
-                  <i class="fas fa-shield-alt mr-2"></i>Insurance Dashboard
+                  <i class="fas fa-shield-alt mr-2"></i>AutoAssess Dashboard
                 </a>
               {% endif %}
             {% endfor %}
@@ -60,19 +65,27 @@
                 
                 <div class="py-2">
                   {% for dashboard in dashboard_access.available_dashboards %}
-                    {% if dashboard == 'customer' %}
+                    {% if dashboard == 'staff' %}
+                      <a href="/admin/" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
+                        <i class="fas fa-cog mr-3 w-4 text-blue-600"></i>
+                        <div>
+                          <p class="font-medium">Staff Dashboard</p>
+                          <p class="text-xs text-gray-500">Administrative access</p>
+                        </div>
+                      </a>
+                    {% elif dashboard == 'autocare' %}
                       <a href="{% url 'dashboard' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
                         <i class="fas fa-tachometer-alt mr-3 w-4 text-blue-600"></i>
                         <div>
-                          <p class="font-medium">Customer Dashboard</p>
-                          <p class="text-xs text-gray-500">Vehicle management and maintenance</p>
+                          <p class="font-medium">AutoCare Dashboard</p>
+                          <p class="text-xs text-gray-500">Vehicle maintenance and care</p>
                         </div>
                       </a>
-                    {% elif dashboard == 'insurance' %}
+                    {% elif dashboard == 'autoassess' %}
                       <a href="{% url 'insurance:insurance_dashboard' %}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 transition duration-150">
                         <i class="fas fa-shield-alt mr-3 w-4 text-green-600"></i>
                         <div>
-                          <p class="font-medium">Insurance Dashboard</p>
+                          <p class="font-medium">AutoAssess Dashboard</p>
                           <p class="text-xs text-gray-500">Risk assessment and claims</p>
                         </div>
                       </a>
@@ -254,13 +267,17 @@
             <div class="border-t border-gray-200 pt-4">
               <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Dashboards</p>
               {% for dashboard in dashboard_access.available_dashboards %}
-                {% if dashboard == 'customer' %}
-                  <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="{% url 'dashboard' %}">
-                    <i class="fas fa-tachometer-alt mr-2"></i>Customer Dashboard
+                {% if dashboard == 'staff' %}
+                  <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="/admin/">
+                    <i class="fas fa-cog mr-2"></i>Staff Dashboard
                   </a>
-                {% elif dashboard == 'insurance' %}
+                {% elif dashboard == 'autocare' %}
+                  <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="{% url 'dashboard' %}">
+                    <i class="fas fa-tachometer-alt mr-2"></i>AutoCare Dashboard
+                  </a>
+                {% elif dashboard == 'autoassess' %}
                   <a class="inline-block max-w-max text-lg tracking-tight font-medium hover:text-opacity-80 transition duration-200 mb-4" href="{% url 'insurance:insurance_dashboard' %}">
-                    <i class="fas fa-shield-alt mr-2"></i>Insurance Dashboard
+                    <i class="fas fa-shield-alt mr-2"></i>AutoAssess Dashboard
                   </a>
                 {% endif %}
               {% endfor %}
@@ -281,10 +298,12 @@
           {% if dashboard_access.available_dashboards %}
             {% if dashboard_access.available_dashboards|length == 1 %}
               {% for dashboard in dashboard_access.available_dashboards %}
-                {% if dashboard == 'customer' %}
-                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">Dashboard</a>
-                {% elif dashboard == 'insurance' %}
-                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'insurance:insurance_dashboard' %}">Insurance Dashboard</a>
+                {% if dashboard == 'staff' %}
+                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="/admin/">Staff Dashboard</a>
+                {% elif dashboard == 'autocare' %}
+                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">AutoCare Dashboard</a>
+                {% elif dashboard == 'autoassess' %}
+                  <a class="inline-flex justify-center items-center text-center w-full h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'insurance:insurance_dashboard' %}">AutoAssess Dashboard</a>
                 {% endif %}
               {% endfor %}
             {% else %}

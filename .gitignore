@@ -38,3 +38,8 @@ dashboard_diagnostics.js
 JAVASCRIPT_FIXES_SUMMARY.md
 DASHBOARD_INTEGRATION_FIXES.md
 DASHBOARD_ERROR_FIXES.md
+check_users.py
+run_test.bat
+simple_auth_test.py
+standalone_auth_test.py
+test_autocare_auth.py

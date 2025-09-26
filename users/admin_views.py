@@ -15,8 +15,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import user_passes_test
-from .services import AuthenticationService, OrganizationService
-from organizations.models import Organization, OrganizationUser
+from .services import AuthenticationService
 import csv
 import logging
 
@@ -54,14 +53,17 @@ class UserPermissionsView(TemplateView):
         if group_filter:
             users = users.filter(groups__name=group_filter)
         
-        # Filter by organization type if specified
-        org_type_filter = self.request.GET.get('org_type', '')
-        if org_type_filter:
-            org_users = OrganizationUser.objects.filter(
-                organization__organization_type=org_type_filter,
-                is_active=True
-            ).values_list('user_id', flat=True)
-            users = users.filter(id__in=org_users)
+        # Filter by dashboard access if specified
+        dashboard_filter = self.request.GET.get('dashboard', '')
+        if dashboard_filter:
+            # Filter users who have access to specific dashboard
+            dashboard_groups = {
+                'Staff': ['Staff'],
+                'AutoCare': ['AutoCare'],
+                'AutoAssess': ['AutoAssess']
+            }
+            if dashboard_filter in dashboard_groups:
+                users = users.filter(groups__name__in=dashboard_groups[dashboard_filter])
         
         # Paginate results
         paginator = Paginator(users, 25)
@@ -72,38 +74,35 @@ class UserPermissionsView(TemplateView):
         user_permissions = []
         for user in page_obj:
             permissions = AuthenticationService.get_user_permissions(user)
-            org = OrganizationService.get_user_organization(user)
             
             user_permissions.append({
                 'user': user,
                 'permissions': permissions,
-                'organization': org,
-                'organization_role': OrganizationService.get_user_organization_role(user),
                 'groups': list(user.groups.values_list('name', flat=True)),
             })
         
         # Get filter options
-        all_groups = Group.objects.all().order_by('name')
-        org_types = Organization.ORGANIZATION_TYPES
+        all_groups = Group.objects.filter(name__in=['Staff', 'AutoCare', 'AutoAssess']).order_by('name')
+        dashboard_options = ['Staff', 'AutoCare', 'AutoAssess']
         
         # Get summary statistics
         total_users = User.objects.count()
         users_with_groups = User.objects.filter(groups__isnull=False).distinct().count()
-        users_with_orgs = User.objects.filter(
-            id__in=OrganizationUser.objects.filter(is_active=True).values_list('user_id', flat=True)
-        ).count()
+        users_with_dashboard_access = User.objects.filter(
+            groups__name__in=['Staff', 'AutoCare', 'AutoAssess']
+        ).distinct().count()
         
         context.update({
             'user_permissions': user_permissions,
             'page_obj': page_obj,
             'search_query': search_query,
             'group_filter': group_filter,
-            'org_type_filter': org_type_filter,
+            'dashboard_filter': dashboard_filter,
             'all_groups': all_groups,
-            'org_types': org_types,
+            'dashboard_options': dashboard_options,
             'total_users': total_users,
             'users_with_groups': users_with_groups,
-            'users_with_orgs': users_with_orgs,
+            'users_with_dashboard_access': users_with_dashboard_access,
         })
         
         return context
@@ -148,33 +147,37 @@ def bulk_user_management(request):
             else:
                 messages.error(request, 'No group selected.')
         
-        elif action == 'sync_org_groups':
-            synced_count = 0
-            for user in users:
-                org = OrganizationService.get_user_organization(user)
-                if org:
-                    org.add_user_to_groups(user)
-                    synced_count += 1
-            messages.success(request, f'Synced {synced_count} users with their organization groups.')
+        elif action == 'assign_default_groups':
+            # Assign users to AutoCare group by default if they have no groups
+            assigned_count = 0
+            try:
+                autocare_group = Group.objects.get(name='AutoCare')
+                for user in users:
+                    if not user.groups.exists():
+                        user.groups.add(autocare_group)
+                        assigned_count += 1
+                messages.success(request, f'Assigned {assigned_count} users to AutoCare group.')
+            except Group.DoesNotExist:
+                messages.error(request, 'AutoCare group does not exist. Run setup_three_groups command first.')
         
         elif action == 'check_permissions':
-            conflict_count = 0
+            no_access_count = 0
             for user in users:
                 permissions = AuthenticationService.get_user_permissions(user)
-                if permissions.has_conflicts:
-                    conflict_count += 1
-                    logger.warning(f"Permission conflict for user {user.username}: {permissions.conflict_details}")
+                if not permissions.has_access:
+                    no_access_count += 1
+                    logger.warning(f"No dashboard access for user {user.username}: groups={permissions.groups}")
             
-            if conflict_count > 0:
-                messages.warning(request, f'Found permission conflicts for {conflict_count} users. Check logs for details.')
+            if no_access_count > 0:
+                messages.warning(request, f'Found {no_access_count} users without dashboard access. Check logs for details.')
             else:
-                messages.success(request, f'No permission conflicts found for {users.count()} users.')
+                messages.success(request, f'All {users.count()} users have dashboard access.')
         
         return redirect('admin:users_bulk_management')
     
     # GET request - show the form
     users = User.objects.select_related('profile').prefetch_related('groups').all()
-    groups = Group.objects.all().order_by('name')
+    groups = Group.objects.filter(name__in=['Staff', 'AutoCare', 'AutoAssess']).order_by('name')
     
     context = {
         'users': users,
@@ -186,29 +189,27 @@ def bulk_user_management(request):
 
 
 @staff_member_required
-def permission_conflicts_report(request):
-    """Admin view for viewing permission conflicts report"""
+def users_without_access_report(request):
+    """Admin view for viewing users without dashboard access report"""
     users = User.objects.select_related('profile').prefetch_related('groups').all()
     
-    conflicts_data = []
+    no_access_data = []
     for user in users:
         permissions = AuthenticationService.get_user_permissions(user)
-        if permissions.has_conflicts:
-            org = OrganizationService.get_user_organization(user)
-            conflicts_data.append({
+        if not permissions.has_access:
+            no_access_data.append({
                 'user': user,
                 'permissions': permissions,
-                'organization': org,
                 'groups': list(user.groups.values_list('name', flat=True)),
             })
     
     context = {
-        'conflicts_data': conflicts_data,
-        'total_conflicts': len(conflicts_data),
-        'title': 'Permission Conflicts Report',
+        'no_access_data': no_access_data,
+        'total_without_access': len(no_access_data),
+        'title': 'Users Without Dashboard Access Report',
     }
     
-    return render(request, 'admin/users/permission_conflicts.html', context)
+    return render(request, 'admin/users/users_without_access.html', context)
 
 
 @staff_member_required
@@ -220,16 +221,13 @@ def export_user_permissions(request):
     writer = csv.writer(response)
     writer.writerow([
         'Username', 'Email', 'First Name', 'Last Name', 'Groups', 
-        'Organization', 'Organization Type', 'Organization Role',
-        'Available Dashboards', 'Default Dashboard', 'Has Conflicts', 'Conflict Details'
+        'Available Dashboards', 'Default Dashboard', 'Has Access'
     ])
     
     users = User.objects.select_related('profile').prefetch_related('groups').all()
     
     for user in users:
         permissions = AuthenticationService.get_user_permissions(user)
-        org = OrganizationService.get_user_organization(user)
-        org_role = OrganizationService.get_user_organization_role(user)
         
         writer.writerow([
             user.username,
@@ -237,76 +235,54 @@ def export_user_permissions(request):
             user.first_name,
             user.last_name,
             ', '.join(user.groups.values_list('name', flat=True)),
-            org.name if org else '',
-            org.organization_type if org else '',
-            org_role or '',
             ', '.join(permissions.available_dashboards),
             permissions.default_dashboard or '',
-            'Yes' if permissions.has_conflicts else 'No',
-            permissions.conflict_details or ''
+            'Yes' if permissions.has_access else 'No'
         ])
     
     return response
 
 
 @staff_member_required
-def group_organization_mapping(request):
-    """Admin view for viewing group-organization mappings"""
-    groups = Group.objects.annotate(user_count=Count('user')).all()
-    organizations = Organization.objects.prefetch_related('linked_groups').all()
+def group_dashboard_mapping(request):
+    """Admin view for viewing group-dashboard mappings"""
+    groups = Group.objects.filter(name__in=['Staff', 'AutoCare', 'AutoAssess']).annotate(user_count=Count('user')).all()
     
     # Build mapping data
     group_data = []
     for group in groups:
-        linked_orgs = Organization.objects.filter(linked_groups=group)
         group_data.append({
             'group': group,
             'user_count': group.user_count,
-            'linked_organizations': linked_orgs,
             'dashboard_access': get_dashboard_for_group(group.name),
-        })
-    
-    org_data = []
-    for org in organizations:
-        members = OrganizationUser.objects.filter(organization=org, is_active=True)
-        org_data.append({
-            'organization': org,
-            'member_count': members.count(),
-            'linked_groups': org.linked_groups.all(),
-            'members_without_groups': get_members_without_groups(org),
+            'description': get_group_description(group.name),
         })
     
     context = {
         'group_data': group_data,
-        'org_data': org_data,
-        'title': 'Group-Organization Mapping',
+        'title': 'Group-Dashboard Mapping',
     }
     
-    return render(request, 'admin/users/group_org_mapping.html', context)
+    return render(request, 'admin/users/group_dashboard_mapping.html', context)
 
 
 def get_dashboard_for_group(group_name):
     """Get dashboard access for a group"""
     dashboard_mapping = {
-        'customers': 'Customer Dashboard',
-        'insurance_company': 'Insurance Dashboard'
+        'Staff': '/admin/ (Administrative Dashboard)',
+        'AutoCare': '/dashboard/ (Vehicle Maintenance)',
+        'AutoAssess': '/insurance/ (Vehicle Assessment)'
     }
     return dashboard_mapping.get(group_name, 'No specific dashboard')
 
-
-def get_members_without_groups(organization):
-    """Get organization members who don't have any groups"""
-    members = OrganizationUser.objects.filter(
-        organization=organization, 
-        is_active=True
-    ).select_related('user')
-    
-    members_without_groups = []
-    for member in members:
-        if not member.user.groups.exists():
-            members_without_groups.append(member.user)
-    
-    return members_without_groups
+def get_group_description(group_name):
+    """Get description for a group"""
+    descriptions = {
+        'Staff': 'Administrative users with full system access',
+        'AutoCare': 'Vehicle maintenance technicians and managers',
+        'AutoAssess': 'Insurance assessors and claims processors'
+    }
+    return descriptions.get(group_name, 'Custom group')
 
 
 @staff_member_required
@@ -320,21 +296,15 @@ def ajax_user_permissions(request):
     try:
         user = User.objects.get(id=user_id)
         permissions = AuthenticationService.get_user_permissions(user)
-        org = OrganizationService.get_user_organization(user)
-        org_role = OrganizationService.get_user_organization_role(user)
         
         data = {
             'user_id': user.id,
             'username': user.username,
             'email': user.email,
             'groups': list(user.groups.values_list('name', flat=True)),
-            'organization': org.name if org else None,
-            'organization_type': org.organization_type if org else None,
-            'organization_role': org_role,
             'available_dashboards': permissions.available_dashboards,
             'default_dashboard': permissions.default_dashboard,
-            'has_conflicts': permissions.has_conflicts,
-            'conflict_details': permissions.conflict_details,
+            'has_access': permissions.has_access,
         }
         
         return JsonResponse(data)
@@ -347,39 +317,44 @@ def ajax_user_permissions(request):
 
 
 @staff_member_required
-def authentication_group_management(request):
-    """Admin view for comprehensive authentication group management"""
-    from .models import AuthenticationGroup
-    
-    # Get all authentication groups
-    auth_groups = AuthenticationGroup.objects.select_related('group').order_by('-priority', 'display_name')
-    
-    # Get all Django groups that don't have auth configurations
-    configured_group_ids = auth_groups.values_list('group_id', flat=True)
-    unconfigured_groups = Group.objects.exclude(id__in=configured_group_ids)
+def three_group_management(request):
+    """Admin view for managing the 3-group authentication system"""
+    # Get the three main groups
+    main_groups = Group.objects.filter(name__in=['Staff', 'AutoCare', 'AutoAssess']).annotate(
+        user_count=Count('user')
+    ).order_by('name')
     
     # Get statistics
-    total_auth_groups = auth_groups.count()
-    active_auth_groups = auth_groups.filter(is_active=True).count()
-    total_users_in_auth_groups = User.objects.filter(
-        groups__in=auth_groups.values_list('group', flat=True)
+    total_users = User.objects.count()
+    users_in_main_groups = User.objects.filter(
+        groups__name__in=['Staff', 'AutoCare', 'AutoAssess']
     ).distinct().count()
+    users_without_groups = User.objects.filter(groups__isnull=True).count()
+    
+    # Build group data
+    group_data = []
+    for group in main_groups:
+        group_data.append({
+            'group': group,
+            'user_count': group.user_count,
+            'dashboard_access': get_dashboard_for_group(group.name),
+            'description': get_group_description(group.name),
+        })
     
     context = {
-        'auth_groups': auth_groups,
-        'unconfigured_groups': unconfigured_groups,
-        'total_auth_groups': total_auth_groups,
-        'active_auth_groups': active_auth_groups,
-        'total_users_in_auth_groups': total_users_in_auth_groups,
-        'title': 'Authentication Group Management',
+        'group_data': group_data,
+        'total_users': total_users,
+        'users_in_main_groups': users_in_main_groups,
+        'users_without_groups': users_without_groups,
+        'title': '3-Group Authentication Management',
     }
     
-    return render(request, 'admin/users/authentication_group_management.html', context)
+    return render(request, 'admin/users/three_group_management.html', context)
 
 
 @staff_member_required
-def ajax_test_auth_group_config(request):
-    """AJAX endpoint for testing authentication group configuration"""
+def ajax_test_group_config(request):
+    """AJAX endpoint for testing group configuration"""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
     
@@ -388,41 +363,34 @@ def ajax_test_auth_group_config(request):
         return JsonResponse({'error': 'Group ID required'}, status=400)
     
     try:
-        from .models import AuthenticationGroup
-        auth_group = AuthenticationGroup.objects.get(id=group_id)
+        group = Group.objects.get(id=group_id)
         
         # Test the configuration
         test_results = {
-            'group_name': auth_group.group.name,
-            'display_name': auth_group.display_name,
-            'dashboard_url': auth_group.dashboard_url,
-            'dashboard_type': auth_group.dashboard_type,
-            'is_active': auth_group.is_active,
-            'user_count': auth_group.group.user_set.count(),
-            'compatible_org_types': auth_group.compatible_org_types,
-            'priority': auth_group.priority
+            'group_name': group.name,
+            'user_count': group.user_set.count(),
+            'dashboard_access': get_dashboard_for_group(group.name),
+            'description': get_group_description(group.name),
+            'is_main_group': group.name in ['Staff', 'AutoCare', 'AutoAssess']
         }
         
-        # Check if URL is valid (basic check)
-        url_valid = auth_group.dashboard_url.startswith('/') and auth_group.dashboard_url.endswith('/')
-        test_results['url_valid'] = url_valid
+        # Check users with permissions
+        users_with_access = 0
+        for user in group.user_set.all():
+            permissions = AuthenticationService.get_user_permissions(user)
+            if permissions.has_access:
+                users_with_access += 1
         
-        # Check for conflicts with other groups
-        conflicts = AuthenticationGroup.objects.filter(
-            dashboard_url=auth_group.dashboard_url,
-            is_active=True
-        ).exclude(id=auth_group.id)
-        
-        test_results['has_conflicts'] = conflicts.exists()
-        test_results['conflicting_groups'] = [ag.display_name for ag in conflicts]
+        test_results['users_with_access'] = users_with_access
+        test_results['users_without_access'] = test_results['user_count'] - users_with_access
         
         return JsonResponse({
             'success': True,
             'test_results': test_results
         })
         
-    except AuthenticationGroup.DoesNotExist:
-        return JsonResponse({'error': 'Authentication group not found'}, status=404)
+    except Group.DoesNotExist:
+        return JsonResponse({'error': 'Group not found'}, status=404)
     except Exception as e:
-        logger.error(f"Error testing auth group config {group_id}: {e}")
+        logger.error(f"Error testing group config {group_id}: {e}")
         return JsonResponse({'error': str(e)}, status=500)

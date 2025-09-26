@@ -11,13 +11,13 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
-from users.permissions import require_group, require_organization_type, check_permission_conflicts
+from users.permissions import require_group, check_permission_conflicts
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.shortcuts import render
 
 # Dashboard Views
-@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class DashboardView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/insurance_dashboard.html'
     context_object_name = 'policies'
@@ -150,7 +150,7 @@ class DashboardView(LoginRequiredMixin, ListView):
         
         return context
 
-@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class VehicleDetailView(LoginRequiredMixin, DetailView):
     model = Vehicle
     template_name = 'dashboard/insurance_detail.html'
@@ -198,7 +198,7 @@ class VehicleDetailView(LoginRequiredMixin, DetailView):
         
         return context
 
-@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class AssessmentDashboardView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/insurance_assessment_dashboard.html'
     context_object_name = 'assessments'
@@ -222,7 +222,7 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
         
         return context
 
-@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class BookAssessmentView(LoginRequiredMixin, ListView):
     template_name = 'dashboard/insurance_booking.html'
     context_object_name = 'bookings'
@@ -237,7 +237,7 @@ class BookAssessmentView(LoginRequiredMixin, ListView):
         messages.success(request, 'Assessment request submitted successfully!')
         return self.get(request, *args, **kwargs)
 
-@method_decorator([require_group('Insurance Companies'), require_organization_type('insurance'), check_permission_conflicts], name='dispatch')
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class AssessmentDetailView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/insurance_assessment_detail.html'
     
@@ -882,8 +882,7 @@ def get_comprehensive_accident_data(request, vehicle_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-@require_group('Insurance Companies')
-@require_organization_type('insurance')
+@require_group('AutoAssess')
 @check_permission_conflicts
 def insurance_dashboard_view(request):
     """

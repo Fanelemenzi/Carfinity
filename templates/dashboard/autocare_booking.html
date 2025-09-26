@@ -1,0 +1,214 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Book Maintenance - AutoCare Dashboard - Carfinity{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+  <!-- Header -->
+  <div class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-6">
+        <div class="flex items-center space-x-4">
+          <a href="{% url 'maintenance_history:autocare_dashboard' %}" class="text-gray-600 hover:text-gray-900">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Dashboard
+          </a>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">Book Maintenance</h1>
+            <p class="mt-1 text-sm text-gray-600">Schedule vehicle maintenance and services</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Booking Form -->
+    <div class="bg-white rounded-lg shadow border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fas fa-calendar-plus mr-2 text-blue-600"></i>
+          Schedule New Service
+        </h3>
+      </div>
+      
+      <form method="post" class="p-6 space-y-6">
+        {% csrf_token %}
+        
+        <!-- Customer Information -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="customer_name" class="block text-sm font-medium text-gray-700">Customer Name</label>
+            <input type="text" id="customer_name" name="customer_name" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="customer_phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+            <input type="tel" id="customer_phone" name="customer_phone" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+
+        <!-- Vehicle Information -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="vehicle_make" class="block text-sm font-medium text-gray-700">Make</label>
+            <input type="text" id="vehicle_make" name="vehicle_make" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="vehicle_model" class="block text-sm font-medium text-gray-700">Model</label>
+            <input type="text" id="vehicle_model" name="vehicle_model" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label for="vehicle_year" class="block text-sm font-medium text-gray-700">Year</label>
+            <input type="number" id="vehicle_year" name="vehicle_year" min="1990" max="2025" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label for="vehicle_vin" class="block text-sm font-medium text-gray-700">VIN Number</label>
+          <input type="text" id="vehicle_vin" name="vehicle_vin" required
+            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <!-- Service Details -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label for="service_type" class="block text-sm font-medium text-gray-700">Service Type</label>
+            <select id="service_type" name="service_type" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Select Service Type</option>
+              <option value="full_service">Full Service</option>
+              <option value="basic_service">Basic Service</option>
+              <option value="mot_test">MOT Test</option>
+              <option value="brake_service">Brake Service</option>
+              <option value="oil_change">Oil Change</option>
+              <option value="tire_service">Tire Service</option>
+              <option value="diagnostic">Diagnostic</option>
+              <option value="repair">Repair Work</option>
+            </select>
+          </div>
+          <div>
+            <label for="preferred_date" class="block text-sm font-medium text-gray-700">Preferred Date</label>
+            <input type="date" id="preferred_date" name="preferred_date" required
+              class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label for="service_notes" class="block text-sm font-medium text-gray-700">Service Notes</label>
+          <textarea id="service_notes" name="service_notes" rows="4"
+            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Describe any specific issues or requirements..."></textarea>
+        </div>
+
+        <!-- Priority Level -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Priority Level</label>
+          <div class="mt-2 space-x-6">
+            <label class="inline-flex items-center">
+              <input type="radio" name="priority" value="normal" checked
+                class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+              <span class="ml-2 text-sm text-gray-700">Normal</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="priority" value="urgent"
+                class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+              <span class="ml-2 text-sm text-gray-700">Urgent</span>
+            </label>
+            <label class="inline-flex items-center">
+              <input type="radio" name="priority" value="emergency"
+                class="form-radio h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+              <span class="ml-2 text-sm text-gray-700">Emergency</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+          <a href="{% url 'maintenance_history:autocare_dashboard' %}"
+            class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md text-sm font-medium transition duration-200">
+            Cancel
+          </a>
+          <button type="submit"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md text-sm font-medium transition duration-200">
+            <i class="fas fa-calendar-plus mr-2"></i>Book Service
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Quick Service Options -->
+    <div class="mt-8 bg-white rounded-lg shadow border border-gray-200">
+      <div class="px-6 py-4 border-b border-gray-200">
+        <h3 class="text-lg font-medium text-gray-900">
+          <i class="fas fa-bolt mr-2 text-yellow-600"></i>
+          Quick Service Options
+        </h3>
+      </div>
+      
+      <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
+            <div class="flex items-center">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-oil-can text-blue-600"></i>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Oil Change</h4>
+                <p class="text-sm text-gray-500">Quick 30-min service</p>
+              </div>
+            </div>
+          </button>
+          
+          <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
+            <div class="flex items-center">
+              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-certificate text-green-600"></i>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">MOT Test</h4>
+                <p class="text-sm text-gray-500">Annual safety check</p>
+              </div>
+            </div>
+          </button>
+          
+          <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
+            <div class="flex items-center">
+              <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+              </div>
+              <div>
+                <h4 class="font-medium text-gray-900">Emergency</h4>
+                <p class="text-sm text-gray-500">Urgent repair needed</p>
+              </div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Set minimum date to today
+document.getElementById('preferred_date').min = new Date().toISOString().split('T')[0];
+
+// Quick service option handlers
+document.querySelectorAll('.grid button').forEach(button => {
+  button.addEventListener('click', function() {
+    const serviceType = this.querySelector('h4').textContent.toLowerCase().replace(' ', '_');
+    document.getElementById('service_type').value = serviceType;
+    
+    // Scroll to form
+    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+  });
+});
+</script>
+
+{% endblock %}

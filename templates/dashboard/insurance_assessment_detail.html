@@ -25,6 +25,429 @@
         }
     }
 </script>
+
+<style>
+    /* Assessment Detail Custom Styles - Only component-specific styles */
+    .assessment-detail-card {
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border: 1px solid #e2e8f0;
+    }
+
+    .assessment-detail-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .assessment-detail-card:hover::before {
+        left: 100%;
+    }
+
+    .assessment-detail-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+    }
+
+    .assessment-gradient {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    }
+
+    .assessment-gradient:hover {
+        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+    }
+
+    .glass-effect {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .assessment-progress-bar {
+        width: 100%;
+        height: 8px;
+        background-color: #e5e7eb;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .assessment-progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+        border-radius: 4px;
+        transition: width 1s ease-in-out;
+    }
+
+    .assessment-status-urgent {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        animation: pulse 2s infinite;
+    }
+
+    .assessment-status-pending {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+    }
+
+    .assessment-status-complete {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    /* Mobile-First Responsive Design */
+    .mobile-nav-toggle {
+        display: none;
+    }
+
+    .mobile-nav-menu {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: white;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    .mobile-nav-menu.active {
+        transform: translateX(0);
+    }
+
+    .mobile-nav-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .mobile-nav-overlay.active {
+        display: block;
+    }
+
+    /* Touch-Optimized Controls */
+    .touch-target {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    /* Mobile Tablet Breakpoints */
+    @media (max-width: 1024px) {
+        .desktop-only {
+            display: none !important;
+        }
+
+        .tablet-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .tablet-single {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .mobile-nav-toggle {
+            display: block;
+        }
+
+        .desktop-nav {
+            display: none;
+        }
+
+        .mobile-nav-menu {
+            display: block;
+        }
+
+        .mobile-dashboard {
+            padding: 1rem;
+        }
+
+        .mobile-header {
+            padding: 0.75rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .mobile-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .mobile-action-cards {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .assessment-detail-card {
+            margin-bottom: 1rem;
+        }
+
+        .assessment-detail-card .p-6 {
+            padding: 1rem;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        .mobile-title {
+            font-size: 1.5rem;
+            line-height: 1.3;
+        }
+
+        .mobile-subtitle {
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .mobile-card {
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .mobile-card-compact {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+
+        .mobile-button {
+            min-height: 48px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.75rem;
+            touch-action: manipulation;
+        }
+
+        .mobile-icon-button {
+            min-height: 44px;
+            min-width: 44px;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 0.75rem;
+        }
+
+        .welcome-section h2 {
+            font-size: 1.25rem;
+        }
+
+        .mobile-single-column {
+            grid-template-columns: 1fr;
+        }
+
+        .mobile-compact .assessment-detail-card {
+            padding: 0.75rem;
+        }
+
+        .mobile-compact .stats-card {
+            padding: 0.75rem;
+        }
+
+        .mobile-nav-item {
+            padding: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 1.125rem;
+        }
+
+        .mobile-activity {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .mobile-activity-item {
+            padding: 0.75rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .mobile-dashboard {
+            padding: 0.75rem;
+        }
+
+        .mobile-header {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .mobile-title {
+            font-size: 1.25rem;
+        }
+
+        .mobile-card {
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mobile-button {
+            min-height: 44px;
+            padding: 0.625rem 1.25rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* Visual Indicators */
+    .status-indicator {
+        position: relative;
+    }
+
+    .status-indicator::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+
+    .urgent-indicator::after {
+        background: #ef4444;
+        animation: pulse 1s infinite;
+    }
+
+    .warning-indicator::after {
+        background: #f59e0b;
+    }
+
+    .card-hover:hover {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .interactive-hover:hover {
+        background-color: rgba(59, 130, 246, 0.05);
+        border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .pulse-dot {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .notification-badge {
+        animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 53%, 80%, 100% {
+            transform: translate3d(0,0,0);
+        }
+        40%, 43% {
+            transform: translate3d(0,-8px,0);
+        }
+        70% {
+            transform: translate3d(0,-4px,0);
+        }
+        90% {
+            transform: translate3d(0,-2px,0);
+        }
+    }
+
+    /* Assessment Detail Specific Styles */
+    .assessment-section-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e5e7eb;
+        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+    }
+
+    .assessment-section-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        border-color: #d1d5db;
+    }
+
+    .severity-critical {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+    }
+
+    .severity-major {
+        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+        color: white;
+    }
+
+    .severity-moderate {
+        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+        color: white;
+    }
+
+    .severity-minor {
+        background: linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%);
+        color: white;
+    }
+
+    .cost-display {
+        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+    }
+
+    .recommendation-card {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .recommendation-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        transform: rotate(45deg);
+        transition: all 0.6s;
+        opacity: 0;
+    }
+
+    .recommendation-card:hover::before {
+        animation: shine 1.5s ease-in-out;
+        opacity: 1;
+    }
+
+    @keyframes shine {
+        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -35,7 +458,7 @@
     <script src="{% static 'js/claims-table-interactivity.js' %}" defer></script>
     <script src="{% static 'js/workflow-integration-test.js' %}" defer></script>
     <script src="{% static 'js/assessment-detail.js' %}" defer></script>
-    
+
     <!-- Header Navigation -->
     <nav class="dashboard-header mobile-header">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +468,7 @@
                     <button class="mobile-nav-toggle mobile-icon-button mr-3 text-gray-600 hover:text-gray-900 focus:outline-none md:hidden" id="mobileMenuToggle">
                         <i class="fas fa-bars text-lg"></i>
                     </button>
-                    
+
                     <div class="flex-shrink-0">
                         <a href="{% url 'insurance:assessment_dashboard' %}" class="dashboard-logo">
                             <i class="fas fa-arrow-left mr-2"></i>
@@ -53,7 +476,7 @@
                             <span class="sm:hidden">Back</span>
                         </a>
                     </div>
-                    
+
                     <!-- Desktop Navigation Menu -->
                     <div class="desktop-nav hidden md:block ml-10">
                         <div class="nav-menu">
@@ -69,7 +492,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="flex items-center space-x-2 md:space-x-4">
                     <!-- Assessment Status -->
                     <div class="hidden sm:flex items-center space-x-2">
@@ -77,12 +500,12 @@
                             <i class="fas fa-clock mr-1"></i>IN PROGRESS
                         </span>
                     </div>
-                    
+
                     <!-- Notifications -->
                     <div class="relative" id="notificationBell">
                         <!-- Notification system will be initialized here by JavaScript -->
                     </div>
-                    
+
                     <!-- Agent Profile -->
                     <div class="flex items-center space-x-2 md:space-x-3">
                         <div class="hidden sm:flex flex-col text-right">
@@ -93,7 +516,7 @@
                             <i class="fas fa-user text-white text-sm"></i>
                         </div>
                     </div>
-                    
+
                     <div class="hidden lg:flex items-center text-sm text-gray-500">
                         <i class="fas fa-clock mr-1"></i>
                         Last login: <span id="lastLogin">{{ user.last_login|date:"M d, H:i" }}</span>
@@ -105,7 +528,7 @@
 
     <!-- Mobile Navigation Overlay -->
     <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-    
+
     <!-- Mobile Navigation Menu -->
     <div class="mobile-nav-menu" id="mobileNavMenu">
         <div class="flex flex-col h-full">
@@ -116,7 +539,7 @@
                     <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
-            
+
             <!-- Mobile Menu Items -->
             <div class="flex-1 overflow-y-auto">
                 <div class="py-2">
@@ -134,7 +557,7 @@
                     </span>
                 </div>
             </div>
-            
+
             <!-- Mobile Menu Footer -->
             <div class="border-t border-gray-200 p-4">
                 <div class="flex items-center space-x-3 mb-3">
@@ -162,14 +585,14 @@
                 <!-- Assessment Title & Status -->
                 <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
                     <div class="mb-4 lg:mb-0">
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 mobile-title">Assessment INS-2024-8847</h1>
-                        <p class="text-gray-600 mobile-subtitle">2019 BMW 320i • VIN: WBA8E9G50KNU12345</p>
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 mobile-title">Assessment {{ claim_id }}</h1>
+                        <p class="text-gray-600 mobile-subtitle">{{ assessment_data.vehicle }} • VIN: {{ assessment_data.vin }}</p>
                     </div>
                     <div class="flex flex-wrap gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 assessment-status-urgent">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium assessment-status-urgent">
                             <i class="fas fa-exclamation-triangle mr-1"></i>TOTAL LOSS CANDIDATE
                         </span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800 assessment-status-pending">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium assessment-status-pending">
                             <i class="fas fa-tools mr-1"></i>STRUCTURAL DAMAGE
                         </span>
                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
@@ -220,7 +643,7 @@
                                     </div>
                                     Assessment Summary
                                 </h2>
-                                
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div class="space-y-4">
                                         <div>
@@ -232,7 +655,7 @@
                                                 <span class="text-sm font-medium text-red-600">{{ assessment_data.damage_type }}</span>
                                             </div>
                                         </div>
-                                        
+
                                         <div class="grid grid-cols-2 gap-4">
                                             <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mobile-card-compact">
                                                 <label class="text-sm font-medium text-gray-500">Estimated Cost</label>
@@ -244,35 +667,35 @@
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="space-y-4">
                                         <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
                                             <label class="text-sm font-medium text-gray-500">Cost Ratio</label>
                                             <p class="text-lg font-semibold text-red-600">152% (Exceeds total loss threshold)</p>
                                         </div>
-                                        
+
                                         <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
                                             <label class="text-sm font-medium text-gray-500">UK Classification</label>
                                             <p class="text-lg font-semibold text-orange-600">Category S (Structural Damage)</p>
                                         </div>
-                                        
+
                                         <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
                                             <label class="text-sm font-medium text-gray-500">SA 70% Rule</label>
                                             <p class="text-lg font-semibold text-red-600">✓ EXCEEDED</p>
                                         </div>
                                     </div>
                                 </div>
-                                
-                                <div class="mt-6 p-4 bg-gradient-to-br from-red-50 to-red-100 rounded-xl border border-red-200">
+
+                                <div class="mt-6 p-4 recommendation-card rounded-xl">
                                     <div class="flex items-center">
                                         <div class="flex-shrink-0">
-                                            <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
                                                 <i class="fas fa-exclamation-triangle text-white text-lg"></i>
                                             </div>
                                         </div>
                                         <div class="ml-3">
-                                            <h3 class="text-sm font-medium text-red-800">Recommendation: TOTAL LOSS</h3>
-                                            <p class="text-sm text-red-700 mt-1">Settlement Range: £16,200 - £18,750</p>
+                                            <h3 class="text-sm font-medium text-white">Recommendation: TOTAL LOSS</h3>
+                                            <p class="text-sm text-white/90 mt-1">Settlement Range: £16,200 - £18,750</p>
                                         </div>
                                     </div>
                                 </div>
@@ -286,10 +709,10 @@
                             <i class="fas fa-clipboard-list mr-3 text-emerald-600"></i>Detailed Assessment
                         </h2>
                         <p class="text-gray-600 mb-6">Click any section below for detailed component breakdown:</p>
-                        
+
                         <div class="space-y-4">
                             {% for section in assessment_data.sections %}
-                                <div class="assessment-detail-card bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-all duration-200 interactive-hover" 
+                                <div class="assessment-section-card bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-all duration-200 interactive-hover"
                                      onclick="viewSection('{{ section.id }}')"
                                      data-section-id="{{ section.id }}"
                                      data-status="{{ section.status }}">
@@ -298,9 +721,9 @@
                                             <span class="text-2xl mr-3">{{ section.icon }}</span>
                                             <h3 class="text-lg font-semibold text-gray-900">{{ section.name }}</h3>
                                         </div>
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium {% if section.status == 'Complete' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ section.status }}</span>
+                                        <span class="px-3 py-1 rounded-full text-sm font-medium {% if section.status == 'Complete' %}assessment-status-complete{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ section.status }}</span>
                                     </div>
-                                    
+
                                     <div class="grid grid-cols-3 gap-4 mb-4">
                                         <div>
                                             <p class="text-sm text-gray-500">Damage Level</p>
@@ -315,7 +738,7 @@
                                             <p class="font-medium">{{ section.componentCount }} items</p>
                                         </div>
                                     </div>
-                                    
+
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center space-x-2">
                                             <span class="text-sm text-gray-500">Progress:</span>
@@ -328,7 +751,7 @@
                                 </div>
                             {% endfor %}
                         </div>
-                        
+
                         <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div class="flex justify-between items-center">
                                 <div>
@@ -353,7 +776,7 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                                 <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
                             </h3>
-                            
+
                             <div class="space-y-3">
                                 <button class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
                                     <i class="fas fa-check mr-2"></i>Approve Settlement
@@ -365,9 +788,9 @@
                                     <i class="fas fa-info-circle mr-2"></i>Request More Info
                                 </button>
                             </div>
-                            
+
                             <hr class="my-4">
-                            
+
                             <div class="space-y-2">
                                 <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
                                     <i class="fas fa-comment mr-2"></i>Send Message
@@ -384,7 +807,7 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                                 <i class="fas fa-camera mr-2 text-indigo-500"></i>Assessment Photos (47 total)
                             </h3>
-                            
+
                             <div class="grid grid-cols-2 gap-2 mb-4">
                                 <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
                                     <span class="text-xs text-gray-500">Overall View</span>
@@ -399,7 +822,7 @@
                                     <span class="text-xs text-gray-500">Side View</span>
                                 </div>
                             </div>
-                            
+
                             <div class="space-y-2">
                                 <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
                                     <i class="fas fa-images mr-2"></i>View All Photos
@@ -417,7 +840,7 @@
                             <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                                 <i class="fas fa-calculator mr-2 text-green-500"></i>Settlement Calculation
                             </h3>
-                            
+
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between items-center py-2 border-b border-gray-100">
                                     <span class="text-gray-600">Vehicle Agreed Value:</span>
@@ -448,7 +871,7 @@
                                     <span class="text-green-600">£9,480</span>
                                 </div>
                             </div>
-                            
+
                             <button class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
                                 <i class="fas fa-file-contract mr-2"></i>Generate Settlement Letter
                             </button>
@@ -561,7 +984,7 @@ function assessmentData() {
                 componentCount: 4
             }
         ],
-        
+
         getSectionStatusBadge(status) {
             const badges = {
                 'Complete': 'bg-green-100 text-green-800',
@@ -571,7 +994,7 @@ function assessmentData() {
             };
             return badges[status] || 'bg-gray-100 text-gray-800';
         },
-        
+
         viewSection(sectionId) {
             // Navigate to component detail view with proper URL structure
             const claimId = '{{ assessment_data.claim_id|default:"INS-8847" }}';
@@ -586,17 +1009,17 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof initializeClaimsTable === 'function') {
         initializeClaimsTable();
     }
-    
+
     // Initialize essential UI components
     if (typeof initializeEssentialUIComponents === 'function') {
         initializeEssentialUIComponents();
     }
-    
+
     // Initialize loading states for buttons
     if (typeof initializeLoadingStates === 'function') {
         initializeLoadingStates();
     }
-    
+
     // Initialize photo gallery functionality
     if (typeof initializePhotoGallery === 'function') {
         initializePhotoGallery();

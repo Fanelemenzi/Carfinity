@@ -4,44 +4,421 @@
 {% block title %}Select Dashboard - Carfinity{% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-3xl mx-auto">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">
-                Welcome, {{ user.first_name|default:user.username }}!
-            </h1>
-            <p class="text-lg text-gray-600">
-                You have access to multiple dashboards. Please select the one you'd like to use.
-            </p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Dashboard - Carfinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Dashboard Selector Custom Styles */
+        .dashboard-card {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: 1px solid #e2e8f0;
+        }
+
+        .dashboard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .dashboard-card:hover::before {
+            left: 100%;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+        }
+
+        .dashboard-card.staff {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+        }
+
+        .dashboard-card.staff:hover {
+            background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
+        }
+
+        .dashboard-card.autocare {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+        }
+
+        .dashboard-card.autocare:hover {
+            background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        }
+
+        .dashboard-card.autoassess {
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+            color: white;
+        }
+
+        .dashboard-card.autoassess:hover {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .glass-effect {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Mobile-First Responsive Design */
+        .mobile-nav-toggle {
+            display: none;
+        }
+
+        .mobile-nav-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-nav-menu.active {
+            transform: translateX(0);
+        }
+
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+        .mobile-nav-overlay.active {
+            display: block;
+        }
+
+        /* Touch-Optimized Controls */
+        .touch-target {
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Mobile Tablet Breakpoints */
+        @media (max-width: 1024px) {
+            .desktop-only {
+                display: none !important;
+            }
+
+            .tablet-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tablet-single {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+
+            .desktop-nav {
+                display: none;
+            }
+
+            .mobile-nav-menu {
+                display: block;
+            }
+
+            .mobile-dashboard {
+                padding: 1rem;
+            }
+
+            .mobile-header {
+                padding: 0.75rem 1rem;
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: white;
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .mobile-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.75rem;
+            }
+
+            .mobile-action-cards {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .dashboard-card {
+                margin-bottom: 1rem;
+            }
+
+            .dashboard-card .p-6 {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+
+            .mobile-title {
+                font-size: 1.5rem;
+                line-height: 1.3;
+            }
+
+            .mobile-subtitle {
+                font-size: 0.875rem;
+                line-height: 1.4;
+            }
+
+            .mobile-card {
+                border-radius: 0.75rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .mobile-card-compact {
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+
+            .mobile-button {
+                min-height: 48px;
+                padding: 0.75rem 1.5rem;
+                font-size: 1rem;
+                border-radius: 0.75rem;
+                touch-action: manipulation;
+            }
+
+            .mobile-icon-button {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 0.75rem;
+                border-radius: 0.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .welcome-section h2 {
+                font-size: 1.25rem;
+            }
+
+            .mobile-single-column {
+                grid-template-columns: 1fr;
+            }
+
+            .mobile-compact .dashboard-card {
+                padding: 0.75rem;
+            }
+
+            .mobile-compact .stats-card {
+                padding: 0.75rem;
+            }
+
+            .mobile-nav-item {
+                padding: 1rem;
+                border-bottom: 1px solid #f3f4f6;
+                font-size: 1.125rem;
+            }
+
+            .mobile-activity {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .mobile-activity-item {
+                padding: 0.75rem;
+                border-bottom: 1px solid #f3f4f6;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-dashboard {
+                padding: 0.75rem;
+            }
+
+            .mobile-header {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .mobile-title {
+                font-size: 1.25rem;
+            }
+
+            .mobile-card {
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            .mobile-button {
+                min-height: 44px;
+                padding: 0.625rem 1.25rem;
+                font-size: 0.875rem;
+            }
+        }
+
+        /* Visual Indicators */
+        .status-indicator {
+            position: relative;
+        }
+
+        .status-indicator::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+
+        .urgent-indicator::after {
+            background: #ef4444;
+            animation: pulse 1s infinite;
+        }
+
+        .warning-indicator::after {
+            background: #f59e0b;
+        }
+
+        .card-hover:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .interactive-hover:hover {
+            background-color: rgba(59, 130, 246, 0.05);
+            border-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .notification-badge {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 53%, 80%, 100% {
+                transform: translate3d(0,0,0);
+            }
+            40%, 43% {
+                transform: translate3d(0,-8px,0);
+            }
+            70% {
+                transform: translate3d(0,-4px,0);
+            }
+            90% {
+                transform: translate3d(0,-2px,0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-4xl mx-auto">
+        <!-- Professional Header -->
+        <div class="text-center mb-16">
+            <div class="mb-8">
+                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full shadow-lg mb-6">
+                    <i class="fas fa-chart-line text-white text-3xl"></i>
+                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                    Welcome back, <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">{{ user.first_name|default:user.username }}</span>!
+                </h1>
+                <p class="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+                    You have access to multiple specialized dashboards. Choose the one that best fits your current needs and workflow.
+                </p>
+            </div>
         </div>
         
         <!-- Dashboard Options -->
         <div class="grid gap-6 md:grid-cols-2">
             {% for dashboard in dashboard_options %}
-            <div class="relative bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 {% if dashboard.name == default_dashboard %}ring-2 ring-blue-500{% endif %}">
+            <div class="dashboard-card {% if dashboard.name == default_dashboard %}ring-2 ring-blue-500{% endif %} rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 {% if dashboard.name == 'staff' %}staff{% elif dashboard.name == 'autocare' %}autocare{% elif dashboard.name == 'autoassess' %}autoassess{% endif %}">
                 <div class="p-6">
                     <!-- Default Dashboard Badge -->
                     {% if dashboard.name == default_dashboard %}
-                    <div class="absolute -top-2 -right-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            Recommended
+                    <div class="absolute -top-2 -right-2 z-10">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-white text-blue-800 shadow-lg">
+                            <i class="fas fa-star mr-1 text-yellow-500"></i>Recommended
                         </span>
                     </div>
                     {% endif %}
                     
                     <!-- Dashboard Icon -->
-                    <div class="flex items-center justify-center h-16 w-16 rounded-full {% if dashboard.name == default_dashboard %}bg-blue-100{% else %}bg-gray-100{% endif %} mb-6 mx-auto">
-                        {% if dashboard.name == 'customer' %}
-                        <svg class="h-8 w-8 {% if dashboard.name == default_dashboard %}text-blue-600{% else %}text-gray-600{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div class="flex items-center justify-center h-20 w-20 rounded-full {% if dashboard.name == default_dashboard %}bg-white/20{% else %}bg-white/10{% endif %} mb-6 mx-auto shadow-lg">
+                        {% if dashboard.name == 'staff' %}
+                        <svg class="h-10 w-10 {% if dashboard.name == default_dashboard %}text-white{% else %}text-white{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        {% elif dashboard.name == 'autocare' %}
+                        <svg class="h-10 w-10 {% if dashboard.name == default_dashboard %}text-white{% else %}text-white{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
-                        {% elif dashboard.name == 'insurance' %}
-                        <svg class="h-8 w-8 {% if dashboard.name == default_dashboard %}text-blue-600{% else %}text-gray-600{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        {% elif dashboard.name == 'autoassess' %}
+                        <svg class="h-10 w-10 {% if dashboard.name == default_dashboard %}text-white{% else %}text-white{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
                         {% else %}
-                        <svg class="h-8 w-8 {% if dashboard.name == default_dashboard %}text-blue-600{% else %}text-gray-600{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg class="h-10 w-10 {% if dashboard.name == default_dashboard %}text-white{% else %}text-white{% endif %}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                         </svg>
                         {% endif %}
@@ -49,28 +426,32 @@
                     
                     <!-- Dashboard Info -->
                     <div class="text-center">
-                        <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                        <h3 class="text-xl font-semibold {% if dashboard.name == default_dashboard %}text-white{% else %}text-white{% endif %} mb-2">
                             {{ dashboard.display_name }}
                             {% if dashboard.name == default_dashboard %}
-                            <span class="text-sm text-blue-600 font-normal">(Default)</span>
+                            <span class="text-sm text-white/80 font-normal">(Default)</span>
                             {% endif %}
                         </h3>
-                        <p class="text-gray-600 mb-4">
-                            {{ dashboard.description }}
+                        <p class="{% if dashboard.name == default_dashboard %}text-white/90{% else %}text-white/90{% endif %} mb-4 text-sm leading-relaxed">
+                            {% if dashboard.name == 'staff' %}
+                                Administrative access to manage users, groups, and system settings
+                            {% elif dashboard.name == 'autocare' %}
+                                Vehicle maintenance and care management for customers
+                            {% elif dashboard.name == 'autoassess' %}
+                                Vehicle assessment and inspection tools for insurance claims
+                            {% else %}
+                                Dashboard access for your assigned role
+                            {% endif %}
                         </p>
                         
                         <!-- Permission Details -->
-                        <div class="text-xs text-gray-500 mb-4">
-                            <p>Required Groups: {{ dashboard.required_groups|join:", " }}</p>
-                            <p>Organization Types: {{ dashboard.required_org_types|join:", " }}</p>
+                        <div class="text-xs {% if dashboard.name == default_dashboard %}text-white/70{% else %}text-white/70{% endif %} mb-4">
+                            <p>Required Groups: {{ dashboard.name|title }}</p>
                         </div>
                         
                         <!-- Access Button -->
-                        <a href="{{ dashboard.url }}" class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-md text-white {% if dashboard.name == default_dashboard %}bg-blue-600 hover:bg-blue-700{% else %}bg-gray-600 hover:bg-gray-700{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2 {% if dashboard.name == default_dashboard %}focus:ring-blue-500{% else %}focus:ring-gray-500{% endif %} transition duration-200">
-                            Access {{ dashboard.display_name }}
-                            <svg class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
+                        <a href="{{ dashboard.url }}" class="inline-flex items-center justify-center w-full px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white {% if dashboard.name == default_dashboard %}bg-white/20 hover:bg-white/30{% else %}bg-white/10 hover:bg-white/20{% endif %} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-200 shadow-lg hover:shadow-xl">
+                            <i class="fas fa-arrow-right mr-2"></i>Access {{ dashboard.display_name }}
                         </a>
                     </div>
                 </div>
@@ -78,62 +459,60 @@
             {% endfor %}
         </div>
         
-        <!-- User Info and Conflict Resolution -->
-        {% if user_permissions.has_conflicts or conflict_resolution.has_conflicts %}
-        <div class="mt-8 bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">
-                        Permission Notice
-                    </h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        {% if user_permissions.conflict_details %}
-                        <p><strong>Issue:</strong> {{ user_permissions.conflict_details }}</p>
+        <!-- User Permission Summary -->
+        <div class="mt-8 bg-white rounded-xl shadow-lg border border-gray-200 p-6 card-hover">
+            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-user-shield mr-2 text-blue-600"></i>Your Access Summary
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm font-medium text-gray-700 mb-2">Groups</div>
+                    <div class="text-sm text-gray-600">
+                        {% if user_permissions.groups %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for group in user_permissions.groups %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ group }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-gray-500">None assigned</span>
                         {% endif %}
-                        
-                        {% if conflict_resolution.recommended_action %}
-                        <p class="mt-1"><strong>Recommended Action:</strong> {{ conflict_resolution.recommended_action }}</p>
-                        {% endif %}
-                        
-                        {% if conflict_resolution.resolution_strategy %}
-                        <p class="mt-1"><strong>Resolution Strategy:</strong> {{ conflict_resolution.resolution_strategy|title|replace:"_":" " }}</p>
-                        {% endif %}
-                        
-                        <p class="mt-2">If you experience any issues, please contact your administrator.</p>
                     </div>
                 </div>
-            </div>
-        </div>
-        {% endif %}
-        
-        <!-- User Permission Summary -->
-        <div class="mt-6 bg-gray-50 border border-gray-200 rounded-md p-4">
-            <h4 class="text-sm font-medium text-gray-800 mb-2">Your Access Summary</h4>
-            <div class="text-sm text-gray-600">
-                <p><strong>Groups:</strong> {{ user_permissions.groups|join:", "|default:"None assigned" }}</p>
-                <p><strong>Organization:</strong> {{ user_permissions.organization|default:"None assigned" }}</p>
-                <p><strong>Organization Type:</strong> {{ user_permissions.organization_type|default:"None assigned" }}</p>
-                <p><strong>Available Dashboards:</strong> {{ user_permissions.available_dashboards|join:", "|default:"None available" }}</p>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm font-medium text-gray-700 mb-2">Available Dashboards</div>
+                    <div class="text-sm text-gray-600">
+                        {% if user_permissions.available_dashboards %}
+                            <div class="flex flex-wrap gap-2">
+                                {% for dashboard in user_permissions.available_dashboards %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    {{ dashboard }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <span class="text-gray-500">None available</span>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
         </div>
         
         <!-- Footer Actions -->
         <div class="mt-12 text-center">
-            <div class="flex justify-center space-x-4">
-                <a href="{% url 'home' %}" class="text-gray-600 hover:text-gray-900 font-medium">
-                    ← Back to Home
+            <div class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-8">
+                <a href="{% url 'home' %}" class="inline-flex items-center px-6 py-3 border border-gray-300 text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                    <i class="fas fa-home mr-2"></i>← Back to Home
                 </a>
-                <span class="text-gray-300">|</span>
-                <a href="{% url 'logout' %}" class="text-gray-600 hover:text-gray-900 font-medium">
-                    Logout
+                <span class="hidden sm:inline text-gray-300">|</span>
+                <a href="{% url 'logout' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
                 </a>
             </div>
         </div>
     </div>
-</div>
+</body>
+</html>
 {% endblock %}
