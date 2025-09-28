@@ -1,1030 +1,246 @@
 {% extends 'base/base.html'%}
 {% load static %}
 
-{% block extra_css %}
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="{% static 'css/responsive-claims-dashboard.css' %}" data-critical="true">
-<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
-<link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
-<link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
-<link rel="stylesheet" href="{% static 'css/assessment-detail.css' %}">
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: '#1e40af',
-                    secondary: '#374151',
-                    accent: '#f59e0b',
-                    success: '#10b981',
-                    warning: '#f59e0b',
-                    danger: '#ef4444'
-                }
-            }
-        }
-    }
-</script>
-
-<style>
-    /* Assessment Detail Custom Styles - Only component-specific styles */
-    .assessment-detail-card {
-        position: relative;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        border: 1px solid #e2e8f0;
-    }
-
-    .assessment-detail-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .assessment-detail-card:hover::before {
-        left: 100%;
-    }
-
-    .assessment-detail-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
-    }
-
-    .assessment-gradient {
-        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    }
-
-    .assessment-gradient:hover {
-        background: linear-gradient(135deg, #4338ca 0%, #6d28d9 100%);
-    }
-
-    .glass-effect {
-        backdrop-filter: blur(10px);
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .assessment-progress-bar {
-        width: 100%;
-        height: 8px;
-        background-color: #e5e7eb;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    .assessment-progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-        border-radius: 4px;
-        transition: width 1s ease-in-out;
-    }
-
-    .assessment-status-urgent {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        color: white;
-        animation: pulse 2s infinite;
-    }
-
-    .assessment-status-pending {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        color: white;
-    }
-
-    .assessment-status-complete {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        color: white;
-    }
-
-    /* Mobile-First Responsive Design */
-    .mobile-nav-toggle {
-        display: none;
-    }
-
-    .mobile-nav-menu {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: white;
-        z-index: 1000;
-        transform: translateX(-100%);
-        transition: transform 0.3s ease;
-    }
-
-    .mobile-nav-menu.active {
-        transform: translateX(0);
-    }
-
-    .mobile-nav-overlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-    }
-
-    .mobile-nav-overlay.active {
-        display: block;
-    }
-
-    /* Touch-Optimized Controls */
-    .touch-target {
-        min-height: 44px;
-        min-width: 44px;
-    }
-
-    /* Mobile Tablet Breakpoints */
-    @media (max-width: 1024px) {
-        .desktop-only {
-            display: none !important;
-        }
-
-        .tablet-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .tablet-single {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .mobile-nav-toggle {
-            display: block;
-        }
-
-        .desktop-nav {
-            display: none;
-        }
-
-        .mobile-nav-menu {
-            display: block;
-        }
-
-        .mobile-dashboard {
-            padding: 1rem;
-        }
-
-        .mobile-header {
-            padding: 0.75rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .mobile-stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.75rem;
-        }
-
-        .mobile-action-cards {
-            grid-template-columns: 1fr;
-            gap: 1rem;
-        }
-
-        .assessment-detail-card {
-            margin-bottom: 1rem;
-        }
-
-        .assessment-detail-card .p-6 {
-            padding: 1rem;
-        }
-
-        .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.5rem;
-        }
-
-        .mobile-title {
-            font-size: 1.5rem;
-            line-height: 1.3;
-        }
-
-        .mobile-subtitle {
-            font-size: 0.875rem;
-            line-height: 1.4;
-        }
-
-        .mobile-card {
-            border-radius: 0.75rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .mobile-card-compact {
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-        }
-
-        .mobile-button {
-            min-height: 48px;
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            border-radius: 0.75rem;
-            touch-action: manipulation;
-        }
-
-        .mobile-icon-button {
-            min-height: 44px;
-            min-width: 44px;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-        }
-    }
-
-    @media (max-width: 640px) {
-        .stats-grid {
-            grid-template-columns: 1fr;
-            gap: 0.75rem;
-        }
-
-        .welcome-section h2 {
-            font-size: 1.25rem;
-        }
-
-        .mobile-single-column {
-            grid-template-columns: 1fr;
-        }
-
-        .mobile-compact .assessment-detail-card {
-            padding: 0.75rem;
-        }
-
-        .mobile-compact .stats-card {
-            padding: 0.75rem;
-        }
-
-        .mobile-nav-item {
-            padding: 1rem;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 1.125rem;
-        }
-
-        .mobile-activity {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .mobile-activity-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid #f3f4f6;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .mobile-dashboard {
-            padding: 0.75rem;
-        }
-
-        .mobile-header {
-            padding: 0.5rem 0.75rem;
-        }
-
-        .mobile-title {
-            font-size: 1.25rem;
-        }
-
-        .mobile-card {
-            padding: 0.75rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .mobile-button {
-            min-height: 44px;
-            padding: 0.625rem 1.25rem;
-            font-size: 0.875rem;
-        }
-    }
-
-    /* Visual Indicators */
-    .status-indicator {
-        position: relative;
-    }
-
-    .status-indicator::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #10b981;
-    }
-
-    .urgent-indicator::after {
-        background: #ef4444;
-        animation: pulse 1s infinite;
-    }
-
-    .warning-indicator::after {
-        background: #f59e0b;
-    }
-
-    .card-hover:hover {
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-    }
-
-    .interactive-hover:hover {
-        background-color: rgba(59, 130, 246, 0.05);
-        border-color: rgba(59, 130, 246, 0.2);
-    }
-
-    .pulse-dot {
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0%, 100% {
-            opacity: 1;
-        }
-        50% {
-            opacity: 0.5;
-        }
-    }
-
-    .notification-badge {
-        animation: bounce 1s infinite;
-    }
-
-    @keyframes bounce {
-        0%, 20%, 53%, 80%, 100% {
-            transform: translate3d(0,0,0);
-        }
-        40%, 43% {
-            transform: translate3d(0,-8px,0);
-        }
-        70% {
-            transform: translate3d(0,-4px,0);
-        }
-        90% {
-            transform: translate3d(0,-2px,0);
-        }
-    }
-
-    /* Assessment Detail Specific Styles */
-    .assessment-section-card {
-        transition: all 0.3s ease;
-        border: 1px solid #e5e7eb;
-        background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-    }
-
-    .assessment-section-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        border-color: #d1d5db;
-    }
-
-    .severity-critical {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        color: white;
-    }
-
-    .severity-major {
-        background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
-        color: white;
-    }
-
-    .severity-moderate {
-        background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
-        color: white;
-    }
-
-    .severity-minor {
-        background: linear-gradient(135deg, #65a30d 0%, #4d7c0f 100%);
-        color: white;
-    }
-
-    .cost-display {
-        background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
-        color: white;
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-weight: 600;
-    }
-
-    .recommendation-card {
-        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-        color: white;
-        border: none;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .recommendation-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-        transform: rotate(45deg);
-        transition: all 0.6s;
-        opacity: 0;
-    }
-
-    .recommendation-card:hover::before {
-        animation: shine 1.5s ease-in-out;
-        opacity: 1;
-    }
-
-    @keyframes shine {
-        0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-        100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-    }
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="bg-gray-50 min-h-screen">
-{% if user.is_authenticated %}
-    <!-- Load essential JavaScript files -->
-    <script src="{% static 'js/essential-ui-components.js' %}" defer></script>
-    <script src="{% static 'js/claims-table-interactivity.js' %}" defer></script>
-    <script src="{% static 'js/workflow-integration-test.js' %}" defer></script>
-    <script src="{% static 'js/assessment-detail.js' %}" defer></script>
-
-    <!-- Header Navigation -->
-    <nav class="dashboard-header mobile-header">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="dashboard-nav">
-                <div class="flex items-center">
-                    <!-- Mobile Menu Toggle -->
-                    <button class="mobile-nav-toggle mobile-icon-button mr-3 text-gray-600 hover:text-gray-900 focus:outline-none md:hidden" id="mobileMenuToggle">
-                        <i class="fas fa-bars text-lg"></i>
-                    </button>
-
-                    <div class="flex-shrink-0">
-                        <a href="{% url 'insurance:assessment_dashboard' %}" class="dashboard-logo">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            <span class="hidden sm:inline">Back to Assessments</span>
-                            <span class="sm:hidden">Back</span>
-                        </a>
-                    </div>
-
-                    <!-- Desktop Navigation Menu -->
-                    <div class="desktop-nav hidden md:block ml-10">
-                        <div class="nav-menu">
-                            <a href="{% url 'insurance:dashboard' %}" class="nav-item">
-                                <i class="fas fa-home mr-2"></i>Dashboard
-                            </a>
-                            <a href="{% url 'insurance:assessment_dashboard' %}" class="nav-item">
-                                <i class="fas fa-chart-line mr-2"></i>Assessments
-                            </a>
-                            <span class="nav-item active">
-                                <i class="fas fa-file-alt mr-2"></i>Assessment Detail
-                            </span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex items-center space-x-2 md:space-x-4">
-                    <!-- Assessment Status -->
-                    <div class="hidden sm:flex items-center space-x-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                            <i class="fas fa-clock mr-1"></i>IN PROGRESS
-                        </span>
-                    </div>
-
-                    <!-- Notifications -->
-                    <div class="relative" id="notificationBell">
-                        <!-- Notification system will be initialized here by JavaScript -->
-                    </div>
-
-                    <!-- Agent Profile -->
-                    <div class="flex items-center space-x-2 md:space-x-3">
-                        <div class="hidden sm:flex flex-col text-right">
-                            <span class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</span>
-                            <span class="text-xs text-gray-500">Assessment Specialist</span>
-                        </div>
-                        <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-white text-sm"></i>
-                        </div>
-                    </div>
-
-                    <div class="hidden lg:flex items-center text-sm text-gray-500">
-                        <i class="fas fa-clock mr-1"></i>
-                        Last login: <span id="lastLogin">{{ user.last_login|date:"M d, H:i" }}</span>
-                    </div>
-                </div>
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicle Assessment Detail</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+  <div class="min-h-screen p-6 lg:p-10">
+    <div class="max-w-6xl mx-auto">
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+          <h1 class="text-2xl lg:text-3xl font-extrabold">Toyota Hilux <span class="text-gray-500 font-medium">2020</span></h1>
+          <p class="text-sm text-gray-500 mt-1">VIN: <span class="font-mono">ABC1234567</span> • Claim: <span class="font-medium">CLM-2025-0412-778</span></p>
         </div>
-    </nav>
-
-    <!-- Mobile Navigation Overlay -->
-    <div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
-
-    <!-- Mobile Navigation Menu -->
-    <div class="mobile-nav-menu" id="mobileNavMenu">
-        <div class="flex flex-col h-full">
-            <!-- Mobile Menu Header -->
-            <div class="flex items-center justify-between p-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Menu</h2>
-                <button class="mobile-icon-button text-gray-600 hover:text-gray-900" id="mobileMenuClose">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Mobile Menu Items -->
-            <div class="flex-1 overflow-y-auto">
-                <div class="py-2">
-                    <a href="{% url 'insurance:dashboard' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
-                        <i class="fas fa-home mr-3"></i>
-                        Dashboard
-                    </a>
-                    <a href="{% url 'insurance:assessment_dashboard' %}" class="mobile-nav-item flex items-center text-gray-700 hover:text-gray-900">
-                        <i class="fas fa-chart-line mr-3"></i>
-                        Assessments
-                    </a>
-                    <span class="mobile-nav-item flex items-center text-primary font-medium">
-                        <i class="fas fa-file-alt mr-3"></i>
-                        Assessment Detail
-                    </span>
-                </div>
-            </div>
-
-            <!-- Mobile Menu Footer -->
-            <div class="border-t border-gray-200 p-4">
-                <div class="flex items-center space-x-3 mb-3">
-                    <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                        <i class="fas fa-user text-white"></i>
-                    </div>
-                    <div>
-                        <div class="text-sm font-medium text-gray-900">{{ user.get_full_name|default:user.username }}</div>
-                        <div class="text-xs text-gray-500">Assessment Specialist</div>
-                    </div>
-                </div>
-                <button class="w-full mobile-button bg-gray-100 text-gray-700 hover:bg-gray-200">
-                    <i class="fas fa-sign-out-alt mr-2"></i>
-                    Logout
-                </button>
-            </div>
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-2 rounded-full text-sm bg-yellow-100 text-yellow-700">In Review</span>
+          <div class="flex gap-2">
+            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md">Download</button>
+            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md">Share</button>
+          </div>
         </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left column -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Assessment Summary -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-lg font-semibold">Assessment Summary</h2>
+                <p class="text-sm text-gray-500 mt-1">Assessor: L. Ndlovu • Insurer: Eswatini Mutual Ins.</p>
+              </div>
+              <div class="text-right">
+                <p class="text-sm text-gray-500">Date</p>
+                <p class="font-medium">2025-09-27</p>
+              </div>
+            </div>
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-xs text-gray-500">Claim Type</p>
+                <p class="font-medium mt-1">Accident</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-xs text-gray-500">Requested Amount</p>
+                <p class="font-medium mt-1">$8,400</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-xs text-gray-500">Total Estimated Repair</p>
+                <p class="font-medium mt-1">$7,700</p>
+              </div>
+              <div class="bg-gray-50 rounded-xl p-3">
+                <p class="text-xs text-gray-500">Assessment ID</p>
+                <p class="font-medium mt-1">CLM-2025-0412-778</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Assessment -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <h3 class="text-lg font-semibold mb-3">Detailed Assessment</h3>
+            <div class="space-y-3">
+              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'exterior' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-medium">Exterior Damage</h4>
+                    <p class="text-sm text-gray-500">Front bumper crushed, left fender dented, paint scratches across hood.</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-500">Estimate</p>
+                    <p class="font-medium">$3,200</p>
+                    <div class="mt-1">
+                      <span class="text-blue-600 text-xs font-medium flex items-center">
+                        <i class="fas fa-arrow-right mr-1"></i>View Details
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'wheels' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-medium">Wheels & Tires</h4>
+                    <p class="text-sm text-gray-500">Left front tire punctured; wheel alignment recommended.</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-500">Estimate</p>
+                    <p class="font-medium">$600</p>
+                    <div class="mt-1">
+                      <span class="text-blue-600 text-xs font-medium flex items-center">
+                        <i class="fas fa-arrow-right mr-1"></i>View Details
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'interior' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-medium">Interior Damage</h4>
+                    <p class="text-sm text-gray-500">Airbag deployed (driver).</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-500">Estimate</p>
+                    <p class="font-medium">$1,400</p>
+                    <div class="mt-1">
+                      <span class="text-blue-600 text-xs font-medium flex items-center">
+                        <i class="fas fa-arrow-right mr-1"></i>View Details
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'mechanical' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-medium">Mechanical Systems</h4>
+                    <p class="text-sm text-gray-500">Radiator leak and engine mount damage.</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-500">Estimate</p>
+                    <p class="font-medium">$2,100</p>
+                    <div class="mt-1">
+                      <span class="text-blue-600 text-xs font-medium flex items-center">
+                        <i class="fas fa-arrow-right mr-1"></i>View Details
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'electrical' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h4 class="font-medium">Electrical Systems</h4>
+                    <p class="text-sm text-gray-500">Headlamp wiring harness worn; sensors report minor fault codes.</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-sm text-gray-500">Estimate</p>
+                    <p class="font-medium">$400</p>
+                    <div class="mt-1">
+                      <span class="text-blue-600 text-xs font-medium flex items-center">
+                        <i class="fas fa-arrow-right mr-1"></i>View Details
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Assessment Photos -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <h3 class="text-lg font-semibold mb-3">Assessment Photos</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
+                <img src="https://via.placeholder.com/800x600?text=Front+bump" alt="Front bumper" class="w-full h-full object-cover" />
+              </div>
+              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
+                <img src="https://via.placeholder.com/800x600?text=Left+door" alt="Left door" class="w-full h-full object-cover" />
+              </div>
+              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
+                <img src="https://via.placeholder.com/800x600?text=Engine+bay" alt="Engine bay" class="w-full h-full object-cover" />
+              </div>
+              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
+                <img src="https://via.placeholder.com/800x600?text=Interior+dash" alt="Interior dash" class="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right column -->
+        <aside class="space-y-6">
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <h3 class="text-lg font-semibold mb-3">Repair Cost Comparison</h3>
+            <table class="w-full text-left text-sm">
+              <thead>
+                <tr class="text-gray-500">
+                  <th class="py-2">Source</th>
+                  <th class="py-2">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-gray-100 bg-green-50">
+                  <td class="py-3">Repairer A</td>
+                  <td class="py-3 font-medium">$7,600</td>
+                </tr>
+                <tr class="border-t border-gray-100">
+                  <td class="py-3">Repairer B</td>
+                  <td class="py-3 font-medium">$7,900</td>
+                </tr>
+                <tr class="border-t border-gray-100">
+                  <td class="py-3">Assessor Estimate</td>
+                  <td class="py-3 font-medium">$8,200</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="bg-white rounded-2xl p-4 shadow-sm sticky top-6">
+            <h3 class="text-lg font-semibold mb-3">Settlement Calculator</h3>
+            <div class="space-y-2 text-sm text-gray-700">
+              <div class="flex items-center justify-between">
+                <div>Depreciation</div>
+                <div>$385</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div>Covered</div>
+                <div>$5,760</div>
+              </div>
+              <div class="flex items-center justify-between">
+                <div>Deductible</div>
+                <div>$500</div>
+              </div>
+              <div class="border-t mt-3 pt-3 flex items-center justify-between">
+                <div class="font-semibold">Estimated Settlement</div>
+                <div class="text-xl font-extrabold">$5,260</div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="mt-8 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div class="text-sm text-gray-600">Last updated: 2025-09-27 • Assessor: L. Ndlovu</div>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 bg-white rounded-xl shadow-sm">Request Update</button>
+          <button class="px-3 py-2 bg-yellow-500 text-white rounded-xl">Send Back</button>
+          <button class="px-3 py-2 bg-red-600 text-white rounded-xl">Close Case</button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto mobile-dashboard px-4 sm:px-6 lg:px-8 py-4 md:py-8">
-        <!-- Assessment Header Card -->
-        <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 md:mb-8 card-hover assessment-detail-card">
-            <div class="p-6 lg:p-8">
-                <!-- Assessment Title & Status -->
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
-                    <div class="mb-4 lg:mb-0">
-                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2 mobile-title">Assessment {{ claim_id }}</h1>
-                        <p class="text-gray-600 mobile-subtitle">{{ assessment_data.vehicle }} • VIN: {{ assessment_data.vin }}</p>
-                    </div>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium assessment-status-urgent">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>TOTAL LOSS CANDIDATE
-                        </span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium assessment-status-pending">
-                            <i class="fas fa-tools mr-1"></i>STRUCTURAL DAMAGE
-                        </span>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                            <i class="fas fa-clock mr-1"></i>18h 42m SLA
-                        </span>
-                    </div>
-                </div>
+</body>
+</html>
 
-                <!-- Assessment Information Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 stats-grid mobile-stats-grid">
-                    <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 mobile-card card-hover">
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Customer Information</h3>
-                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.customer_name }}</p>
-                        <p class="text-sm text-gray-600">Claim: {{ assessment_data.claim_id }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 mobile-card card-hover">
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Incident Details</h3>
-                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.location }}</p>
-                        <p class="text-sm text-gray-600">{{ assessment_data.incident_date }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 mobile-card card-hover">
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Assessor</h3>
-                        <p class="text-lg font-semibold text-gray-900">{{ assessment_data.assessor }}</p>
-                        <p class="text-sm text-gray-600">Level 3 • Assigned: {{ assessment_data.incident_date }}</p>
-                    </div>
-                    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl p-4 mobile-card card-hover">
-                        <h3 class="text-sm font-medium text-gray-500 mb-2">Assessment Progress</h3>
-                        <p class="text-lg font-semibold text-green-600">{{ assessment_data.assessment_progress }}% Complete</p>
-                        <!-- CSS classes defined in assessment-detail.css -->
-                        <div class="assessment-progress-bar mt-2">
-                            <div class="assessment-progress-fill" style="width: {{ assessment_data.assessment_progress }}%"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
-            <!-- Assessment Summary Panel -->
-            <div class="lg:col-span-2">
-                        <!-- Assessment Summary Card -->
-                        <div class="bg-white rounded-xl shadow-lg border border-gray-200 mb-6 md:mb-8 card-hover action-card">
-                            <div class="p-6 lg:p-8">
-                                <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
-                                        <i class="fas fa-chart-bar text-white"></i>
-                                    </div>
-                                    Assessment Summary
-                                </h2>
-
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="space-y-4">
-                                        <div>
-                                            <label class="text-sm font-medium text-gray-500 mb-2 block">Overall Severity</label>
-                                            <div class="flex items-center">
-                                                <div class="flex-1 bg-gray-200 rounded-full h-3 mr-3">
-                                                    <div class="bg-gradient-to-r from-red-500 to-red-600 h-3 rounded-full transition-all duration-1000" style="width: 85%"></div>
-                                                </div>
-                                                <span class="text-sm font-medium text-red-600">{{ assessment_data.damage_type }}</span>
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-2 gap-4">
-                                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mobile-card-compact">
-                                                <label class="text-sm font-medium text-gray-500">Estimated Cost</label>
-                                                <p class="text-lg font-semibold text-gray-900">{{ assessment_data.estimated_repair_cost }}</p>
-                                            </div>
-                                            <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mobile-card-compact">
-                                                <label class="text-sm font-medium text-gray-500">Claim Value</label>
-                                                <p class="text-lg font-semibold text-gray-900">{{ assessment_data.claim_value }}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="space-y-4">
-                                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
-                                            <label class="text-sm font-medium text-gray-500">Cost Ratio</label>
-                                            <p class="text-lg font-semibold text-red-600">152% (Exceeds total loss threshold)</p>
-                                        </div>
-
-                                        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4 border border-orange-200">
-                                            <label class="text-sm font-medium text-gray-500">UK Classification</label>
-                                            <p class="text-lg font-semibold text-orange-600">Category S (Structural Damage)</p>
-                                        </div>
-
-                                        <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border border-red-200">
-                                            <label class="text-sm font-medium text-gray-500">SA 70% Rule</label>
-                                            <p class="text-lg font-semibold text-red-600">✓ EXCEEDED</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mt-6 p-4 recommendation-card rounded-xl">
-                                    <div class="flex items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                                                <i class="fas fa-exclamation-triangle text-white text-lg"></i>
-                                            </div>
-                                        </div>
-                                        <div class="ml-3">
-                                            <h3 class="text-sm font-medium text-white">Recommendation: TOTAL LOSS</h3>
-                                            <p class="text-sm text-white/90 mt-1">Settlement Range: £16,200 - £18,750</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                <!-- Detailed Assessment Sections -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover" x-data="assessmentData()">
-                    <div class="p-6 lg:p-8">
-                        <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                            <i class="fas fa-clipboard-list mr-3 text-emerald-600"></i>Detailed Assessment
-                        </h2>
-                        <p class="text-gray-600 mb-6">Click any section below for detailed component breakdown:</p>
-
-                        <div class="space-y-4">
-                            {% for section in assessment_data.sections %}
-                                <div class="assessment-section-card bg-gray-50 rounded-lg border border-gray-200 p-6 cursor-pointer hover:shadow-md transition-all duration-200 interactive-hover"
-                                     onclick="viewSection('{{ section.id }}')"
-                                     data-section-id="{{ section.id }}"
-                                     data-status="{{ section.status }}">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <div class="flex items-center">
-                                            <span class="text-2xl mr-3">{{ section.icon }}</span>
-                                            <h3 class="text-lg font-semibold text-gray-900">{{ section.name }}</h3>
-                                        </div>
-                                        <span class="px-3 py-1 rounded-full text-sm font-medium {% if section.status == 'Complete' %}assessment-status-complete{% else %}bg-yellow-100 text-yellow-800{% endif %}">{{ section.status }}</span>
-                                    </div>
-
-                                    <div class="grid grid-cols-3 gap-4 mb-4">
-                                        <div>
-                                            <p class="text-sm text-gray-500">Damage Level</p>
-                                            <p class="font-medium">{{ section.damageLevel }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-500">Estimated Cost</p>
-                                            <p class="font-medium">{{ section.estimatedCost }}</p>
-                                        </div>
-                                        <div>
-                                            <p class="text-sm text-gray-500">Components</p>
-                                            <p class="font-medium">{{ section.componentCount }} items</p>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-2">
-                                            <span class="text-sm text-gray-500">Progress:</span>
-                                            <span class="text-sm font-medium">{{ section.points }}</span>
-                                        </div>
-                                        <span class="text-blue-600 text-sm font-medium transition-all duration-200 flex items-center">
-                                            <i class="fas fa-arrow-right mr-1"></i>View Details
-                                        </span>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <p class="font-medium text-blue-900">Total Assessment Points: 117/120 Complete</p>
-                                    <p class="text-sm text-blue-700">Missing: Emissions sticker verification</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="font-semibold text-blue-900">Total Cost: £39,150</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Sidebar -->
-            <div class="lg:col-span-1">
-                <div class="space-y-6">
-                    <!-- Quick Actions Card -->
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-bolt mr-2 text-yellow-500"></i>Quick Actions
-                            </h3>
-
-                            <div class="space-y-3">
-                                <button class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-check mr-2"></i>Approve Settlement
-                                </button>
-                                <button class="w-full bg-red-600 hover:bg-red-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-times mr-2"></i>Reject Claim
-                                </button>
-                                <button class="w-full bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-info-circle mr-2"></i>Request More Info
-                                </button>
-                            </div>
-
-                            <hr class="my-4">
-
-                            <div class="space-y-2">
-                                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-comment mr-2"></i>Send Message
-                                </button>
-                                <button class="w-full bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-phone mr-2"></i>Schedule Call
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Assessment Photos Card -->
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-camera mr-2 text-indigo-500"></i>Assessment Photos (47 total)
-                            </h3>
-
-                            <div class="grid grid-cols-2 gap-2 mb-4">
-                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
-                                    <span class="text-xs text-gray-500">Overall View</span>
-                                </div>
-                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
-                                    <span class="text-xs text-gray-500">Damage Detail</span>
-                                </div>
-                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
-                                    <span class="text-xs text-gray-500">Front View</span>
-                                </div>
-                                <div class="aspect-square bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer">
-                                    <span class="text-xs text-gray-500">Side View</span>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2">
-                                <button class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-images mr-2"></i>View All Photos
-                                </button>
-                                <button class="w-full bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                    <i class="fas fa-upload mr-2"></i>Upload More
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Settlement Calculator Card -->
-                    <div class="bg-white rounded-xl shadow-lg border border-gray-200 card-hover">
-                        <div class="p-6">
-                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                                <i class="fas fa-calculator mr-2 text-green-500"></i>Settlement Calculation
-                            </h3>
-
-                            <div class="space-y-3 text-sm">
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-gray-600">Vehicle Agreed Value:</span>
-                                    <span class="font-medium">£18,750</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-gray-600">Less: Policy Excess:</span>
-                                    <span class="font-medium text-red-600">-£500</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-gray-600">Less: Outstanding Finance:</span>
-                                    <span class="font-medium text-red-600">-£12,400</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 border-b border-gray-100">
-                                    <span class="text-gray-600">Add: Salvage Recovery:</span>
-                                    <span class="font-medium text-green-600">+£3,200</span>
-                                </div>
-                                <div class="flex justify-between items-center py-2 font-semibold border-t border-gray-200 pt-3">
-                                    <span>Net Settlement:</span>
-                                    <span class="text-green-600">£9,050</span>
-                                </div>
-                                <div class="flex justify-between items-center py-1 text-xs text-gray-500">
-                                    <span>Additional allowances:</span>
-                                    <span>+£430</span>
-                                </div>
-                                <div class="flex justify-between items-center py-3 font-bold text-lg bg-green-50 px-3 rounded-lg border border-green-200">
-                                    <span>TOTAL PAYMENT:</span>
-                                    <span class="text-green-600">£9,480</span>
-                                </div>
-                            </div>
-
-                            <button class="w-full mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 flex items-center justify-center">
-                                <i class="fas fa-file-contract mr-2"></i>Generate Settlement Letter
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-{% endif %}
-
-<script>
-function assessmentData() {
-    return {
-        assessmentSections: [
-            {
-                id: 'exterior',
-                name: 'EXTERIOR DAMAGE',
-                icon: '🚗',
-                points: '38/38 ✓',
-                status: 'Complete',
-                severity: 'Severe',
-                cost: '£15,200',
-                damageLevel: 'Major',
-                estimatedCost: '£10,000',
-                componentCount: 12
-            },
-            {
-                id: 'wheels',
-                name: 'WHEELS & TIRES',
-                icon: '🛞',
-                points: '12/12 ✓',
-                status: 'Complete',
-                severity: 'Major',
-                cost: '£3,800',
-                damageLevel: 'Moderate',
-                estimatedCost: '£2,000',
-                componentCount: 8
-            },
-            {
-                id: 'interior',
-                name: 'INTERIOR DAMAGE',
-                icon: '🪑',
-                points: '19/19 ✓',
-                status: 'Complete',
-                severity: 'Moderate',
-                cost: '£2,400',
-                damageLevel: 'Minor',
-                estimatedCost: '£1,500',
-                componentCount: 10
-            },
-            {
-                id: 'mechanical',
-                name: 'MECHANICAL SYSTEMS',
-                icon: '⚙️',
-                points: '18/20 ⚠️',
-                status: '90% Complete',
-                severity: 'Minor',
-                cost: '£4,200',
-                damageLevel: 'Moderate',
-                estimatedCost: '£3,000',
-                componentCount: 15
-            },
-            {
-                id: 'electrical',
-                name: 'ELECTRICAL SYSTEMS',
-                icon: '🔌',
-                points: '9/9 ✓',
-                status: 'Complete',
-                severity: 'Moderate',
-                cost: '£1,900',
-                damageLevel: 'Minor',
-                estimatedCost: '£1,200',
-                componentCount: 6
-            },
-            {
-                id: 'safety',
-                name: 'SAFETY SYSTEMS',
-                icon: '🛡️',
-                points: '6/6 ✓',
-                status: 'Complete',
-                severity: 'Major',
-                cost: '£2,800',
-                damageLevel: 'Major',
-                estimatedCost: '£2,500',
-                componentCount: 8
-            },
-            {
-                id: 'structural',
-                name: 'FRAME & STRUCTURAL',
-                icon: '🏗️',
-                points: '6/6 ✓',
-                status: 'Complete',
-                severity: 'Severe',
-                cost: '£8,400',
-                damageLevel: 'Severe',
-                estimatedCost: '£8,000',
-                componentCount: 12
-            },
-            {
-                id: 'fluids',
-                name: 'FLUID SYSTEMS',
-                icon: '💧',
-                points: '6/6 ✓',
-                status: 'Complete',
-                severity: 'Minor',
-                cost: '£450',
-                damageLevel: 'Minor',
-                estimatedCost: '£400',
-                componentCount: 4
-            }
-        ],
-
-        getSectionStatusBadge(status) {
-            const badges = {
-                'Complete': 'bg-green-100 text-green-800',
-                '90% Complete': 'bg-yellow-100 text-yellow-800',
-                'In Progress': 'bg-blue-100 text-blue-800',
-                'Pending': 'bg-gray-100 text-gray-800'
-            };
-            return badges[status] || 'bg-gray-100 text-gray-800';
-        },
-
-        viewSection(sectionId) {
-            // Navigate to component detail view with proper URL structure
-            const claimId = '{{ assessment_data.claim_id|default:"INS-8847" }}';
-            window.location.href = `/insurance/assessments/${claimId}/section/${sectionId}/`;
-        }
-    }
-}
-
-// Initialize JavaScript components when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize claims table interactivity (for any table elements)
-    if (typeof initializeClaimsTable === 'function') {
-        initializeClaimsTable();
-    }
-
-    // Initialize essential UI components
-    if (typeof initializeEssentialUIComponents === 'function') {
-        initializeEssentialUIComponents();
-    }
-
-    // Initialize loading states for buttons
-    if (typeof initializeLoadingStates === 'function') {
-        initializeLoadingStates();
-    }
-
-    // Initialize photo gallery functionality
-    if (typeof initializePhotoGallery === 'function') {
-        initializePhotoGallery();
-    }
-});
-</script>
 
 {% endblock %}

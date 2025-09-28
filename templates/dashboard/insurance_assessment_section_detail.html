@@ -1,314 +1,841 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}{{ section_data.name }} - Assessment Detail{% endblock %}
-
-{% block extra_css %}
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<link rel="stylesheet" href="{% static 'css/responsive-claims-dashboard.css' %}" data-critical="true">
-<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
-<link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
-<link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
-<link rel="stylesheet" href="{% static 'css/assessment-detail.css' %}">
-<script>
-    tailwind.config = {
-        theme: {
-            extend: {
-                colors: {
-                    primary: '#1e40af',
-                    secondary: '#374151',
-                    accent: '#f59e0b',
-                    success: '#10b981',
-                    warning: '#f59e0b',
-                    danger: '#ef4444'
-                }
-            }
-        }
-    }
-</script>
-{% endblock %}
-
 {% block content %}
-<div class="min-h-screen bg-gray-50" x-data="sectionDetailData()">
-        <!-- Header Section -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 shadow-lg">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mobile-dashboard">
-                <!-- Breadcrumb -->
-                <nav class="flex mb-4" aria-label="Breadcrumb">
-                    <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                        <li class="inline-flex items-center">
-                            <a href="{% url 'insurance:assessment_dashboard' %}" class="inline-flex items-center text-sm font-medium text-blue-100 hover:text-white transition-colors duration-200">
-                                <div class="w-6 h-6 bg-white bg-opacity-20 rounded-lg flex items-center justify-center mr-2">
-                                    <i class="fas fa-tachometer-alt text-xs"></i>
-                                </div>
-                                Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-blue-300 mx-2"></i>
-                                <a href="{% url 'insurance:assessment_detail' claim_id %}" class="ml-1 text-sm font-medium text-blue-100 hover:text-white md:ml-2 transition-colors duration-200">
-                                    Claim {{ claim_id }}
-                                </a>
-                            </div>
-                        </li>
-                        <li aria-current="page">
-                            <div class="flex items-center">
-                                <i class="fas fa-chevron-right text-blue-300 mx-2"></i>
-                                <span class="ml-1 text-sm font-medium text-blue-200 md:ml-2">{{ section_data.name }}</span>
-                            </div>
-                        </li>
-                    </ol>
-                </nav>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mechanical Systems — Assessment Outcomes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .thin-scroll::-webkit-scrollbar { height: 8px; }
+    .thin-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 8px; }
+  </style>
+</head>
+<body class="bg-gray-50 font-sans text-gray-800">
+  <div class="min-h-screen p-6 lg:p-10">
+    <div class="max-w-5xl mx-auto">
+      <!-- Breadcrumb + Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <nav class="text-sm text-gray-500 mb-2"> 
+            <a href="#" class="hover:underline">Dashboard</a>
+            <span class="mx-2">/</span>
+            <a href="#" class="hover:underline">Toyota Hilux • CLM-2025-0412-778</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-700 font-medium">Mechanical Systems</span>
+          </nav>
+          <h1 class="text-2xl font-extrabold">Mechanical Systems — Assessment outcomes</h1>
+          <p class="text-sm text-gray-500 mt-1">Overview of all mechanical checks, outcomes, photos and repair cost estimates for this vehicle.</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <button class="px-3 py-2 bg-white rounded-2xl shadow-sm">Back</button>
+          <button class="px-3 py-2 bg-white rounded-2xl shadow-sm">Download CSV</button>
+          <button class="px-3 py-2 bg-indigo-600 text-white rounded-2xl">Export Report</button>
+        </div>
+      </div>
 
-                <!-- Section Header -->
-                <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                    <div class="flex items-center mb-4 lg:mb-0">
-                        <div class="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mr-4 glass-effect">
-                            <span class="text-3xl">{{ section_data.icon }}</span>
-                        </div>
-                        <div>
-                            <h1 class="text-3xl font-bold text-white mobile-title">{{ section_data.name }}</h1>
-                            <p class="text-blue-100 mt-1 mobile-subtitle">Detailed component breakdown and damage assessment</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <!-- Progress Circle -->
-                        <div class="relative w-16 h-16">
-                            <svg class="w-16 h-16 progress-ring" viewBox="0 0 36 36">
-                                <path class="progress-ring-circle text-white text-opacity-30"
-                                      stroke="currentColor"
-                                      stroke-width="3"
-                                      fill="transparent"
-                                      d="M18 2.0845
-                                         a 15.9155 15.9155 0 0 1 0 31.831
-                                         a 15.9155 15.9155 0 0 1 0 -31.831"
-                                      stroke-dasharray="100, 100">
-                                </path>
-                                <path class="progress-ring-circle text-white"
-                                      stroke="currentColor"
-                                      stroke-width="3"
-                                      fill="transparent"
-                                      d="M18 2.0845
-                                         a 15.9155 15.9155 0 0 1 0 31.831
-                                         a 15.9155 15.9155 0 0 1 0 -31.831"
-                                      :stroke-dasharray="`${sectionData.completion_percentage}, 100`">
-                                </path>
-                            </svg>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <span class="text-sm font-semibold text-white" x-text="`${sectionData.completion_percentage}%`"></span>
-                            </div>
-                        </div>
-                        <button onclick="window.history.back()" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg transition-all duration-200 flex items-center mobile-button glass-effect">
-                            <i class="fas fa-arrow-left mr-2"></i>
-                            <span class="hidden sm:inline">Back to Assessment</span>
-                            <span class="sm:hidden">Back</span>
-                        </button>
-                    </div>
-                </div>
+      <!-- Summary card -->
+      <div class="bg-white rounded-2xl p-5 shadow-sm mb-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm text-gray-500">Vehicle</p>
+            <div class="flex items-baseline gap-3">
+              <h2 class="text-lg font-semibold">Toyota Hilux <span class="text-gray-500 font-medium">2020</span></h2>
+              <span class="px-2 py-1 rounded-full bg-yellow-100 text-yellow-700 text-sm">Claim: In Review</span>
             </div>
+            <p class="text-sm text-gray-500 mt-1">Assessor: L. Ndlovu • Assessed: 2025-09-27</p>
+          </div>
+
+          <div class="text-right">
+            <p class="text-xs text-gray-500">Mechanical Total Estimate</p>
+            <div class="text-xl font-extrabold">$2,100</div>
+            <p class="text-sm text-gray-500 mt-1">(Sum of mechanical component estimates)</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="bg-white rounded-xl p-2 shadow-sm flex items-center gap-2">
+          <label class="text-sm text-gray-500">Filter</label>
+          <select class="text-sm px-2 py-1 border rounded-md">
+            <option value="all">All</option>
+            <option value="major">Major</option>
+            <option value="minor">Minor</option>
+            <option value="ok">OK</option>
+          </select>
+        </div>
+        <div class="bg-white rounded-xl p-2 shadow-sm">
+          <label class="text-sm text-gray-500">Search</label>
+          <input type="search" placeholder="Search component or note" class="text-sm outline-none px-2 py-1" />
+        </div>
+        <div class="ml-auto text-sm text-gray-500">Showing <span class="font-medium">15</span> checks</div>
+      </div>
+
+      <!-- Engine Bay Group -->
+      <section class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">Engine Bay</h2>
+          <p class="text-sm text-gray-500">Key items inspected in the engine bay</p>
         </div>
 
-        <!-- Summary Cards -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mobile-dashboard">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 stats-grid mobile-stats-grid">
-                <!-- Status Card -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 card-hover assessment-section-card">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-clipboard-check text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Status</p>
-                            <p class="text-lg font-semibold text-gray-900" x-text="sectionData.status"></p>
-                        </div>
+        <div class="grid gap-3">
+          <!-- Component card template -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <!-- block icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 7h18v10H3z" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Engine Block</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
                     </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for cracks, leaks and mounting damage.</p>
+                  </div>
+
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$1,200</div>
+                  </div>
                 </div>
 
-                <!-- Damage Level Card -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 card-hover assessment-section-card">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-exclamation-triangle text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Damage Level</p>
-                            <p class="text-lg font-semibold text-gray-900" x-text="sectionData.damage_level"></p>
-                        </div>
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Cracks</li>
+                      <li>Leaks</li>
+                      <li>Mounting damage</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('engine-block')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('engine-block')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('engine-block')">Recommend Repair</button>
                     </div>
+                  </div>
                 </div>
 
-                <!-- Estimated Cost Card -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 card-hover assessment-section-card">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-pound-sign text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Estimated Cost</p>
-                            <p class="text-lg font-semibold text-gray-900" x-text="sectionData.estimated_cost"></p>
-                        </div>
-                    </div>
+                <div id="engine-block" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Visible oil seepage at front cover, small hairline crack near mount. Recommend further pressure test and removal for inspection.</p>
                 </div>
 
-                <!-- Components Card -->
-                <div class="bg-white rounded-xl shadow-lg border border-gray-200 p-6 card-hover assessment-section-card">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-                                <i class="fas fa-cogs text-white"></i>
-                            </div>
-                        </div>
-                        <div class="ml-4">
-                            <p class="text-sm font-medium text-gray-500">Components</p>
-                            <p class="text-lg font-semibold text-gray-900" x-text="`${sectionData.component_count} items`"></p>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
+          </div>
 
-            <!-- Components List -->
-            <div class="bg-white rounded-xl shadow-lg border border-gray-200 action-card">
-                <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
-                        <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-list text-white text-sm"></i>
-                        </div>
-                        Component Details
-                    </h2>
-                    <p class="text-gray-600 mt-1 mobile-subtitle">Individual assessment of each component in this section</p>
-                </div>
+          <!-- Radiator -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18M3 6h18" />
+                </svg>
+              </div>
 
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mobile-action-cards">
-                        <template x-for="component in sectionData.components" :key="component.name">
-                            <div class="component-card assessment-detail-card bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 p-4 hover:shadow-lg transition-all duration-300">
-                                <div class="flex items-center justify-between mb-3">
-                                    <h3 class="font-medium text-gray-900" x-text="component.name"></h3>
-                                    <span :class="getSeverityBadgeClass(component.severity)" 
-                                          class="severity-badge px-3 py-1 rounded-full text-xs font-medium" 
-                                          x-text="component.severity"></span>
-                                </div>
-                                
-                                <div class="space-y-2">
-                                    <div class="flex justify-between">
-                                        <span class="text-sm text-gray-500">Status:</span>
-                                        <span :class="getStatusClass(component.status)" 
-                                              class="text-sm font-medium" 
-                                              x-text="component.status"></span>
-                                    </div>
-                                    
-                                    <div class="flex justify-between">
-                                        <span class="text-sm text-gray-500">Repair Cost:</span>
-                                        <span :class="component.cost === '£0' ? 'text-green-600' : 'text-red-600'" 
-                                              class="text-sm font-medium" 
-                                              x-text="component.cost"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Component Actions -->
-                                <div class="mt-4 pt-3 border-t border-gray-200">
-                                    <div class="flex space-x-2">
-                                        <button class="flex-1 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 text-blue-700 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200 mobile-button">
-                                            <i class="fas fa-eye mr-1"></i>
-                                            View Photos
-                                        </button>
-                                        <button class="flex-1 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-gray-100 hover:to-gray-200 text-gray-700 text-xs font-medium py-2 px-3 rounded-lg transition-all duration-200 mobile-button">
-                                            <i class="fas fa-file-alt mr-1"></i>
-                                            Report
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Radiator</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
                     </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect for leaks, fin damage and mounting bracket issues.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$300</div>
+                  </div>
                 </div>
-            </div>
 
-            <!-- Action Buttons -->
-            <div class="mt-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-                <button onclick="window.history.back()" class="w-full sm:w-auto bg-gradient-to-r from-gray-100 to-gray-200 hover:from-gray-200 hover:to-gray-300 text-gray-700 px-6 py-3 rounded-xl transition-all duration-200 flex items-center justify-center mobile-button action-button">
-                    <i class="fas fa-arrow-left mr-2"></i>
-                    <span class="hidden sm:inline">Back to Assessment Overview</span>
-                    <span class="sm:hidden">Back</span>
-                </button>
-                
-                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-                    <button class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-xl transition-all duration-200 flex items-center justify-center mobile-button action-button">
-                        <i class="fas fa-download mr-2"></i>
-                        Export Report
-                    </button>
-                    <button class="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-6 py-3 rounded-xl transition-all duration-200 flex items-center justify-center mobile-button action-button">
-                        <i class="fas fa-check mr-2"></i>
-                        Mark Complete
-                    </button>
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Leaks</li>
+                      <li>Fin damage</li>
+                      <li>Mounting brackets</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('radiator')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('radiator')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('radiator')">Recommend Repair</button>
+                    </div>
+                  </div>
                 </div>
+
+                <div id="radiator" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Pressure test failed at lower hose. Minor fin damage on lower section. Replace lower hose and re-test; consider radiator core repair if leak persists.</p>
+                </div>
+
+              </div>
             </div>
+          </div>
+
+          <!-- Battery -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 6h2v6h-2zM5 6h2v6H5z" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Battery</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check case integrity, terminal corrosion, and hold-down securement.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$100</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Case damage</li>
+                      <li>Terminal corrosion</li>
+                      <li>Hold-down</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('battery')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('battery')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('battery')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="battery" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Terminals show light corrosion; hold-down missing rubber cushion. Clean terminals and fit new cushion; test charging system.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Air Filter Housing -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Air Filter Housing</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for cracks and secure mounting.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$50</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Cracks</li>
+                      <li>Mounting damage</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('airfilter')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('airfilter')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('airfilter')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="airfilter" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Housing shows minor cracks at clip area; still serviceable but recommend replacement if cracking worsens.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Belts and Hoses -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16M4 12h16" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Belts & Hoses</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect fraying, cracks and tension.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$150</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Fraying</li>
+                      <li>Cracks</li>
+                      <li>Proper tension</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('belts')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('belts')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('belts')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="belts" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Serpentine belt shows light glazing; top hose has small crack near clamp—replace hose and re-tension belt.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Fluid Reservoirs -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v18M6 7h12" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Fluid Reservoirs</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check caps, levels and visible cracks.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$50</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Cracks</li>
+                      <li>Cap damage</li>
+                      <li>Fluid levels</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('fluids')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('fluids')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('fluids')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="fluids" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Coolant low and slightly discolored; cap shows wear. Top up and flush coolant; replace cap if leak detected.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Wiring Harnesses -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18M12 3v18" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Wiring Harnesses</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect for damage, routing and secure connections.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$120</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Damage</li>
+                      <li>Proper routing</li>
+                      <li>Connections</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('wiring')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('wiring')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('wiring')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="wiring" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Minor abrasions found on loom near alternator; re-route and protect with split loom; re-test sensors afterward.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Engine Mounts -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v6l9 3-9 3v6" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Engine Mounts</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Assess structural integrity and rubber condition.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$150</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Structural integrity</li>
+                      <li>Rubber condition</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('mounts')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('mounts')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('mounts')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="mounts" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Top mount shows split in rubber—may cause vibration under load. Recommend replacement of affected mounts.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
         </div>
+      </section>
+
+      <!-- Suspension & Steering Group -->
+      <section>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-lg font-semibold">Suspension & Steering</h2>
+          <p class="text-sm text-gray-500">Inspected suspension and steering components</p>
+        </div>
+
+        <div class="grid gap-3">
+          <!-- Shock Absorbers -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v18M3 12h18" />
+                </svg>
+              </div>
+
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Shock Absorbers</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for leaks, mounting damage and function.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$300</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <p class="text-sm text-gray-700">Checklist</p>
+                    <ul class="list-disc ml-5 mt-2 text-sm text-gray-600">
+                      <li>Leaks</li>
+                      <li>Mounting damage</li>
+                      <li>Function</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-700">Actions & notes</p>
+                    <div class="mt-2 flex gap-2">
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('shocks')">View details</button>
+                      <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('shocks')">Photos</button>
+                      <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('shocks')">Recommend Repair</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="shocks" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Left front shock shows oil trail and reduced rebound. Replace left front shock and inspect top mount.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Struts -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 18h16" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Struts</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect structural integrity and mounting points.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$180</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('struts')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('struts')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('struts')">Recommend Repair</button>
+                </div>
+
+                <div id="struts" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Mounting bolts show minor corrosion; strut bodies intact.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Springs -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4v16M8 8v8M16 8v8" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Springs</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for cracks, proper seating and corrosion.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$120</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('springs')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('springs')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('springs')">Recommend Repair</button>
+                </div>
+
+                <div id="springs" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Front-left spring shows light surface corrosion; seating looks correct. Monitor for progression.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Arms -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 12h16M12 4v16" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Control Arms</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect for bending, bushing damage and ball joint integrity.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$250</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('control')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('control')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('control')">Recommend Repair</button>
+                </div>
+
+                <div id="control" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Near-side control arm shows deformation and bushing play—replace arm and rebalance wheel alignment.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Tie Rods -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v18M3 12h18" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Tie Rods</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for bending, boot damage and end wear.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$120</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('tie')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('tie')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('tie')">Recommend Repair</button>
+                </div>
+
+                <div id="tie" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Outer tie rod end boot torn—replace tie rod end and check alignment.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Steering Rack -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18M12 3v18" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Steering Rack</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-red-100 text-red-700">Major</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Inspect for leaks, mounting damage and boot tears.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$400</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('rack')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('rack')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('rack')">Recommend Repair</button>
+                </div>
+
+                <div id="rack" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Power steering rack shows minor leak at input seal. Recommend replace seal and inspect lines.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Brake Lines -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12h18M6 6v12M18 6v12" />
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-start justify-between">
+                  <div>
+                    <div class="flex items-center gap-3">
+                      <h3 class="font-semibold">Brake Lines</h3>
+                      <span class="text-xs py-1 px-2 rounded-full bg-yellow-100 text-yellow-700">Minor</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">Check for damage, routing and leaks.</p>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm text-gray-500">Estimate</div>
+                    <div class="font-medium">$80</div>
+                  </div>
+                </div>
+
+                <div class="mt-3 flex gap-2">
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="toggleDetails('brakelines')">View details</button>
+                  <button class="px-3 py-2 bg-white rounded-md shadow-sm" onclick="openGallery('brakelines')">Photos</button>
+                  <button class="px-3 py-2 bg-green-600 text-white rounded-md" onclick="markAction('brakelines')">Recommend Repair</button>
+                </div>
+
+                <div id="brakelines" class="mt-4 hidden bg-gray-50 border border-gray-100 rounded-lg p-3">
+                  <p class="text-sm text-gray-700">Detailed notes: Minor abrasion to near-side brake line—no active leak. Protect and re-route where chafing occurs.</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- Gallery modal placeholder -->
+      <div id="galleryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-3xl w-full p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold">Photos</h4>
+            <button class="text-gray-500" onclick="closeGallery()">Close</button>
+          </div>
+          <div id="galleryContent" class="thin-scroll overflow-x-auto whitespace-nowrap gap-3"></div>
+        </div>
+      </div>
+
+      <!-- Footer actions -->
+      <div class="mt-8 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
+        <div class="text-sm text-gray-600">Mechanical checks summary • Last updated: 2025-09-27</div>
+        <div class="flex gap-2">
+          <button class="px-3 py-2 bg-white rounded-xl shadow-sm">Export CSV</button>
+          <button class="px-3 py-2 bg-indigo-600 text-white rounded-xl">Create Work Order</button>
+        </div>
+      </div>
+
     </div>
+  </div>
 
-<script>
-function sectionDetailData() {
-    return {
-        sectionData: JSON.parse('{{ section_data|escapejs }}') || {
-            name: 'Loading...',
-            icon: '⏳',
-            status: 'Loading',
-            damage_level: 'Unknown',
-            estimated_cost: '£0',
-            component_count: 0,
-            completion_percentage: 0,
-            components: []
-        },
-        
-        getSeverityBadgeClass(severity) {
-            const classes = {
-                'Severe': 'bg-red-100 text-red-800',
-                'Major': 'bg-orange-100 text-orange-800',
-                'Moderate': 'bg-yellow-100 text-yellow-800',
-                'Minor': 'bg-blue-100 text-blue-800',
-                'None': 'bg-green-100 text-green-800',
-                'Unknown': 'bg-gray-100 text-gray-800'
-            };
-            return classes[severity] || 'bg-gray-100 text-gray-800';
-        },
-        
-        getStatusClass(status) {
-            const statusClasses = {
-                'Good': 'text-green-600',
-                'Damaged': 'text-red-600',
-                'Worn': 'text-yellow-600',
-                'Scratched': 'text-orange-600',
-                'Cracked': 'text-red-600',
-                'Bent': 'text-red-600',
-                'Dented': 'text-orange-600',
-                'Torn': 'text-red-600',
-                'Stained': 'text-yellow-600',
-                'Scuffed': 'text-orange-600',
-                'Deployed': 'text-red-600',
-                'Low': 'text-yellow-600',
-                'Dirty': 'text-yellow-600',
-                'Pending': 'text-gray-600'
-            };
-            return statusClasses[status] || 'text-gray-600';
-        }
+  <script>
+    function toggleDetails(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.toggle('hidden');
     }
-}
 
-// Initialize Alpine.js data
-document.addEventListener('DOMContentLoaded', function() {
-    // Any additional initialization can go here
-});
-</script>
-{% endblock %}
+    function openGallery(component) {
+      const modal = document.getElementById('galleryModal');
+      const content = document.getElementById('galleryContent');
+      modal.classList.remove('hidden');
+      content.innerHTML = '';
+      const pics = [
+        `https://via.placeholder.com/1200x800?text=${component}+photo+1`,
+        `https://via.placeholder.com/1200x800?text=${component}+photo+2`,
+        `https://via.placeholder.com/1200x800?text=${component}+photo+3`,
+      ];
+      pics.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'inline-block h-64 object-cover mr-3 rounded-lg';
+        content.appendChild(img);
+      });
+    }
 
-{% block extra_js %}
-<script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    function closeGallery() {
+      document.getElementById('galleryModal').classList.add('hidden');
+    }
+
+    function markAction(id) {
+      alert('Marked '+id+' for recommended repair — create work order or send to vendor.');
+    }
+  </script>
+</body>
+</html>
+
 {% endblock %}
