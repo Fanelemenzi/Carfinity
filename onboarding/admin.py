@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import PendingVehicleOnboarding
+from .models import PendingVehicleOnboarding, CustomerOnboarding, VehicleOnboarding
 from django.utils import timezone
 from vehicles.models import Vehicle, VehicleOwnership, VehicleStatus, VehicleImage
 # from django_countries.fields import Country
@@ -328,3 +328,150 @@ class PendingVehicleOnboardingAdmin(admin.ModelAdmin):
                 self.message_user(request, f"Error creating full vehicle for onboarding {onboarding.id}: {e}", level='error')
         self.message_user(request, f"{created} full vehicle(s) and related records created from approved onboarding records.")
     create_full_vehicle_from_onboarding.short_description = "Create full Vehicle & related records from approved onboarding(s)"
+
+
+class VehicleOnboardingInline(admin.TabularInline):
+    """Inline admin for VehicleOnboarding within CustomerOnboarding"""
+    model = VehicleOnboarding
+    extra = 0
+    readonly_fields = ('added_at', 'updated_at')
+    fields = (
+        'vin_number', 'make', 'model', 'year', 'primary_usage', 
+        'current_odometer', 'estimated_annual_mileage', 'current_condition',
+        'maintenance_preference', 'vehicle_nickname'
+    )
+
+
+@admin.register(CustomerOnboarding)
+class CustomerOnboardingAdmin(admin.ModelAdmin):
+    list_display = (
+        'user', 'customer_type', 'primary_goal', 'maintenance_knowledge', 
+        'service_priority', 'completed_at', 'get_vehicle_count'
+    )
+    list_filter = (
+        'customer_type', 'maintenance_knowledge', 'primary_goal', 
+        'service_priority', 'preferred_payment_model', 'parts_preference',
+        'completed_at'
+    )
+    search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
+    readonly_fields = ('completed_at', 'updated_at')
+    inlines = [VehicleOnboardingInline]
+    
+    fieldsets = (
+        ('User Information', {
+            'fields': ('user',)
+        }),
+        ('Customer Profile', {
+            'fields': (
+                'customer_type', 'preferred_communication', 'reminder_frequency',
+                'service_radius', 'monthly_maintenance_budget'
+            )
+        }),
+        ('Service Preferences', {
+            'fields': (
+                'mobile_service_interest', 'emergency_service_interest',
+                'maintenance_knowledge', 'primary_goal', 'service_priority'
+            )
+        }),
+        ('Payment & Parts', {
+            'fields': (
+                'preferred_payment_model', 'parts_preference'
+            )
+        }),
+        ('Current Service History', {
+            'fields': (
+                'current_mechanic', 'maintenance_tracking_method',
+                'biggest_maintenance_challenge'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Insurance & Warranty', {
+            'fields': (
+                'auto_insurance_provider', 'vehicle_under_warranty',
+                'extended_warranty_interest'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Referral Information', {
+            'fields': (
+                'how_heard_about_service', 'potential_referrals',
+                'interested_in_referral_rewards'
+            ),
+            'classes': ('collapse',)
+        }),
+        ('Timestamps', {
+            'fields': ('completed_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_vehicle_count(self, obj):
+        count = obj.vehicles.count()
+        if count > 0:
+            return format_html(
+                '<span style="color: green; font-weight: bold;">{} vehicle{}</span>',
+                count, 's' if count != 1 else ''
+            )
+        return format_html('<span style="color: orange;">No vehicles</span>')
+    get_vehicle_count.short_description = 'Vehicles'
+
+
+@admin.register(VehicleOnboarding)
+class VehicleOnboardingAdmin(admin.ModelAdmin):
+    list_display = (
+        'get_vehicle_info', 'customer_onboarding', 'primary_usage',
+        'current_condition', 'maintenance_preference', 'added_at'
+    )
+    list_filter = (
+        'primary_usage', 'estimated_annual_mileage', 'typical_driving_conditions',
+        'current_condition', 'maintenance_preference', 'under_warranty', 'added_at'
+    )
+    search_fields = (
+        'vin_number', 'make', 'model', 'vehicle_nickname',
+        'customer_onboarding__user__username', 'customer_onboarding__user__email'
+    )
+    readonly_fields = ('added_at', 'updated_at')
+    
+    fieldsets = (
+        ('Customer', {
+            'fields': ('customer_onboarding',)
+        }),
+        ('Vehicle Information', {
+            'fields': (
+                'vin_number', 'make', 'model', 'year', 'vehicle_nickname'
+            )
+        }),
+        ('Usage & Mileage', {
+            'fields': (
+                'primary_usage', 'current_odometer', 'estimated_annual_mileage',
+                'typical_driving_conditions'
+            )
+        }),
+        ('Condition & Service History', {
+            'fields': (
+                'current_condition', 'last_oil_change', 'last_major_service',
+                'current_problems'
+            )
+        }),
+        ('Warranty & Preferences', {
+            'fields': (
+                'under_warranty', 'warranty_expires', 'maintenance_preference'
+            )
+        }),
+        ('Timestamps', {
+            'fields': ('added_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def get_vehicle_info(self, obj):
+        if obj.make and obj.model and obj.year:
+            vehicle_info = f"{obj.year} {obj.make} {obj.model}"
+        else:
+            vehicle_info = f"VIN: {obj.vin_number[:8]}..."
+        
+        if obj.vehicle_nickname:
+            vehicle_info += f" ({obj.vehicle_nickname})"
+        
+        return vehicle_info
+    get_vehicle_info.short_description = 'Vehicle'

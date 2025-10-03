@@ -235,8 +235,8 @@ def register_user(request):
                 # Show success message
                 messages.success(request, "Registration successful! Welcome to Carfinity.")
                 
-                # Redirect to onboarding survey
-                return redirect('customer_vehicle_survey')
+                # Start onboarding workflow - redirect to onboarding step 1
+                return redirect('onboarding:onboarding_step_1')
                 
             except Exception as e:
                 # Log the error

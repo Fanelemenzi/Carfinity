@@ -1,0 +1,233 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Final Preferences - Step 4{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Preferences</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-check-circle text-danger mr-2"></i>
+                            Final Setup
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01. Welcome ✓</div>
+            <div class="text-sm font-medium text-success">02. Preferences ✓</div>
+            <div class="text-sm font-medium text-success">03. Vehicle Information ✓</div>
+            <div class="text-sm font-medium text-danger">04. Final Setup</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Almost Done!
+                    </h2>
+                    <p class="text-gray-600">Just a few more preferences to personalize your experience.</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step 4 of 4</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Final Preferences</h3>
+                <p class="text-sm text-gray-500">Complete your profile with payment and service preferences</p>
+            </div>
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="space-y-8">
+                    <!-- Payment Model -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">Are you interested in subscription maintenance plans or pay-per-service? <span class="text-red-500">*</span></label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="preferred_payment_model" value="subscription" class="mr-4 text-danger focus:ring-danger" required>
+                                <span class="text-gray-700">Subscription maintenance plans</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="preferred_payment_model" value="pay_per_service" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Pay-per-service</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="preferred_payment_model" value="both" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Both options interest me</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Parts Preference -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">Do you prefer OEM parts or are quality aftermarket parts acceptable? <span class="text-red-500">*</span></label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="parts_preference" value="oem_only" class="mr-4 text-danger focus:ring-danger" required>
+                                <span class="text-gray-700">OEM parts only</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="parts_preference" value="quality_aftermarket" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Quality aftermarket parts acceptable</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="parts_preference" value="cost_effective" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Most cost-effective option</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- How did you hear about us -->
+                    <div>
+                        <label for="how_heard_about_service" class="block text-sm font-medium text-gray-700 mb-2">
+                            How did you hear about our service? <span class="text-red-500">*</span>
+                        </label>
+                        <select name="how_heard_about_service" id="how_heard_about_service" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" required>
+                            <option value="">Select an option</option>
+                            <option value="google_search">Google search</option>
+                            <option value="social_media">Social media</option>
+                            <option value="friend_family">Friend or family member</option>
+                            <option value="online_ad">Online advertisement</option>
+                            <option value="mechanic_referral">Mechanic referral</option>
+                            <option value="app_store">App store</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Additional Vehicle Details -->
+                    <div class="border-t border-gray-200 pt-6">
+                        <h4 class="text-lg font-medium text-gray-900 mb-6">Additional Vehicle Details</h4>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="estimated_annual_mileage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Estimated Annual Mileage
+                                </label>
+                                <select name="estimated_annual_mileage" id="estimated_annual_mileage" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger">
+                                    <option value="under_5k">Under 5,000 miles/year</option>
+                                    <option value="5k_10k">5,000-10,000 miles/year</option>
+                                    <option value="10k_15k" selected>10,000-15,000 miles/year</option>
+                                    <option value="15k_20k">15,000-20,000 miles/year</option>
+                                    <option value="20k_25k">20,000-25,000 miles/year</option>
+                                    <option value="over_25k">Over 25,000 miles/year</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label for="current_condition" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Current Vehicle Condition
+                                </label>
+                                <select name="current_condition" id="current_condition" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger">
+                                    <option value="excellent">Excellent - Like new</option>
+                                    <option value="good" selected>Good - Well maintained</option>
+                                    <option value="fair">Fair - Some issues but runs well</option>
+                                    <option value="poor">Poor - Frequent problems</option>
+                                    <option value="unknown">Unknown - Recently acquired</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <label for="maintenance_preference" class="block text-sm font-medium text-gray-700 mb-2">
+                                Maintenance Priority for This Vehicle
+                            </label>
+                            <select name="maintenance_preference" id="maintenance_preference" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger">
+                                <option value="cost_effective" selected>Most cost-effective options</option>
+                                <option value="oem_parts">OEM parts and dealer service</option>
+                                <option value="performance">Performance and reliability focused</option>
+                                <option value="eco_friendly">Environmentally conscious options</option>
+                                <option value="quick_turnaround">Fastest service possible</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-between items-center space-x-4">
+                    <a href="{% url 'onboarding:onboarding_step_3' %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </a>
+                    <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        Complete Setup<i class="fas fa-check ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-red-600"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Final Setup Information</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Subscription Plans:</strong> Fixed monthly cost with predictable maintenance</li>
+                            <li><strong>Pay-per-Service:</strong> Pay only when services are needed</li>
+                            <li><strong>OEM Parts:</strong> Original manufacturer parts for guaranteed compatibility</li>
+                            <li><strong>Aftermarket Parts:</strong> Quality alternatives often at lower cost</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

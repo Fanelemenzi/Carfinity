@@ -167,6 +167,51 @@ def get_user_default_dashboard(user):
         return ''
 
 
+@register.simple_tag
+def get_user_dashboard_url(user):
+    """
+    Template tag to get the appropriate dashboard URL for a user.
+
+    Args:
+        user: Django User instance
+
+    Returns:
+        Dashboard URL string
+    """
+    if not user or not user.is_authenticated:
+        return '/login/'
+
+    try:
+        from ..services import AuthenticationService
+        
+        # Get user permissions
+        permissions = AuthenticationService.get_user_permissions(user)
+        
+        if not permissions.available_dashboards:
+            logger.warning(f"User {user.id} has no available dashboards")
+            return '/access-denied/'
+        
+        # If user has multiple dashboards, redirect to dashboard selector
+        if len(permissions.available_dashboards) > 1:
+            logger.info(f"User {user.id} has multiple dashboards, redirecting to selector")
+            return '/dashboard-selector/'
+        
+        # If user has only one dashboard, redirect directly to it
+        if permissions.default_dashboard:
+            dashboard_info = AuthenticationService.DASHBOARDS.get(permissions.default_dashboard)
+            if dashboard_info:
+                return dashboard_info.url
+        
+        # Fallback to first available dashboard
+        first_dashboard = permissions.available_dashboards[0]
+        dashboard_info = AuthenticationService.DASHBOARDS.get(first_dashboard)
+        return dashboard_info.url if dashboard_info else '/dashboard/'
+        
+    except Exception as e:
+        logger.error(f"Error getting dashboard URL for user {user.id}: {str(e)}")
+        return '/dashboard/'
+
+
 @register.filter
 def has_group(user, group_name):
     """

@@ -5,7 +5,14 @@ from .forms import ClientForm, VehicleForm, VehicleStatusForm, VehicleEquipmentF
 app_name = 'onboarding'
 
 urlpatterns = [
-    # New customer & vehicle survey
+    # Multi-step onboarding workflow
+    path('step-1/', views.onboarding_step_1, name='onboarding_step_1'),
+    path('step-2/', views.onboarding_step_2, name='onboarding_step_2'),
+    path('step-3/', views.onboarding_step_3, name='onboarding_step_3'),
+    path('step-4/', views.onboarding_step_4, name='onboarding_step_4'),
+    path('complete/', views.onboarding_complete, name='onboarding_complete'),
+    
+    # Legacy customer & vehicle survey (kept for compatibility)
     path('survey/', views.customer_vehicle_survey, name='customer_vehicle_survey'),
     path('survey/complete/', views.onboarding_complete_view, name='onboarding_complete_view'),
     
