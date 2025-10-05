@@ -35,7 +35,7 @@ DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 #ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = ['.vercel.app']
+ALLOWED_HOSTS = ['.vercel.app', 'www.carfinity.co.za']
 
 # Application definition
 
