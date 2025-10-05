@@ -34,8 +34,8 @@ SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45
 DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS = ['*']
-#ALLOWED_HOSTS = ['.vercel.app', 'www.carfinity.co.za', 'carfinity.co.za']
+#ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['.vercel.app', 'www.carfinity.co.za', 'carfinity.co.za']
 
 # Application definition
 
