@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import dj_database_url
 from pathlib import Path
 import os
-from decouple import config, Csv
+from decouple import config
 #from dotenv import load_dotenv
 
 #load_dotenv()
@@ -36,7 +36,7 @@ DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 #ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,carfinity.co.za,www.carfinity.co.za', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,carfinity.co.za,www.carfinity.co.za,.vercel.app').split(',')
 
 # Application definition
 
