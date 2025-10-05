@@ -12,16 +12,16 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import dj_database_url
 from pathlib import Path
 import os
-from decouple import config
-#from dotenv import load_dotenv
+#from decouple import config
+from dotenv import load_dotenv
 
-#load_dotenv()
+
 
 #from .models import User
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -32,11 +32,12 @@ SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45
 #'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = 'True'
+DEBUG = False
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-#ALLOWED_HOSTS = ['*']
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,carfinity.co.za,www.carfinity.co.za,.vercel.app').split(',')
+ALLOWED_HOSTS = ['https://carfinity-production.up.railway.app/']
+CSRF_TRUSTED_ORIGINS = ['https://carfinity-production.up.railway.app']
+
 
 # Application definition
 
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'whitenoise.runserver_nostatic',
     'cloudinary',
     'rest_framework',
     'cloudinary_storage',
