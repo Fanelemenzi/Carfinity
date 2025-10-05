@@ -35,8 +35,8 @@ SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45
 DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS = ['carfinity-production.up.railway.app', 'https://carfinity-production.up.railway.app/']
-CSRF_TRUSTED_ORIGINS = ['https://carfinity-production.up.railway.app/']
+ALLOWED_HOSTS = ['https://www.carfinity.co.za','https://carfinity.co.za', 'carfinity-production.up.railway.app', 'https://carfinity-production.up.railway.app/']
+CSRF_TRUSTED_ORIGINS = ['https://www.carfinity.co.za', 'https://carfinity.co.za', 'https://carfinity-production.up.railway.app/']
 
 
 # Application definition
