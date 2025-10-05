@@ -14,6 +14,7 @@
         }
       }
     ],
+    "includeFiles": ["templates/**/*", "static/**/*"],
     "routes": [
       {
         "src": "/(.*)",
