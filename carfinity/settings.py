@@ -36,7 +36,7 @@ DEBUG = False
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 ALLOWED_HOSTS = ['carfinity-production.up.railway.app', 'https://carfinity-production.up.railway.app/']
-CSRF_TRUSTED_ORIGINS = ['carfinity-production.up.railway.app', 'https://carfinity-production.up.railway.app/']
+CSRF_TRUSTED_ORIGINS = ['https://carfinity-production.up.railway.app/']
 
 
 # Application definition
