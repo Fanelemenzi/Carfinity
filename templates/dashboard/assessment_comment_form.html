@@ -1,0 +1,125 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Add Comment - Assessment {{ assessment.assessment_id }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Add Comment</h1>
+                    <p class="mt-2 text-gray-600">Assessment {{ assessment.assessment_id }} - {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</p>
+                </div>
+                <a href="{% url 'insurance:assessment_detail' claim_id=assessment.id %}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back to Assessment
+                </a>
+            </div>
+        </div>
+
+        <!-- Comment Form -->
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Add Your Comment</h2>
+                <p class="text-sm text-gray-600 mt-1">Provide feedback or notes about this assessment</p>
+            </div>
+            
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- Comment Type -->
+                    <div>
+                        <label for="{{ form.comment_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.comment_type.label }}
+                        </label>
+                        {{ form.comment_type }}
+                        {% if form.comment_type.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.comment_type.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Subject -->
+                    <div>
+                        <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.subject.label }}
+                        </label>
+                        {{ form.subject }}
+                        {% if form.subject.help_text %}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.subject.help_text }}</p>
+                        {% endif %}
+                        {% if form.subject.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Comment Content -->
+                    <div>
+                        <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            {{ form.content.label }}
+                        </label>
+                        {{ form.content }}
+                        {% if form.content.help_text %}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.content.help_text }}</p>
+                        {% endif %}
+                        {% if form.content.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.content.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Options -->
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            {{ form.is_important }}
+                            <label for="{{ form.is_important.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                                {{ form.is_important.label }}
+                            </label>
+                        </div>
+                        {% if form.is_important.help_text %}
+                            <p class="text-sm text-gray-500 ml-6">{{ form.is_important.help_text }}</p>
+                        {% endif %}
+
+                        <div class="flex items-center">
+                            {{ form.requires_action }}
+                            <label for="{{ form.requires_action.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                                {{ form.requires_action.label }}
+                            </label>
+                        </div>
+                        {% if form.requires_action.help_text %}
+                            <p class="text-sm text-gray-500 ml-6">{{ form.requires_action.help_text }}</p>
+                        {% endif %}
+
+                        <div class="flex items-center">
+                            {{ form.is_customer_visible }}
+                            <label for="{{ form.is_customer_visible.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                                {{ form.is_customer_visible.label }}
+                            </label>
+                        </div>
+                        {% if form.is_customer_visible.help_text %}
+                            <p class="text-sm text-gray-500 ml-6">{{ form.is_customer_visible.help_text }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-end space-x-3">
+                    <a href="{% url 'insurance:assessment_detail' claim_id=assessment.id %}" 
+                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Add Comment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

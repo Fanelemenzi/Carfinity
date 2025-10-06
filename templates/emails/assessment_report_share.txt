@@ -1,0 +1,29 @@
+Vehicle Assessment Report
+Shared by {{ sender_name }}
+
+Hello,
+
+{{ sender_name }} has shared a vehicle assessment report with you.
+
+{% if message %}
+Message from {{ sender_name }}:
+{{ message }}
+{% endif %}
+
+Vehicle Information:
+- Vehicle: {{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}
+- VIN: {{ assessment.vehicle.vin }}
+- Assessment Date: {{ assessment.assessment_date|date:"F d, Y" }}
+- Assessment ID: {{ assessment.assessment_id }}
+- Report Type: {{ report_type }}
+
+The detailed assessment report is attached to this email as a PDF document.
+
+If you have any questions about this assessment, please contact {{ sender_name }} directly.
+
+Best regards,
+Carfinity Assessment Team
+
+---
+This email was sent from the Carfinity Vehicle Assessment System.
+Please do not reply to this email address.

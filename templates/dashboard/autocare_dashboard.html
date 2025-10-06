@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% load dashboard_extras %}
+{% load dashboard_filters %}
 
 {% block title %}AutoCare Dashboard - Carfinity{% endblock %}
 
@@ -25,10 +26,29 @@
 <body class="bg-gray-50 font-sans text-gray-800">
   <div class="max-w-7xl mx-auto p-6">
 
+    {% if error_message %}
+      <!-- Error Message -->
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-red-800">Error Loading Dashboard</h3>
+            <div class="mt-2 text-sm text-red-700">
+              <p>{{ error_message }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
     <!-- Header -->
     <header class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-extrabold">Good morning, Alex</h1>
+        <h1 class="text-2xl font-extrabold">Good morning, {{ user_first_name|default:"User" }}</h1>
         <p class="text-sm text-gray-500">Overview of your vehicle health & maintenance</p>
       </div>
       <div class="flex items-center gap-3">
@@ -51,36 +71,55 @@
 
         <!-- Vehicle Overview Card -->
         <section class="bg-white rounded-2xl p-6 shadow">
-          <div class="flex items-center gap-6">
-            <div class="w-28 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
-              <!-- simple car SVG / image placeholder -->
-              <svg class="w-14 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13s1.5-4 6-4 6 4 6 4 1.5 0 3 0 1 2 1 2H2s.5-2 1-2 1-0 3-0z"/></svg>
-            </div>
-            <div class="flex-1">
-              <h2 class="text-xl font-semibold">Toyota Corolla — 2018</h2>
-              <p class="text-sm text-gray-500">VIN: <span class="font-medium">1HGCM82633A00435</span> • Mileage: <span class="font-medium">123,400 km</span></p>
-              <div class="mt-4 flex gap-4">
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Next Service</div>
-                  <div class="font-semibold">In 12 days</div>
-                </div>
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Next Service Mileage</div>
-                  <div class="font-semibold">125,000 km</div>
-                </div>
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Status</div>
-                  <div class="font-semibold text-green-600">Healthy</div>
+          {% if vehicle %}
+            <div class="flex items-center gap-6">
+              <div class="w-28 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
+                <!-- simple car SVG / image placeholder -->
+                <svg class="w-14 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13s1.5-4 6-4 6 4 6 4 1.5 0 3 0 1 2 1 2H2s.5-2 1-2 1-0 3-0z"/></svg>
+              </div>
+              <div class="flex-1">
+                <h2 class="text-xl font-semibold">{{ vehicle_overview.make|default:"Unknown" }} {{ vehicle_overview.model|default:"Vehicle" }} — {{ vehicle_overview.year|default:"N/A" }}</h2>
+                <p class="text-sm text-gray-500">
+                  VIN: <span class="font-medium">{{ vehicle_overview.vin|truncate_vin|default:"N/A" }}</span> • 
+                  Mileage: <span class="font-medium">{{ vehicle_overview.mileage|mileage_format }}</span>
+                </p>
+                <div class="mt-4 flex gap-4">
+                  {% get_next_service_summary upcoming_maintenance as next_service %}
+                  <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                    <div class="text-xs text-gray-500">Next Service</div>
+                    <div class="font-semibold {{ next_service.days_until|service_urgency_class }}">
+                      {{ next_service.days_until|service_urgency_text }}
+                    </div>
+                  </div>
+                  <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                    <div class="text-xs text-gray-500">Next Service Mileage</div>
+                    <div class="font-semibold">{{ vehicle_overview.next_service_mileage|mileage_format }}</div>
+                  </div>
+                  <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
+                    <div class="text-xs text-gray-500">Status</div>
+                    <div class="font-semibold {{ vehicle_overview.health_status|health_status_color }}">{{ vehicle_overview.health_status|default:"Unknown" }}</div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="text-right">
-              <div class="text-sm text-gray-500">Estimated Value</div>
-              <div class="text-2xl font-bold text-green-600">E85,200</div>
-              <button class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-full text-sm shadow-sm">View VIN</button>
+              <div class="text-right">
+                <div class="text-sm text-gray-500">Estimated Value</div>
+                <div class="text-2xl font-bold text-green-600">{{ vehicle_overview.estimated_value|currency_format }}</div>
+                <button class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-full text-sm shadow-sm">View VIN</button>
+              </div>
             </div>
-          </div>
+          {% else %}
+            <div class="text-center py-8">
+              <div class="text-gray-500 mb-4">
+                <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-700 mb-2">No Vehicle Found</h3>
+              <p class="text-gray-500 mb-4">{{ no_vehicles_message|default:"Please add a vehicle to view your dashboard." }}</p>
+              <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Vehicle</button>
+            </div>
+          {% endif %}
         </section>
 
         <!-- Upcoming Maintenance & Alerts (side-by-side on md+) -->
@@ -89,56 +128,84 @@
           <!-- Upcoming maintenance -->
           <section class="bg-white rounded-2xl p-4 shadow">
             <h3 class="font-semibold mb-2">Upcoming Maintenance</h3>
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm text-gray-500">Oil Change & Brake Inspection</div>
-                  <div class="font-medium">Scheduled • 2025-10-10</div>
-                </div>
-                <div class="text-right">
-                  <div class="text-sm text-gray-500">In</div>
-                  <div class="text-xl font-bold text-orange-600">12 days</div>
-                </div>
-              </div>
+            {% if upcoming_maintenance %}
+              {% for maintenance in upcoming_maintenance|slice:":1" %}
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <div class="text-sm text-gray-500">{{ maintenance.service_type|default:"Scheduled Maintenance" }}</div>
+                      <div class="font-medium">
+                        Scheduled • {{ maintenance.scheduled_date|format_date_friendly }}
+                        {% if maintenance.service_provider %}
+                          <br><span class="text-xs text-gray-400">{{ maintenance.service_provider }}</span>
+                        {% endif %}
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="text-sm text-gray-500">
+                        {% if maintenance.is_overdue %}Overdue{% else %}In{% endif %}
+                      </div>
+                      <div class="text-xl font-bold {{ maintenance.days_until|service_urgency_class }}">
+                        {% if maintenance.is_overdue %}
+                          {{ maintenance.days_until }} days
+                        {% else %}
+                          {{ maintenance.days_until|default:"N/A" }} days
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
 
-              <div class="flex gap-2">
-                <button class="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium">Reschedule</button>
-                <button class="flex-1 py-2 rounded-lg border border-gray-200">Details</button>
+                  <div class="flex gap-2">
+                    <button class="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium">Reschedule</button>
+                    <button class="flex-1 py-2 rounded-lg border border-gray-200">Details</button>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="text-center py-4">
+                <div class="text-gray-500 mb-2">
+                  <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <p class="text-sm text-gray-500">No upcoming maintenance scheduled</p>
               </div>
-            </div>
+            {% endif %}
           </section>
 
           <!-- Alerts -->
           <section class="bg-white rounded-2xl p-4 shadow">
             <h3 class="font-semibold mb-3">Alerts & Notifications</h3>
-            <ul class="space-y-3">
-              <li class="flex items-start gap-3">
-                <span class="flex-none mt-1 text-red-600">⚠️</span>
-                <div class="flex-1 text-sm">
-                  <div class="font-medium">Oil Change Overdue</div>
-                  <div class="text-gray-500">3 days ago • Recommended service now</div>
+            {% if alerts %}
+              <ul class="space-y-3">
+                {% for alert in alerts|slice:":3" %}
+                  <li class="flex items-start gap-3">
+                    <span class="flex-none mt-1">{{ alert.priority|alert_priority_emoji }}</span>
+                    <div class="flex-1 text-sm">
+                      <div class="font-medium">{{ alert.title }}</div>
+                      <div class="text-gray-500">
+                        {{ alert.created_at|timesince }} ago • {{ alert.description|truncatewords:10 }}
+                      </div>
+                    </div>
+                    <div class="text-xs text-gray-400">{{ alert.priority_display }}</div>
+                  </li>
+                {% endfor %}
+              </ul>
+              {% if alerts|length > 3 %}
+                <div class="mt-3 text-center">
+                  <button class="text-sm text-indigo-600 hover:text-indigo-800">View all {{ alerts|length }} alerts</button>
                 </div>
-                <div class="text-xs text-gray-400">High</div>
-              </li>
-
-              <li class="flex items-start gap-3">
-                <span class="flex-none mt-1 text-orange-500">🛠️</span>
-                <div class="flex-1 text-sm">
-                  <div class="font-medium">Brake pads at 30%</div>
-                  <div class="text-gray-500">Book replacement within 2 weeks</div>
+              {% endif %}
+            {% else %}
+              <div class="text-center py-4">
+                <div class="text-gray-500 mb-2">
+                  <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
                 </div>
-                <div class="text-xs text-gray-400">Medium</div>
-              </li>
-
-              <li class="flex items-start gap-3">
-                <span class="flex-none mt-1 text-blue-500">📑</span>
-                <div class="flex-1 text-sm">
-                  <div class="font-medium">Insurance expires</div>
-                  <div class="text-gray-500">In 5 days — renew to stay covered</div>
-                </div>
-                <div class="text-xs text-gray-400">Low</div>
-              </li>
-            </ul>
+                <p class="text-sm text-gray-500">No active alerts</p>
+              </div>
+            {% endif %}
           </section>
 
         </div>
@@ -150,38 +217,39 @@
             <button class="text-sm text-indigo-600">See all</button>
           </div>
 
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="text-left text-gray-500">
-                <tr>
-                  <th class="pb-2">Date</th>
-                  <th class="pb-2">Service</th>
-                  <th class="pb-2">Provider</th>
-                  <th class="pb-2">Cost</th>
-                </tr>
-              </thead>
-              <tbody class="text-gray-700">
-                <tr class="border-t">
-                  <td class="py-3">2025-09-01</td>
-                  <td class="py-3">Oil Change</td>
-                  <td class="py-3">Speedy Auto</td>
-                  <td class="py-3">E450</td>
-                </tr>
-                <tr class="border-t">
-                  <td class="py-3">2025-06-10</td>
-                  <td class="py-3">Brake Pads</td>
-                  <td class="py-3">BrakeWorks</td>
-                  <td class="py-3">E230</td>
-                </tr>
-                <tr class="border-t">
-                  <td class="py-3">2024-12-03</td>
-                  <td class="py-3">Full Service</td>
-                  <td class="py-3">AutoCare</td>
-                  <td class="py-3">E380</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {% if service_history %}
+            <div class="overflow-x-auto">
+              <table class="min-w-full text-sm">
+                <thead class="text-left text-gray-500">
+                  <tr>
+                    <th class="pb-2">Date</th>
+                    <th class="pb-2">Service</th>
+                    <th class="pb-2">Provider</th>
+                    <th class="pb-2">Cost</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-700">
+                  {% for record in service_history %}
+                    <tr class="border-t">
+                      <td class="py-3">{{ record.date_performed|date:"Y-m-d" }}</td>
+                      <td class="py-3">{{ record.work_done|default:"Service" }}</td>
+                      <td class="py-3">{{ record.service_provider|default:"N/A" }}</td>
+                      <td class="py-3">{{ record.cost|currency_format }}</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% else %}
+            <div class="text-center py-8">
+              <div class="text-gray-500 mb-2">
+                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+              </div>
+              <p class="text-sm text-gray-500">No service history available</p>
+            </div>
+          {% endif %}
         </section>
 
       </main>
@@ -194,11 +262,11 @@
           <div class="flex items-center justify-between">
             <div>
               <div class="text-xs text-gray-500">Estimated Market Value</div>
-              <div class="text-xl font-bold text-green-600">E85,200</div>
+              <div class="text-xl font-bold text-green-600">{{ valuation.estimated_value|currency_format }}</div>
             </div>
             <div class="text-sm text-gray-500 text-right">
-              <div>Condition: <span class="font-medium">Good</span></div>
-              <div>Last updated: <span class="font-medium">2 days ago</span></div>
+              <div>Condition: <span class="font-medium">{{ valuation.condition_rating|condition_rating_display }}</span></div>
+              <div>Last updated: <span class="font-medium">{{ valuation.last_updated|timesince|default:"N/A" }} ago</span></div>
             </div>
           </div>
         </section>
@@ -206,13 +274,20 @@
         <!-- Costs Card -->
         <section class="bg-white rounded-2xl p-4 shadow">
           <h4 class="font-semibold mb-2">Costs</h4>
-          <div class="flex items-center justify-between text-sm mb-2">
-            <div>This month</div>
-            <div class="font-bold">E210</div>
-          </div>
+          {% if cost_analytics.monthly_data %}
+            <div class="flex items-center justify-between text-sm mb-2">
+              <div>This month</div>
+              <div class="font-bold">{{ cost_analytics.monthly_data.0.total_cost|currency_format }}</div>
+            </div>
+          {% else %}
+            <div class="flex items-center justify-between text-sm mb-2">
+              <div>This month</div>
+              <div class="font-bold">E0</div>
+            </div>
+          {% endif %}
           <div class="flex items-center justify-between text-sm mb-2">
             <div>Lifetime</div>
-            <div class="font-bold">E4,870</div>
+            <div class="font-bold">{{ cost_analytics.lifetime_total|currency_format }}</div>
           </div>
           <div class="h-28 mt-3 rounded-lg chart-placeholder"></div>
         </section>
@@ -221,9 +296,20 @@
         <section class="bg-white rounded-2xl p-4 shadow">
           <h4 class="font-semibold mb-2">Statistics & Insights</h4>
           <ul class="text-sm space-y-2">
-            <li class="flex justify-between"><span>Avg monthly spend</span><span class="font-medium">$75</span></li>
-            <li class="flex justify-between"><span>Days until next service</span><span class="font-medium">12</span></li>
-            <li class="flex justify-between"><span>Vehicle health score</span><span class="font-medium">87 / 100</span></li>
+            <li class="flex justify-between">
+              <span>Avg monthly spend</span>
+              <span class="font-medium">{{ cost_analytics.monthly_average|currency_format }}</span>
+            </li>
+            <li class="flex justify-between">
+              <span>Days until next service</span>
+              <span class="font-medium">{{ cost_analytics.next_service_days|default:"N/A" }}</span>
+            </li>
+            <li class="flex justify-between">
+              <span>Vehicle health score</span>
+              <span class="font-medium {% get_health_score_color cost_analytics.health_score %}">
+                {{ cost_analytics.health_score|default:"N/A" }}{% if cost_analytics.health_score %} / 100{% endif %}
+              </span>
+            </li>
           </ul>
           <p class="text-xs text-gray-500 mt-3">Tip: Follow the recommended service plan to keep resale value high.</p>
         </section>

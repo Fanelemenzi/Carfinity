@@ -33,12 +33,15 @@ packaging==23.2
 pillow==10.4.0
 platformdirs==4.3.7
 prompt_toolkit==3.0.51
+psycopg==3.2.3
+psycopg2==2.9.9
 psycopg2-binary==2.9.10
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.0.1
 python-env==1.0.0
 redis==5.2.1
+reportlab==4.4.4
 requests==2.32.4
 six==1.17.0
 sqlparse==0.5.3

@@ -388,3 +388,162 @@ class RiskAssessmentMetrics(models.Model):
     class Meta:
         ordering = ['-calculation_date']
         unique_together = ['policy', 'calculation_date']
+
+
+# Assessment History and Audit Trail Models
+
+class AssessmentHistory(models.Model):
+    """Track all changes and activities for vehicle assessments"""
+    
+    ACTIVITY_TYPES = [
+        ('status_change', 'Status Change'),
+        ('cost_adjustment', 'Cost Adjustment'),
+        ('document_update', 'Document Update'),
+        ('agent_assignment', 'Agent Assignment'),
+        ('comment_added', 'Comment Added'),
+        ('photo_uploaded', 'Photo Uploaded'),
+        ('photo_deleted', 'Photo Deleted'),
+        ('section_updated', 'Section Updated'),
+        ('workflow_action', 'Workflow Action'),
+        ('report_generated', 'Report Generated'),
+        ('approval_granted', 'Approval Granted'),
+        ('rejection_issued', 'Rejection Issued'),
+        ('changes_requested', 'Changes Requested'),
+    ]
+    
+    assessment = models.ForeignKey(
+        'assessments.VehicleAssessment', 
+        on_delete=models.CASCADE, 
+        related_name='history_entries'
+    )
+    activity_type = models.CharField(max_length=20, choices=ACTIVITY_TYPES)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assessment_activities')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    
+    # Change tracking
+    field_name = models.CharField(max_length=100, blank=True, help_text="Field that was changed")
+    old_value = models.TextField(blank=True, help_text="Previous value")
+    new_value = models.TextField(blank=True, help_text="New value")
+    
+    # Activity details
+    description = models.TextField(help_text="Description of the activity")
+    notes = models.TextField(blank=True, help_text="Additional notes or context")
+    
+    # Related objects
+    related_comment_id = models.PositiveIntegerField(null=True, blank=True)
+    related_photo_id = models.PositiveIntegerField(null=True, blank=True)
+    related_section = models.CharField(max_length=50, blank=True)
+    
+    # Metadata
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['assessment', 'timestamp']),
+            models.Index(fields=['activity_type', 'timestamp']),
+            models.Index(fields=['user', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.assessment.assessment_id} - {self.get_activity_type_display()} by {self.user.username}"
+
+
+class AssessmentVersion(models.Model):
+    """Version control for assessment data"""
+    
+    assessment = models.ForeignKey(
+        'assessments.VehicleAssessment', 
+        on_delete=models.CASCADE, 
+        related_name='versions'
+    )
+    version_number = models.PositiveIntegerField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    # Snapshot of assessment data
+    assessment_data = models.JSONField(help_text="Complete snapshot of assessment data")
+    
+    # Version metadata
+    change_summary = models.TextField(help_text="Summary of changes in this version")
+    is_major_version = models.BooleanField(default=False, help_text="Major version change")
+    
+    # Related history entry
+    history_entry = models.OneToOneField(
+        AssessmentHistory, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='version_snapshot'
+    )
+    
+    class Meta:
+        ordering = ['-version_number']
+        unique_together = ['assessment', 'version_number']
+        indexes = [
+            models.Index(fields=['assessment', 'version_number']),
+            models.Index(fields=['created_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.assessment.assessment_id} v{self.version_number}"
+
+
+# Import existing models from assessments app
+from assessments.models import AssessmentComment, AssessmentWorkflow
+
+
+class AssessmentNotification(models.Model):
+    """Notification system for assessment status changes"""
+    
+    NOTIFICATION_TYPES = [
+        ('status_change', 'Status Change'),
+        ('comment_added', 'Comment Added'),
+        ('deadline_reminder', 'Deadline Reminder'),
+        ('approval_required', 'Approval Required'),
+        ('rejection_notice', 'Rejection Notice'),
+        ('changes_requested', 'Changes Requested'),
+    ]
+    
+    NOTIFICATION_STATUS = [
+        ('unread', 'Unread'),
+        ('read', 'Read'),
+        ('dismissed', 'Dismissed'),
+    ]
+    
+    assessment = models.ForeignKey(
+        'assessments.VehicleAssessment', 
+        on_delete=models.CASCADE, 
+        related_name='insurance_notifications'
+    )
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='insurance_assessment_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=NOTIFICATION_STATUS, default='unread')
+    related_comment = models.ForeignKey(
+        AssessmentComment, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'status', 'created_at']),
+            models.Index(fields=['assessment', 'created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Notification for {self.recipient.username}: {self.title}"
+    
+    def mark_as_read(self):
+        """Mark notification as read"""
+        if self.status == 'unread':
+            self.status = 'read'
+            self.read_at = timezone.now()
+            self.save()

@@ -26,15 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("SECRET_KEY")
-#SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45'
+#SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45'
 #'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'True'
 
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-#ALLOWED_HOSTS = ['*']
+#ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -62,17 +62,22 @@ INSTALLED_APPS = [
     'onboarding',
     'insurance_app',
     'assessments',
+    'notifications',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    #'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Dashboard monitoring middleware
+    'notifications.middleware.DatabaseQueryMonitoringMiddleware',
+    'notifications.middleware.DashboardMonitoringMiddleware',
+    'notifications.middleware.SecurityMonitoringMiddleware',
 ]
 
 ROOT_URLCONF = 'carfinity.urls'
@@ -104,8 +109,11 @@ DATABASES = {
     'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
 }
 
-database_url = os.environ.get("DATABASE_URL")
-#DATABASES ["default"] = dj_database_url.parse("postgresql://neondb_owner:npg_YtSVe2TFHml6@ep-aged-star-a8fds20c-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require")
+#database_url = os.environ.get("DATABASE_URL")
+#dev database
+#DATABASES ["default"] = dj_database_url.parse("postgresql://neondb_owner:npg_Edf6BtgsV1AY@ep-proud-mode-ad4sw8fo-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require")
+#Production database
+DATABASES ["default"] = dj_database_url.parse("postgresql://neondb_owner:npg_YtSVe2TFHml6@ep-aged-star-a8fds20c-pooler.eastus2.azure.neon.tech/neondb?sslmode=require&channel_binding=require")
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -145,8 +153,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 #White noise static stuff
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+#STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 #MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
@@ -166,7 +174,38 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25
+    'PAGE_SIZE': 25,
+    'EXCEPTION_HANDLER': 'notifications.exceptions.custom_exception_handler',
+}
+
+# Redis Configuration for Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'carfinity-cache',
+        'TIMEOUT': 300,  # Default timeout of 5 minutes
+    }
+}
+
+# Original Redis configuration (commented out until django_redis is installed)
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         },
+#         'KEY_PREFIX': 'carfinity',
+#         'TIMEOUT': 300,  # Default timeout of 5 minutes
+#     }
+# }
+
+# Cache timeout settings for different data types
+CACHE_TIMEOUTS = {
+    'VEHICLE_VALUATION': 86400,  # 24 hours
+    'HEALTH_SCORES': 3600,       # 1 hour
+    'DASHBOARD_DATA': 300,       # 5 minutes
+    'COST_ANALYTICS': 1800,      # 30 minutes
 }
 
 # Celery Configuration (if using background tasks)
@@ -178,25 +217,55 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # Celery Beat Schedule for periodic tasks
-# from celery.schedules import crontab
-# CELERY_BEAT_SCHEDULE = {
-#     'calculate-daily-risk-scores': {
-#         'task': 'insurance.tasks.calculate_daily_risk_scores',
-#         'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
-#     },
-#     'update-compliance-scores': {
-#         'task': 'insurance.tasks.update_compliance_scores',
-#         'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM
-#     },
-#     'generate-maintenance-alerts': {
-#         'task': 'insurance.tasks.generate_maintenance_alerts',
-#         'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
-#     },
-#     'check-condition-deterioration': {
-#         'task': 'insurance.tasks.check_condition_deterioration',
-#         'schedule': crontab(hour=12, minute=0),  # Daily at noon
-#     },
-# }
+try:
+    from celery.schedules import crontab
+    CELERY_BEAT_SCHEDULE = {
+    'calculate-daily-risk-scores': {
+        'task': 'insurance_app.tasks.calculate_daily_risk_scores',
+        'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
+    },
+    'update-compliance-scores': {
+        'task': 'insurance_app.tasks.update_compliance_scores',
+        'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM
+    },
+    'generate-maintenance-alerts': {
+        'task': 'insurance_app.tasks.generate_maintenance_alerts',
+        'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
+    },
+    'check-condition-deterioration': {
+        'task': 'insurance_app.tasks.check_condition_deterioration',
+        'schedule': crontab(hour=12, minute=0),  # Daily at noon
+    },
+    # Cost Analytics Tasks
+    'calculate-monthly-cost-analytics': {
+        'task': 'notifications.tasks.calculate_monthly_cost_analytics',
+        'schedule': crontab(day_of_month=1, hour=2, minute=30),  # Run on 1st of each month at 2:30 AM
+    },
+    'cleanup-old-analytics': {
+        'task': 'notifications.tasks.cleanup_old_analytics',
+        'schedule': crontab(day_of_month=15, hour=3, minute=0),  # Run on 15th of each month at 3 AM
+    },
+    'generate-cost-analytics-report': {
+        'task': 'notifications.tasks.generate_cost_analytics_report',
+        'schedule': crontab(day_of_month=1, hour=4, minute=0),  # Run on 1st of each month at 4 AM
+    },
+    # Alert Generation Tasks
+    'generate-vehicle-alerts': {
+        'task': 'notifications.tasks.generate_vehicle_alerts',
+        'schedule': crontab(day_of_week=1, hour=8, minute=30),  # Run every Monday at 8:30 AM
+    },
+    'check-insurance-expiry-alerts': {
+        'task': 'notifications.tasks.check_insurance_expiry_alerts',
+        'schedule': crontab(hour=9, minute=30),  # Run daily at 9:30 AM
+    },
+    'cleanup-resolved-alerts': {
+        'task': 'notifications.tasks.cleanup_resolved_alerts',
+        'schedule': crontab(day_of_month=1, hour=1, minute=30),  # Run on 1st of each month at 1:30 AM
+    },
+    }
+except ImportError:
+    # Celery not available, skip beat schedule
+    CELERY_BEAT_SCHEDULE = {}
 
 
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static/js', 'serviceworker.js')
@@ -244,3 +313,44 @@ PWA_APP_LANG = 'en-US'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging Configuration
+# Import logging configuration from notifications app
+from notifications.logging_config import LOGGING_CONFIG
+
+# Apply the logging configuration
+LOGGING = LOGGING_CONFIG
+LOGGING_CONFIG = None  # Disable Django's default logging config function
+
+# Additional logging settings for production monitoring
+if not DEBUG:
+    # In production, also log to syslog for centralized logging
+    LOGGING['handlers']['syslog'] = {
+        'class': 'logging.handlers.SysLogHandler',
+        'address': '/dev/log',
+        'facility': 'local0',
+        'formatter': 'structured',
+    }
+    
+    # Add syslog to all loggers in production
+    for logger_name in LOGGING['loggers']:
+        if 'handlers' in LOGGING['loggers'][logger_name]:
+            LOGGING['loggers'][logger_name]['handlers'].append('syslog')
+
+# Performance monitoring settings
+DASHBOARD_MONITORING = {
+    'ENABLE_PERFORMANCE_LOGGING': True,
+    'ENABLE_SECURITY_LOGGING': True,
+    'SLOW_QUERY_THRESHOLD_MS': 1000,  # Log queries slower than 1 second
+    'CACHE_HIT_RATE_THRESHOLD': 0.8,  # Alert if cache hit rate drops below 80%
+    'API_RESPONSE_TIME_THRESHOLD_MS': 2000,  # Alert if API responses exceed 2 seconds
+}
+
+# Security monitoring settings
+SECURITY_MONITORING = {
+    'LOG_FAILED_LOGIN_ATTEMPTS': True,
+    'LOG_PERMISSION_DENIALS': True,
+    'LOG_SUSPICIOUS_ACTIVITY': True,
+    'MAX_FAILED_ATTEMPTS_PER_HOUR': 10,
+    'ALERT_ON_MULTIPLE_VEHICLE_ACCESS_ATTEMPTS': True,
+}

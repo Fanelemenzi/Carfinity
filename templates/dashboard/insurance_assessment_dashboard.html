@@ -761,43 +761,88 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="claimsTableBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Hardcoded Example Claims -->
+                            <tbody id="claimsTableBody" class="bg-white divide-y divide-gray-200" data-sortable-container>
+                                {% for assessment in assessments %}
                                 <tr class="hover:bg-gray-50 cursor-pointer transition-all duration-200" 
-                                    onclick="viewClaim('INS-8847')"
-                                    data-claim-id="INS-8847"
-                                    data-status="URGENT"
-                                    data-priority="urgent"
-                                    data-date="Sep 15"
-                                    data-value="35000"
+                                    onclick="viewClaim('{{ assessment.assessment_id }}')"
+                                    data-claim-id="{{ assessment.assessment_id }}"
+                                    data-status="{{ assessment.agent_status|upper }}"
+                                    data-priority="{% if assessment.review_deadline and assessment.review_deadline|timeuntil|slice:':1' == '-' %}urgent{% elif assessment.agent_status == 'pending_review' %}review{% elif assessment.agent_status == 'approved' %}ready{% else %}progress{% endif %}"
+                                    data-date="{{ assessment.assessment_date|date:'M d' }}"
+                                    data-value="{{ assessment.estimated_repair_cost|default:0|floatformat:0 }}"
                                     data-searchable
-                                    data-filterable>
+                                    data-filterable
+                                    data-sortable>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
-                                            <span class="text-2xl">🔴</span>
+                                            {% if assessment.review_deadline and assessment.review_deadline|timeuntil|slice:':1' == '-' %}
+                                                <span class="text-2xl">🔴</span>
+                                            {% elif assessment.agent_status == 'pending_review' %}
+                                                <span class="text-2xl">🟡</span>
+                                            {% elif assessment.agent_status == 'approved' %}
+                                                <span class="text-2xl">🟢</span>
+                                            {% elif assessment.agent_status == 'rejected' %}
+                                                <span class="text-2xl">❌</span>
+                                            {% elif assessment.agent_status == 'under_review' %}
+                                                <span class="text-2xl">🔵</span>
+                                            {% else %}
+                                                <span class="text-2xl">✅</span>
+                                            {% endif %}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="customer-name text-sm font-medium text-gray-900">INS-8847</div>
-                                        <div class="text-sm text-gray-500">Sep 15</div>
-                                        <div class="text-sm text-gray-500">Smith, J.</div>
+                                        <div class="customer-name text-sm font-medium text-gray-900">{{ assessment.assessment_id }}</div>
+                                        <div class="text-sm text-gray-500">{{ assessment.assessment_date|date:"M d" }}</div>
+                                        <div class="text-sm text-gray-500">{{ assessment.user.get_full_name|default:assessment.user.username }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="vehicle-info text-sm font-medium text-gray-900">2019 BMW 320i</div>
-                                        <div class="text-sm text-gray-500">VIN: WBA8E9G50KNU12345</div>
+                                        <div class="vehicle-info text-sm font-medium text-gray-900">
+                                            {{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">VIN: {{ assessment.vehicle.vin|default:"N/A" }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">£35,000</div>
-                                        <div class="text-sm text-gray-500">Total Loss</div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            £{{ assessment.estimated_repair_cost|default:0|floatformat:0 }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">{{ assessment.get_overall_severity_display }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                            URGENT
-                                        </span>
-                                        <div class="text-sm text-gray-500">18h</div>
+                                        {% if assessment.agent_status == 'pending_review' %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                                PENDING REVIEW
+                                            </span>
+                                        {% elif assessment.agent_status == 'under_review' %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                UNDER REVIEW
+                                            </span>
+                                        {% elif assessment.agent_status == 'approved' %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                APPROVED
+                                            </span>
+                                        {% elif assessment.agent_status == 'rejected' %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                                REJECTED
+                                            </span>
+                                        {% elif assessment.agent_status == 'changes_requested' %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                                CHANGES REQUESTED
+                                            </span>
+                                        {% else %}
+                                            <span class="status-badge inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                {{ assessment.get_agent_status_display|upper }}
+                                            </span>
+                                        {% endif %}
+                                        <div class="text-sm text-gray-500">
+                                            {% if assessment.review_deadline %}
+                                                {{ assessment.review_deadline|timeuntil }}
+                                            {% else %}
+                                                {{ assessment.assessment_date|timesince }} ago
+                                            {% endif %}
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onclick="event.stopPropagation(); viewClaim('INS-8847')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-all duration-200">
+                                        <button onclick="event.stopPropagation(); viewClaim('{{ assessment.assessment_id }}')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm transition-all duration-200">
                                             <i class="fas fa-arrow-right mr-1"></i>VIEW DETAILS
                                         </button>
                                     </td>
@@ -811,7 +856,8 @@
                                     data-date="Sep 16"
                                     data-value="12500"
                                     data-searchable
-                                    data-filterable>
+                                    data-filterable
+                                    data-sortable>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <span class="text-2xl">🟡</span>
@@ -851,7 +897,8 @@
                                     data-date="Sep 16"
                                     data-value="4200"
                                     data-searchable
-                                    data-filterable>
+                                    data-filterable
+                                    data-sortable>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <span class="text-2xl">🟢</span>
@@ -891,7 +938,8 @@
                                     data-date="Sep 17"
                                     data-value="18900"
                                     data-searchable
-                                    data-filterable>
+                                    data-filterable
+                                    data-sortable>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <span class="text-2xl">🔵</span>
@@ -931,7 +979,8 @@
                                     data-date="Sep 17"
                                     data-value="8750"
                                     data-searchable
-                                    data-filterable>
+                                    data-filterable
+                                    data-sortable>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center">
                                             <span class="text-2xl">🟠</span>
@@ -964,6 +1013,11 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+                    
+                    <!-- Pagination Controls -->
+                    <div id="paginationControls" class="pagination-controls border-t border-gray-200 px-6 py-4">
+                        <!-- Pagination will be dynamically generated by JavaScript -->
                     </div>
 
                     <!-- Status Legend -->
@@ -1003,6 +1057,34 @@
 function viewClaim(claimId) {
     // Direct navigation to assessment detail page
     window.location.href = `/insurance/assessments/${claimId}/`;
+}
+
+// Global pagination functions
+function goToPage(page) {
+    if (typeof DashboardInteractivity !== 'undefined' && DashboardInteractivity.goToPage) {
+        DashboardInteractivity.goToPage(page);
+    } else {
+        // Fallback implementation
+        window.DashboardState = window.DashboardState || { currentPage: 1, itemsPerPage: 10 };
+        window.DashboardState.currentPage = page;
+        if (typeof applyPagination === 'function') {
+            applyPagination();
+        }
+    }
+}
+
+function changePageSize(pageSize) {
+    if (typeof DashboardInteractivity !== 'undefined' && DashboardInteractivity.changePageSize) {
+        DashboardInteractivity.changePageSize(pageSize);
+    } else {
+        // Fallback implementation
+        window.DashboardState = window.DashboardState || { currentPage: 1, itemsPerPage: 10 };
+        window.DashboardState.itemsPerPage = parseInt(pageSize);
+        window.DashboardState.currentPage = 1;
+        if (typeof applyPagination === 'function') {
+            applyPagination();
+        }
+    }
 }
 
 // Filter and Search Functionality
@@ -1163,6 +1245,11 @@ function initializeTableSorting() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize claims table filters and sorting
     initializeClaimsTableFilters();
+    
+    // Initialize pagination
+    if (typeof initializePagination === 'function') {
+        initializePagination();
+    }
     
     // Initialize claims table interactivity
     if (typeof initializeClaimsTable === 'function') {

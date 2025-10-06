@@ -15,6 +15,7 @@ urlpatterns = [
     path('', include('assessments.urls')),
     path('', include('onboarding.urls', namespace='onboarding')),
     path('insurance/', include('insurance_app.urls')),
+    path('notifications/', include('notifications.urls')),
     path('favicon.ico', RedirectView.as_view(url='/static/images/icon.png', permanent=True)),
 ] #+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 

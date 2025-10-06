@@ -1,0 +1,444 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Assessment History - {{ assessment.assessment_id }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/responsive-claims-dashboard.css' %}" rel="stylesheet">
+<style>
+.history-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.history-timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e5e7eb;
+}
+
+.history-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    background: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-left: 1rem;
+}
+
+.history-item::before {
+    content: '';
+    position: absolute;
+    left: -1.75rem;
+    top: 1rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid #3b82f6;
+    z-index: 1;
+}
+
+.history-item.status-change::before { border-color: #3b82f6; }
+.history-item.cost-adjustment::before { border-color: #10b981; }
+.history-item.document-update::before { border-color: #8b5cf6; }
+.history-item.comment-added::before { border-color: #06b6d4; }
+.history-item.workflow-action::before { border-color: #f59e0b; }
+.history-item.approval-granted::before { border-color: #10b981; }
+.history-item.rejection-issued::before { border-color: #ef4444; }
+
+.activity-summary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.version-comparison {
+    background: #f8fafc;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.filter-tab {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-tab.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #3b82f6;
+}
+
+.history-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.5rem;
+}
+
+.change-details {
+    background: #f3f4f6;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+    margin-top: 0.5rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
+.old-value {
+    color: #dc2626;
+    text-decoration: line-through;
+}
+
+.new-value {
+    color: #059669;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Assessment History</h1>
+            <p class="text-gray-600">{{ assessment.assessment_id }} - {{ assessment.vehicle }}</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'insurance_app:assessment_detail' assessment.assessment_id %}" 
+               class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
+            </a>
+            {% if can_rollback %}
+            <button id="compareVersionsBtn" class="btn btn-primary">
+                <i class="fas fa-code-branch mr-2"></i>Compare Versions
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Activity Summary -->
+    <div class="activity-summary">
+        <h2 class="text-xl font-semibold mb-2">Activity Summary</h2>
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="text-2xl font-bold">{{ activity_summary.total_activities }}</div>
+                <div class="text-sm opacity-90">Total Activities</div>
+            </div>
+            <div class="summary-card">
+                <div class="text-2xl font-bold">{{ activity_summary.total_workflow_steps }}</div>
+                <div class="text-sm opacity-90">Workflow Steps</div>
+            </div>
+            <div class="summary-card">
+                <div class="text-2xl font-bold">{{ activity_summary.total_comments }}</div>
+                <div class="text-sm opacity-90">Comments</div>
+            </div>
+            <div class="summary-card">
+                <div class="text-2xl font-bold">{{ activity_summary.recent_activity_count }}</div>
+                <div class="text-sm opacity-90">Recent (7 days)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="filter-tabs">
+        <button class="filter-tab active" data-filter="all">All Activities</button>
+        <button class="filter-tab" data-filter="status_change">Status Changes</button>
+        <button class="filter-tab" data-filter="cost_adjustment">Cost Adjustments</button>
+        <button class="filter-tab" data-filter="comment_added">Comments</button>
+        <button class="filter-tab" data-filter="workflow_action">Workflow</button>
+        <button class="filter-tab" data-filter="document_update">Documents</button>
+    </div>
+
+    <!-- History Timeline -->
+    <div class="history-timeline" id="historyTimeline">
+        {% for entry in history_entries %}
+        <div class="history-item {{ entry.activity_type }}" data-type="{{ entry.activity_type }}">
+            <div class="flex items-start justify-between">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i class="{{ entry.activity_type|default:'fas fa-circle' }} text-blue-600"></i>
+                        <h3 class="font-semibold text-gray-900">
+                            {% if entry.activity_type == 'status_change' %}
+                                Status changed from {{ entry.old_value }} to {{ entry.new_value }}
+                            {% elif entry.activity_type == 'cost_adjustment' %}
+                                Cost adjusted: {{ entry.field_name }}
+                            {% elif entry.activity_type == 'document_update' %}
+                                Document updated: {{ entry.field_name }}
+                            {% elif entry.activity_type == 'agent_assignment' %}
+                                Agent assigned: {{ entry.new_value }}
+                            {% else %}
+                                {{ entry.description }}
+                            {% endif %}
+                        </h3>
+                    </div>
+                    
+                    {% if entry.description %}
+                    <p class="text-gray-700 mb-2">{{ entry.description }}</p>
+                    {% endif %}
+                    
+                    {% if entry.field_name and entry.old_value and entry.new_value %}
+                    <div class="change-details">
+                        <div class="mb-1"><strong>Field:</strong> {{ entry.field_name }}</div>
+                        <div class="mb-1"><strong>Old:</strong> <span class="old-value">{{ entry.old_value }}</span></div>
+                        <div><strong>New:</strong> <span class="new-value">{{ entry.new_value }}</span></div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if entry.notes %}
+                    <div class="mt-2 p-2 bg-yellow-50 border-l-4 border-yellow-400">
+                        <p class="text-sm text-yellow-800">{{ entry.notes }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="history-meta">
+                        <span><i class="fas fa-user mr-1"></i>{{ entry.user.get_full_name|default:entry.user.username }}</span>
+                        <span><i class="fas fa-clock mr-1"></i>{{ entry.timestamp|naturaltime }}</span>
+                        {% if entry.related_section %}
+                        <span><i class="fas fa-tag mr-1"></i>{{ entry.related_section }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-history text-4xl mb-4"></i>
+            <p>No history entries found for this assessment.</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Load More Button -->
+    {% if history_entries|length >= 100 %}
+    <div class="text-center mt-6">
+        <button id="loadMoreHistory" class="btn btn-secondary">
+            <i class="fas fa-plus mr-2"></i>Load More History
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Version Comparison Modal -->
+{% if can_rollback and versions %}
+<div id="versionComparisonModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto">
+            <div class="p-6 border-b">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Version Comparison</h2>
+                    <button id="closeVersionModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Version A</label>
+                        <select id="versionA" class="form-select w-full">
+                            {% for version in versions %}
+                            <option value="{{ version.id }}">
+                                v{{ version.version_number }} - {{ version.created_at|date:"M d, Y H:i" }}
+                                ({{ version.created_by.get_full_name|default:version.created_by.username }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Version B</label>
+                        <select id="versionB" class="form-select w-full">
+                            {% for version in versions %}
+                            <option value="{{ version.id }}" {% if forloop.first %}selected{% endif %}>
+                                v{{ version.version_number }} - {{ version.created_at|date:"M d, Y H:i" }}
+                                ({{ version.created_by.get_full_name|default:version.created_by.username }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <button id="compareBtn" class="btn btn-primary mb-4">
+                    <i class="fas fa-code-branch mr-2"></i>Compare Versions
+                </button>
+                <div id="comparisonResult" class="version-comparison hidden">
+                    <!-- Comparison results will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const historyItems = document.querySelectorAll('.history-item');
+    
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const filter = this.dataset.filter;
+            
+            // Update active tab
+            filterTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Filter items
+            historyItems.forEach(item => {
+                if (filter === 'all' || item.dataset.type === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+    
+    // Version comparison modal
+    const compareBtn = document.getElementById('compareVersionsBtn');
+    const modal = document.getElementById('versionComparisonModal');
+    const closeBtn = document.getElementById('closeVersionModal');
+    
+    if (compareBtn) {
+        compareBtn.addEventListener('click', function() {
+            modal.classList.remove('hidden');
+        });
+    }
+    
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+    }
+    
+    // Version comparison
+    const compareVersionsBtn = document.getElementById('compareBtn');
+    if (compareVersionsBtn) {
+        compareVersionsBtn.addEventListener('click', function() {
+            const versionA = document.getElementById('versionA').value;
+            const versionB = document.getElementById('versionB').value;
+            
+            if (versionA === versionB) {
+                alert('Please select different versions to compare.');
+                return;
+            }
+            
+            // Show loading
+            const resultDiv = document.getElementById('comparisonResult');
+            resultDiv.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin"></i> Comparing versions...</div>';
+            resultDiv.classList.remove('hidden');
+            
+            // Make AJAX request to compare versions
+            fetch(`{% url 'insurance_app:assessment_version_compare' assessment.assessment_id %}?version_a=${versionA}&version_b=${versionB}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        resultDiv.innerHTML = data.comparison_html;
+                    } else {
+                        resultDiv.innerHTML = `<div class="text-red-600">Error: ${data.error}</div>`;
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<div class="text-red-600">Error loading comparison: ${error}</div>`;
+                });
+        });
+    }
+    
+    // Load more history
+    const loadMoreBtn = document.getElementById('loadMoreHistory');
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            const currentCount = historyItems.length;
+            
+            fetch(`{% url 'insurance_app:assessment_history' assessment.assessment_id %}?format=json&offset=${currentCount}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.history.length > 0) {
+                        // Add new history items to timeline
+                        const timeline = document.getElementById('historyTimeline');
+                        data.history.forEach(entry => {
+                            const historyItem = createHistoryItem(entry);
+                            timeline.appendChild(historyItem);
+                        });
+                        
+                        // Hide button if no more items
+                        if (data.history.length < 50) {
+                            loadMoreBtn.style.display = 'none';
+                        }
+                    } else {
+                        loadMoreBtn.style.display = 'none';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading more history:', error);
+                });
+        });
+    }
+});
+
+function createHistoryItem(entry) {
+    // Create history item element from JSON data
+    const item = document.createElement('div');
+    item.className = `history-item ${entry.action}`;
+    item.dataset.type = entry.action;
+    
+    item.innerHTML = `
+        <div class="flex items-start justify-between">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="${entry.icon} text-blue-600"></i>
+                    <h3 class="font-semibold text-gray-900">${entry.title}</h3>
+                </div>
+                <p class="text-gray-700 mb-2">${entry.description}</p>
+                <div class="history-meta">
+                    <span><i class="fas fa-user mr-1"></i>${entry.user}</span>
+                    <span><i class="fas fa-clock mr-1"></i>${entry.timestamp_relative}</span>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    return item;
+}
+</script>
+{% endblock %}

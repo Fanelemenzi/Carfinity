@@ -1,5 +1,7 @@
 {% extends 'base/base.html'%}
 {% load static %}
+{% load insurance_extras %}
+{% load insurance_filters %}
 
 {% block content %}
 <!DOCTYPE html>
@@ -9,6 +11,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicle Assessment Detail</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Enhanced Assessment Section Card Styles */
+    .assessment-section-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    
+    .assessment-section-card:hover {
+      transform: translateY(-4px) scale(1.02);
+    }
+    
+    .assessment-section-card:focus {
+      outline: 2px solid #3B82F6;
+      outline-offset: 2px;
+    }
+    
+    .assessment-section-card .text-3xl {
+      transition: transform 0.2s ease-in-out;
+    }
+    
+    .assessment-section-card:hover .text-3xl {
+      transform: scale(1.1) rotate(5deg);
+    }
+    
+    /* Progress bar animation */
+    .assessment-section-card .bg-blue-600 {
+      transition: width 0.5s ease-in-out;
+    }
+    
+    /* Severity badge animations */
+    .assessment-section-card .rounded-full {
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .assessment-section-card:hover .rounded-full {
+      transform: scale(1.05);
+    }
+    
+    /* Status indicator pulse animation */
+    @keyframes pulse-status {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .animate-pulse {
+      animation: pulse-status 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    /* Smooth transitions for all interactive elements */
+    .assessment-section-card * {
+      transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, transform 0.2s ease-in-out;
+    }
+    
+    /* Enhanced hover effects for action buttons */
+    .assessment-section-card .inline-flex {
+      transition: all 0.2s ease-in-out;
+    }
+    
+    .assessment-section-card:hover .inline-flex {
+      transform: translateX(4px);
+    }
+    
+    /* Loading state styles */
+    .loading-state {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+    
+    /* Accessibility improvements */
+    .assessment-section-card:focus-visible {
+      outline: 2px solid #3B82F6;
+      outline-offset: 2px;
+      border-color: #3B82F6;
+    }
+    
+    /* Summary cards animation */
+    .assessment-summary-card {
+      transition: transform 0.2s ease-in-out;
+    }
+    
+    .assessment-summary-card:hover {
+      transform: scale(1.05);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .assessment-section-card:hover {
+        transform: translateY(-2px) scale(1.01);
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-50 font-sans text-gray-800">
   <div class="min-h-screen p-6 lg:p-10">
@@ -16,14 +109,26 @@
       <!-- Header -->
       <div class="flex items-start justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-2xl lg:text-3xl font-extrabold">Toyota Hilux <span class="text-gray-500 font-medium">2020</span></h1>
-          <p class="text-sm text-gray-500 mt-1">VIN: <span class="font-mono">ABC1234567</span> • Claim: <span class="font-medium">CLM-2025-0412-778</span></p>
+          <h1 class="text-2xl lg:text-3xl font-extrabold">{{ assessment_data.vehicle }}</h1>
+          <p class="text-sm text-gray-500 mt-1">VIN: <span class="font-mono">{{ assessment_data.vin }}</span> • Claim: <span class="font-medium">{{ assessment_data.claim_id }}</span></p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="px-3 py-2 rounded-full text-sm bg-yellow-100 text-yellow-700">In Review</span>
+          <span class="px-3 py-2 rounded-full text-sm 
+            {% if assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-700
+            {% elif assessment.agent_status == 'under_review' %}bg-blue-100 text-blue-700
+            {% elif assessment.agent_status == 'approved' %}bg-green-100 text-green-700
+            {% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-700
+            {% elif assessment.agent_status == 'changes_requested' %}bg-orange-100 text-orange-700
+            {% else %}bg-gray-100 text-gray-700{% endif %}">
+            {{ assessment_data.status }}
+          </span>
           <div class="flex gap-2">
-            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md">Download</button>
-            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md">Share</button>
+            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md" onclick="toggleReportDropdown()">
+              <i class="fas fa-download mr-1"></i>Download
+            </button>
+            <button class="px-3 py-2 bg-white rounded-2xl shadow-sm hover:shadow-md" onclick="openShareModal()">
+              <i class="fas fa-share mr-1"></i>Share
+            </button>
           </div>
         </div>
       </div>
@@ -36,191 +141,800 @@
             <div class="flex items-center justify-between">
               <div>
                 <h2 class="text-lg font-semibold">Assessment Summary</h2>
-                <p class="text-sm text-gray-500 mt-1">Assessor: L. Ndlovu • Insurer: Eswatini Mutual Ins.</p>
+                <p class="text-sm text-gray-500 mt-1">Assessor: {{ assessment_data.assessor }} • Customer: {{ assessment_data.customer_name }}</p>
               </div>
               <div class="text-right">
                 <p class="text-sm text-gray-500">Date</p>
-                <p class="font-medium">2025-09-27</p>
+                <p class="font-medium">{{ assessment_data.incident_date }}</p>
               </div>
             </div>
             <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="bg-gray-50 rounded-xl p-3">
-                <p class="text-xs text-gray-500">Claim Type</p>
-                <p class="font-medium mt-1">Accident</p>
+                <p class="text-xs text-gray-500">Damage Type</p>
+                <p class="font-medium mt-1">{{ assessment_data.damage_type }}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-3">
-                <p class="text-xs text-gray-500">Requested Amount</p>
-                <p class="font-medium mt-1">$8,400</p>
+                <p class="text-xs text-gray-500">Claim Value</p>
+                <p class="font-medium mt-1">{{ assessment_data.claim_value }}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-3">
                 <p class="text-xs text-gray-500">Total Estimated Repair</p>
-                <p class="font-medium mt-1">$7,700</p>
+                <p class="font-medium mt-1">{{ assessment_data.estimated_repair_cost }}</p>
               </div>
               <div class="bg-gray-50 rounded-xl p-3">
                 <p class="text-xs text-gray-500">Assessment ID</p>
-                <p class="font-medium mt-1">CLM-2025-0412-778</p>
+                <p class="font-medium mt-1">{{ assessment_data.claim_id }}</p>
               </div>
             </div>
+            <div class="mt-4">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-500">Assessment Progress</p>
+                <p class="text-sm font-medium">{{ assessment_data.assessment_progress }}%</p>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: {{ assessment_data.assessment_progress }}%"></div>
+              </div>
+            </div>
+            {% if assessment_data.incident_description %}
+            <div class="mt-4 p-3 bg-blue-50 rounded-xl">
+              <p class="text-xs text-blue-600 font-medium mb-1">Incident Description</p>
+              <p class="text-sm text-gray-700">{{ assessment_data.incident_description }}</p>
+            </div>
+            {% endif %}
           </div>
 
-          <!-- Detailed Assessment -->
+          <!-- Enhanced Detailed Assessment -->
           <div class="bg-white rounded-2xl p-4 shadow-sm">
-            <h3 class="text-lg font-semibold mb-3">Detailed Assessment</h3>
-            <div class="space-y-3">
-              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'exterior' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h4 class="font-medium">Exterior Damage</h4>
-                    <p class="text-sm text-gray-500">Front bumper crushed, left fender dented, paint scratches across hood.</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm text-gray-500">Estimate</p>
-                    <p class="font-medium">$3,200</p>
-                    <div class="mt-1">
-                      <span class="text-blue-600 text-xs font-medium flex items-center">
-                        <i class="fas fa-arrow-right mr-1"></i>View Details
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'wheels' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h4 class="font-medium">Wheels & Tires</h4>
-                    <p class="text-sm text-gray-500">Left front tire punctured; wheel alignment recommended.</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm text-gray-500">Estimate</p>
-                    <p class="font-medium">$600</p>
-                    <div class="mt-1">
-                      <span class="text-blue-600 text-xs font-medium flex items-center">
-                        <i class="fas fa-arrow-right mr-1"></i>View Details
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'interior' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h4 class="font-medium">Interior Damage</h4>
-                    <p class="text-sm text-gray-500">Airbag deployed (driver).</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm text-gray-500">Estimate</p>
-                    <p class="font-medium">$1,400</p>
-                    <div class="mt-1">
-                      <span class="text-blue-600 text-xs font-medium flex items-center">
-                        <i class="fas fa-arrow-right mr-1"></i>View Details
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'mechanical' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h4 class="font-medium">Mechanical Systems</h4>
-                    <p class="text-sm text-gray-500">Radiator leak and engine mount damage.</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm text-gray-500">Estimate</p>
-                    <p class="font-medium">$2,100</p>
-                    <div class="mt-1">
-                      <span class="text-blue-600 text-xs font-medium flex items-center">
-                        <i class="fas fa-arrow-right mr-1"></i>View Details
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="{% url 'insurance:assessment_section_detail' 'CLM-2025-0412-778' 'electrical' %}" class="block border border-gray-100 rounded-xl overflow-hidden p-4 cursor-pointer hover:bg-gray-50 hover:border-gray-200 transition-all duration-200">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h4 class="font-medium">Electrical Systems</h4>
-                    <p class="text-sm text-gray-500">Headlamp wiring harness worn; sensors report minor fault codes.</p>
-                  </div>
-                  <div class="text-right">
-                    <p class="text-sm text-gray-500">Estimate</p>
-                    <p class="font-medium">$400</p>
-                    <div class="mt-1">
-                      <span class="text-blue-600 text-xs font-medium flex items-center">
-                        <i class="fas fa-arrow-right mr-1"></i>View Details
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </a>
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-lg font-semibold">Detailed Assessment</h3>
+              <div class="text-sm text-gray-500">
+                <span class="font-medium">{{ assessment_data.sections|length }}</span> sections assessed
+              </div>
             </div>
+            <div class="space-y-3">
+              {% for section in assessment_data.sections %}
+              <div class="assessment-section-card group border border-gray-100 rounded-xl overflow-hidden transition-all duration-300 hover:shadow-md hover:border-blue-200 hover:-translate-y-1" 
+                   data-section-id="{{ section.id }}" 
+                   data-section-name="{{ section.name }}"
+                   data-section-cost="{{ section.cost }}"
+                   data-section-severity="{{ section.severity }}">
+                <a href="{% url 'insurance:assessment_section_detail' assessment_data.claim_id section.id %}" class="block p-4 cursor-pointer">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                      <!-- Enhanced Icon with Status Indicator -->
+                      <div class="relative">
+                        <span class="text-3xl transition-transform duration-200 group-hover:scale-110">{{ section.icon }}</span>
+                        {% if section.status == 'Complete' %}
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                        {% elif section.status == 'Pending' %}
+                        <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-500 rounded-full border-2 border-white animate-pulse"></div>
+                        {% endif %}
+                      </div>
+                      
+                      <div class="flex-1">
+                        <div class="flex items-center space-x-2 mb-1">
+                          <h4 class="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">{{ section.name }}</h4>
+                          {% if section.status == 'Complete' %}
+                          <i class="fas fa-check-circle text-green-500 text-sm"></i>
+                          {% elif section.status == 'Pending' %}
+                          <i class="fas fa-clock text-yellow-500 text-sm"></i>
+                          {% endif %}
+                        </div>
+                        
+                        <div class="flex items-center space-x-3 mb-2">
+                          <!-- Enhanced Severity Badge -->
+                          <span class="text-xs px-3 py-1 rounded-full font-medium border transition-all duration-200
+                            {% if section.severity == 'None' %}bg-green-50 text-green-700 border-green-200 group-hover:bg-green-100
+                            {% elif section.severity == 'Minor' %}bg-yellow-50 text-yellow-700 border-yellow-200 group-hover:bg-yellow-100
+                            {% elif section.severity == 'Moderate' %}bg-orange-50 text-orange-700 border-orange-200 group-hover:bg-orange-100
+                            {% elif section.severity == 'Major' %}bg-red-50 text-red-700 border-red-200 group-hover:bg-red-100
+                            {% elif section.severity == 'Severe' %}bg-red-100 text-red-800 border-red-300 group-hover:bg-red-200
+                            {% else %}bg-gray-50 text-gray-700 border-gray-200 group-hover:bg-gray-100{% endif %}">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>{{ section.severity }}
+                          </span>
+                          
+                          <!-- Assessment Progress -->
+                          <span class="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full group-hover:bg-gray-200 transition-colors duration-200">
+                            <i class="fas fa-list-check mr-1"></i>{{ section.points }}
+                          </span>
+                          
+                          <!-- Component Count -->
+                          <span class="text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded-full group-hover:bg-blue-100 transition-colors duration-200">
+                            <i class="fas fa-cogs mr-1"></i>{{ section.componentCount }} components
+                          </span>
+                        </div>
+                        
+                        <!-- Enhanced Quick Summary for hover -->
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-xs text-gray-600 mt-2 space-y-1">
+                          <div class="flex items-center justify-between">
+                            <span>
+                              {% if section.severity == 'None' %}
+                              <i class="fas fa-shield-alt text-green-500 mr-1"></i>No damage detected in this section
+                              {% elif section.severity == 'Minor' %}
+                              <i class="fas fa-tools text-yellow-500 mr-1"></i>Minor repairs required
+                              {% elif section.severity == 'Moderate' %}
+                              <i class="fas fa-wrench text-orange-500 mr-1"></i>Moderate damage requiring attention
+                              {% elif section.severity == 'Major' %}
+                              <i class="fas fa-exclamation-circle text-red-500 mr-1"></i>Major damage requiring immediate repair
+                              {% elif section.severity == 'Severe' %}
+                              <i class="fas fa-ban text-red-600 mr-1"></i>Severe damage - safety concern
+                              {% else %}
+                              <i class="fas fa-question-circle text-gray-500 mr-1"></i>Assessment pending
+                              {% endif %}
+                            </span>
+                          </div>
+                          
+                          <!-- Additional details on hover -->
+                          {% if section.damageDetails %}
+                          <div class="flex items-center justify-between text-xs bg-gray-50 rounded px-2 py-1 mt-1">
+                            <span class="flex items-center">
+                              <i class="fas fa-percentage text-blue-500 mr-1"></i>
+                              {{ section.damageDetails.damage_percentage }}% damaged
+                            </span>
+                            {% if section.repairTimeline.days > 0 %}
+                            <span class="flex items-center text-orange-600">
+                              <i class="fas fa-clock mr-1"></i>
+                              {{ section.repairTimeline.days }} day{{ section.repairTimeline.days|pluralize }}
+                            </span>
+                            {% endif %}
+                          </div>
+                          {% endif %}
+                          
+                          {% if section.damageDetails.repair_priority != 'Low' %}
+                          <div class="flex items-center text-xs mt-1">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium
+                              {% if section.damageDetails.repair_priority == 'Critical' %}bg-red-100 text-red-700
+                              {% elif section.damageDetails.repair_priority == 'High' %}bg-orange-100 text-orange-700
+                              {% elif section.damageDetails.repair_priority == 'Medium' %}bg-yellow-100 text-yellow-700
+                              {% else %}bg-green-100 text-green-700{% endif %}">
+                              <i class="fas fa-flag mr-1"></i>{{ section.damageDetails.repair_priority }} Priority
+                            </span>
+                          </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="text-right">
+                      <!-- Enhanced Cost Display -->
+                      <div class="mb-2">
+                        <p class="text-xs text-gray-500 mb-1">Repair Estimate</p>
+                        <p class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">{{ section.cost }}</p>
+                      </div>
+                      
+                      <!-- Enhanced Cost Indicator -->
+                      {% if section.cost != '£0' %}
+                      <div class="text-xs mb-2">
+                        {% if section.rawCost %}
+                          {% if section.rawCost < 500 %}
+                          <span class="text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-200 group-hover:bg-green-100 transition-colors duration-200">
+                            <i class="fas fa-pound-sign mr-1"></i>Low Cost
+                          </span>
+                          {% elif section.rawCost < 2000 %}
+                          <span class="text-yellow-600 bg-yellow-50 px-2 py-1 rounded-full border border-yellow-200 group-hover:bg-yellow-100 transition-colors duration-200">
+                            <i class="fas fa-pound-sign mr-1"></i>Moderate Cost
+                          </span>
+                          {% elif section.rawCost < 5000 %}
+                          <span class="text-orange-600 bg-orange-50 px-2 py-1 rounded-full border border-orange-200 group-hover:bg-orange-100 transition-colors duration-200">
+                            <i class="fas fa-pound-sign mr-1"></i>High Cost
+                          </span>
+                          {% else %}
+                          <span class="text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200 group-hover:bg-red-100 transition-colors duration-200">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>Very High Cost
+                          </span>
+                          {% endif %}
+                        {% else %}
+                          <span class="text-gray-600 bg-gray-50 px-2 py-1 rounded-full border border-gray-200">
+                            <i class="fas fa-calculator mr-1"></i>Calculating...
+                          </span>
+                        {% endif %}
+                      </div>
+                      {% endif %}
+                      
+                      <!-- Enhanced Action Button -->
+                      <div class="mt-2">
+                        <span class="inline-flex items-center text-blue-600 text-xs font-medium group-hover:text-blue-700 transition-all duration-200 group-hover:translate-x-1">
+                          <i class="fas fa-search-plus mr-1 group-hover:mr-2 transition-all duration-200"></i>
+                          <span class="group-hover:font-semibold transition-all duration-200">View Details</span>
+                          <i class="fas fa-arrow-right ml-1 opacity-0 group-hover:opacity-100 transition-all duration-200"></i>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Progress Bar for Assessment Completion -->
+                  {% if section.points %}
+                  {% with completion_parts=section.points|split:"/" %}
+                  {% if completion_parts|length == 2 %}
+                  {% with completed=completion_parts.0|add:0 total=completion_parts.1|split:" "|first|add:0 %}
+                  <div class="mt-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+                      <span>Assessment Progress</span>
+                      <span>{{ completed }}/{{ total }} points</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5">
+                      <div class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" 
+                           style="width: {% widthratio completed total 100 %}%"></div>
+                    </div>
+                  </div>
+                  {% endwith %}
+                  {% endif %}
+                  {% endwith %}
+                  {% endif %}
+                </a>
+              </div>
+              {% empty %}
+              <div class="text-center py-12 text-gray-500">
+                <div class="mb-4">
+                  <i class="fas fa-clipboard-list text-4xl text-gray-300"></i>
+                </div>
+                <p class="text-lg font-medium mb-2">No Assessment Sections Available</p>
+                <p class="text-sm">Assessment data is being processed or has not been completed yet.</p>
+              </div>
+              {% endfor %}
+            </div>
+            
+            <!-- Enhanced Assessment Summary Footer -->
+            {% if assessment_data.sections %}
+            <div class="mt-6 pt-4 border-t border-gray-100">
+              <div class="mb-3">
+                <h4 class="text-sm font-semibold text-gray-700 mb-2">Assessment Overview</h4>
+              </div>
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <!-- Total Sections -->
+                <div class="assessment-summary-card bg-green-50 rounded-lg p-3 border border-green-200 hover:shadow-md transition-all duration-200">
+                  <div class="text-lg font-bold text-green-600">
+                    {{ assessment_data.sections|length }}
+                  </div>
+                  <div class="text-xs text-green-700 font-medium">Total Sections</div>
+                  <div class="text-xs text-green-600 mt-1">
+                    <i class="fas fa-list mr-1"></i>Assessed
+                  </div>
+                </div>
+                
+                <!-- Completed Sections -->
+                <div class="assessment-summary-card bg-blue-50 rounded-lg p-3 border border-blue-200 hover:shadow-md transition-all duration-200">
+                  <div class="text-lg font-bold text-blue-600">
+                    {% regroup assessment_data.sections by status as status_groups %}
+                    {% for status_group in status_groups %}
+                      {% if status_group.grouper == 'Complete' %}{{ status_group.list|length }}{% endif %}
+                    {% empty %}0{% endfor %}
+                  </div>
+                  <div class="text-xs text-blue-700 font-medium">Completed</div>
+                  <div class="text-xs text-blue-600 mt-1">
+                    <i class="fas fa-check-circle mr-1"></i>Finished
+                  </div>
+                </div>
+                
+                <!-- Sections with Damage -->
+                <div class="assessment-summary-card bg-yellow-50 rounded-lg p-3 border border-yellow-200 hover:shadow-md transition-all duration-200">
+                  <div class="text-lg font-bold text-yellow-600">
+                    {% regroup assessment_data.sections by severity as severity_groups %}
+                    {% for severity_group in severity_groups %}
+                      {% if severity_group.grouper != 'None' and severity_group.grouper != 'Unknown' %}{{ severity_group.list|length }}{% endif %}
+                    {% empty %}0{% endfor %}
+                  </div>
+                  <div class="text-xs text-yellow-700 font-medium">With Damage</div>
+                  <div class="text-xs text-yellow-600 mt-1">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>Needs Repair
+                  </div>
+                </div>
+                
+                <!-- High Priority Sections -->
+                <div class="assessment-summary-card bg-red-50 rounded-lg p-3 border border-red-200 hover:shadow-md transition-all duration-200">
+                  <div class="text-lg font-bold text-red-600">
+                    {% regroup assessment_data.sections by severity as severity_groups %}
+                    {% for severity_group in severity_groups %}
+                      {% if severity_group.grouper == 'Major' or severity_group.grouper == 'Severe' %}{{ severity_group.list|length }}{% endif %}
+                    {% empty %}0{% endfor %}
+                  </div>
+                  <div class="text-xs text-red-700 font-medium">High Priority</div>
+                  <div class="text-xs text-red-600 mt-1">
+                    <i class="fas fa-flag mr-1"></i>Urgent
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Action Bar -->
+              <div class="mt-4 flex flex-wrap gap-2 justify-center">
+                <button onclick="filterSections('all')" class="px-3 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded-full transition-colors duration-200 active">
+                  <i class="fas fa-list mr-1"></i>Show All
+                </button>
+                <button onclick="filterSections('Major')" class="px-3 py-1 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded-full transition-colors duration-200" data-filter-severity="Major">
+                  <i class="fas fa-exclamation-circle mr-1"></i>Major Damage
+                </button>
+                <button onclick="filterSections('Moderate')" class="px-3 py-1 text-xs bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-full transition-colors duration-200" data-filter-severity="Moderate">
+                  <i class="fas fa-wrench mr-1"></i>Moderate Damage
+                </button>
+                <button onclick="filterSections('None')" class="px-3 py-1 text-xs bg-green-100 hover:bg-green-200 text-green-700 rounded-full transition-colors duration-200" data-filter-severity="None">
+                  <i class="fas fa-shield-alt mr-1"></i>No Damage
+                </button>
+              </div>
+            </div>
+            {% endif %}
           </div>
 
           <!-- Assessment Photos -->
           <div class="bg-white rounded-2xl p-4 shadow-sm">
             <h3 class="text-lg font-semibold mb-3">Assessment Photos</h3>
+            {% if photos %}
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
-                <img src="https://via.placeholder.com/800x600?text=Front+bump" alt="Front bumper" class="w-full h-full object-cover" />
+              {% for photo in photos|slice:":8" %}
+              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden relative group cursor-pointer" onclick="openPhotoModal('{{ photo.image.url }}', '{{ photo.description|default:"Assessment Photo" }}')">
+                <img src="{{ photo.image.url }}" alt="{{ photo.description|default:'Assessment Photo' }}" class="w-full h-full object-cover" />
+                <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
+                  <i class="fas fa-expand text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200"></i>
+                </div>
+                {% if photo.category %}
+                <div class="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded">
+                  {{ photo.get_category_display }}
+                </div>
+                {% endif %}
               </div>
-              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
-                <img src="https://via.placeholder.com/800x600?text=Left+door" alt="Left door" class="w-full h-full object-cover" />
-              </div>
-              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
-                <img src="https://via.placeholder.com/800x600?text=Engine+bay" alt="Engine bay" class="w-full h-full object-cover" />
-              </div>
-              <div class="aspect-[4/3] bg-gray-100 rounded-xl overflow-hidden">
-                <img src="https://via.placeholder.com/800x600?text=Interior+dash" alt="Interior dash" class="w-full h-full object-cover" />
-              </div>
+              {% endfor %}
             </div>
+            {% if photos.count > 8 %}
+            <div class="mt-3 text-center">
+              <button class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                View all {{ photos.count }} photos
+              </button>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-8 text-gray-500">
+              <i class="fas fa-camera text-4xl mb-2"></i>
+              <p>No photos available for this assessment</p>
+            </div>
+            {% endif %}
           </div>
         </div>
 
         <!-- Right column -->
         <aside class="space-y-6">
+          <!-- Enhanced Cost Breakdown by Category -->
           <div class="bg-white rounded-2xl p-4 shadow-sm">
-            <h3 class="text-lg font-semibold mb-3">Repair Cost Comparison</h3>
+            <h3 class="text-lg font-semibold mb-3">Detailed Cost Breakdown</h3>
+            
+            {% if detailed_costs %}
+            <!-- Section-by-section breakdown -->
+            <div class="space-y-3 mb-4">
+              {% for section in assessment_data.sections %}
+              {% if section.cost != '£0' %}
+              <div class="border border-gray-200 rounded-lg p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-lg">{{ section.icon }}</span>
+                    <div>
+                      <p class="text-sm font-medium">{{ section.name|title }}</p>
+                      <p class="text-xs text-gray-500">{{ section.componentCount }} components</p>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-medium">{{ section.cost }}</p>
+                    <span class="text-xs px-2 py-1 rounded-full 
+                      {% if section.severity == 'None' %}bg-green-100 text-green-700
+                      {% elif section.severity == 'Minor' %}bg-yellow-100 text-yellow-700
+                      {% elif section.severity == 'Moderate' %}bg-orange-100 text-orange-700
+                      {% elif section.severity == 'Major' %}bg-red-100 text-red-700
+                      {% elif section.severity == 'Severe' %}bg-red-200 text-red-800
+                      {% else %}bg-gray-100 text-gray-700{% endif %}">
+                      {{ section.severity }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Detailed cost breakdown for this section -->
+                {% with section_key=section.id section_data=detailed_costs.section_costs|get_item:section.id %}
+                {% if section_data %}
+                <div class="text-xs text-gray-600 space-y-1 bg-gray-50 rounded p-2">
+                  <div class="flex justify-between">
+                    <span>Parts & Materials:</span>
+                    <span>£{{ section_data.parts_cost|floatformat:0 }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Labor (70%):</span>
+                    <span>£{{ section_data.labor_cost|floatformat:0 }}</span>
+                  </div>
+                </div>
+                {% endif %}
+                {% endwith %}
+              </div>
+              {% endif %}
+              {% endfor %}
+            </div>
+            
+            <!-- Cost summary -->
+            <div class="border-t border-gray-200 pt-3 space-y-2 text-sm">
+              <div class="flex justify-between">
+                <span>Subtotal (Parts + Labor):</span>
+                <span class="font-medium">£{{ detailed_costs.subtotal|floatformat:0 }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Paint & Materials (15%):</span>
+                <span>£{{ detailed_costs.paint_materials|floatformat:0 }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>Shop Supplies (8%):</span>
+                <span>£{{ detailed_costs.shop_supplies|floatformat:0 }}</span>
+              </div>
+              <div class="flex justify-between border-t pt-2">
+                <span>Subtotal before VAT:</span>
+                <span class="font-medium">£{{ detailed_costs.total_before_tax|floatformat:0 }}</span>
+              </div>
+              <div class="flex justify-between text-gray-600">
+                <span>VAT (20%):</span>
+                <span>£{{ detailed_costs.vat|floatformat:0 }}</span>
+              </div>
+              <div class="flex justify-between border-t pt-2 text-lg font-bold text-red-600">
+                <span>Total Repair Cost:</span>
+                <span>£{{ detailed_costs.grand_total|floatformat:0 }}</span>
+              </div>
+            </div>
+            
+            {% else %}
+            <!-- Fallback to simple breakdown -->
+            <div class="space-y-3">
+              {% for section in assessment_data.sections %}
+              {% if section.cost != '£0' %}
+              <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
+                <div class="flex items-center space-x-2">
+                  <span class="text-lg">{{ section.icon }}</span>
+                  <div>
+                    <p class="text-sm font-medium">{{ section.name|title }}</p>
+                    <p class="text-xs text-gray-500">{{ section.componentCount }} components</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-medium">{{ section.cost }}</p>
+                  <span class="text-xs px-2 py-1 rounded-full 
+                    {% if section.severity == 'None' %}bg-green-100 text-green-700
+                    {% elif section.severity == 'Minor' %}bg-yellow-100 text-yellow-700
+                    {% elif section.severity == 'Moderate' %}bg-orange-100 text-orange-700
+                    {% elif section.severity == 'Major' %}bg-red-100 text-red-700
+                    {% elif section.severity == 'Severe' %}bg-red-200 text-red-800
+                    {% else %}bg-gray-100 text-gray-700{% endif %}">
+                    {{ section.severity }}
+                  </span>
+                </div>
+              </div>
+              {% endif %}
+              {% endfor %}
+              
+              <!-- Total -->
+              <div class="pt-3 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                  <p class="font-semibold">Total Repair Cost</p>
+                  <p class="text-lg font-bold text-red-600">{{ assessment_data.estimated_repair_cost }}</p>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Enhanced Repair Quote Comparison -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <h3 class="text-lg font-semibold mb-3">Repair Quote Comparison</h3>
+            
+            {% if repair_quotes %}
+            <div class="space-y-3">
+              {% for quote in repair_quotes %}
+              <div class="border border-gray-200 rounded-lg p-3 
+                {% if quote.type == 'primary' %}bg-blue-50 border-blue-200{% endif %}">
+                <div class="flex items-center justify-between mb-2">
+                  <div>
+                    <p class="font-medium text-sm">{{ quote.source }}</p>
+                    <p class="text-xs text-gray-500">{{ quote.provider }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="font-bold text-lg 
+                      {% if quote.type == 'primary' %}text-blue-600
+                      {% elif quote.amount < assessment.estimated_repair_cost %}text-green-600
+                      {% else %}text-gray-900{% endif %}">
+                      £{{ quote.amount|floatformat:0 }}
+                    </p>
+                    <div class="flex items-center space-x-2">
+                      <span class="text-xs px-2 py-1 rounded-full 
+                        {% if quote.confidence == 'High' %}bg-green-100 text-green-700
+                        {% elif quote.confidence == 'Medium' %}bg-yellow-100 text-yellow-700
+                        {% else %}bg-gray-100 text-gray-700{% endif %}">
+                        {{ quote.confidence }}
+                      </span>
+                      {% if quote.amount < assessment.estimated_repair_cost %}
+                      <span class="text-xs text-green-600 font-medium">
+                        -£{{ assessment.estimated_repair_cost|sub:quote.amount|floatformat:0 }}
+                      </span>
+                      {% elif quote.amount > assessment.estimated_repair_cost %}
+                      <span class="text-xs text-red-600 font-medium">
+                        +£{{ quote.amount|sub:assessment.estimated_repair_cost|floatformat:0 }}
+                      </span>
+                      {% endif %}
+                    </div>
+                  </div>
+                </div>
+                <p class="text-xs text-gray-600">{{ quote.notes }}</p>
+              </div>
+              {% endfor %}
+            </div>
+            
+            <!-- Quote statistics -->
+            <div class="mt-4 pt-3 border-t border-gray-200">
+              <div class="grid grid-cols-3 gap-4 text-center text-xs">
+                {% with min_quote=repair_quotes|min_by:'amount' avg_amount=repair_quotes|avg:'amount' max_quote=repair_quotes|max_by:'amount' %}
+                <div>
+                  <p class="text-gray-500">Lowest Quote</p>
+                  <p class="font-medium text-green-600">
+                    {% if min_quote %}£{{ min_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Average Quote</p>
+                  <p class="font-medium">
+                    £{{ avg_amount|floatformat:0 }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-gray-500">Highest Quote</p>
+                  <p class="font-medium text-red-600">
+                    {% if max_quote %}£{{ max_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
+                  </p>
+                </div>
+                {% endwith %}
+              </div>
+            </div>
+            
+            {% else %}
+            <!-- Fallback table -->
             <table class="w-full text-left text-sm">
               <thead>
                 <tr class="text-gray-500">
                   <th class="py-2">Source</th>
-                  <th class="py-2">Amount</th>
+                  <th class="py-2 text-right">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="border-t border-gray-100 bg-green-50">
-                  <td class="py-3">Repairer A</td>
-                  <td class="py-3 font-medium">$7,600</td>
+                {% if assessment.estimated_repair_cost %}
+                <tr class="border-t border-gray-100 bg-blue-50">
+                  <td class="py-3">
+                    <div>
+                      <p class="font-medium">Assessor Estimate</p>
+                      <p class="text-xs text-gray-500">{{ assessment_data.assessor }}</p>
+                    </div>
+                  </td>
+                  <td class="py-3 font-medium text-right">{{ assessment_data.estimated_repair_cost }}</td>
                 </tr>
                 <tr class="border-t border-gray-100">
-                  <td class="py-3">Repairer B</td>
-                  <td class="py-3 font-medium">$7,900</td>
+                  <td class="py-3">
+                    <div>
+                      <p class="font-medium">Market Average</p>
+                      <p class="text-xs text-gray-500">Regional estimate</p>
+                    </div>
+                  </td>
+                  <td class="py-3 font-medium text-right">£{{ assessment.estimated_repair_cost|add_num:500|floatformat:0 }}</td>
                 </tr>
                 <tr class="border-t border-gray-100">
-                  <td class="py-3">Assessor Estimate</td>
-                  <td class="py-3 font-medium">$8,200</td>
+                  <td class="py-3">
+                    <div>
+                      <p class="font-medium">Conservative Estimate</p>
+                      <p class="text-xs text-gray-500">Lower bound</p>
+                    </div>
+                  </td>
+                  <td class="py-3 font-medium text-right">£{{ assessment.estimated_repair_cost|sub:800|floatformat:0 }}</td>
                 </tr>
+                {% else %}
+                <tr class="border-t border-gray-100">
+                  <td colspan="2" class="py-6 text-center text-gray-500">
+                    <i class="fas fa-calculator text-2xl mb-2"></i>
+                    <p>No repair estimates available</p>
+                  </td>
+                </tr>
+                {% endif %}
               </tbody>
             </table>
+            {% endif %}
           </div>
 
+          <!-- Enhanced Settlement Calculator -->
           <div class="bg-white rounded-2xl p-4 shadow-sm sticky top-6">
             <h3 class="text-lg font-semibold mb-3">Settlement Calculator</h3>
-            <div class="space-y-2 text-sm text-gray-700">
-              <div class="flex items-center justify-between">
-                <div>Depreciation</div>
-                <div>$385</div>
+            
+            {% if settlement_details %}
+            <div class="space-y-3 text-sm">
+              <!-- Vehicle Information -->
+              <div class="bg-gray-50 rounded-lg p-3">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-xs text-gray-500">Vehicle Market Value</span>
+                  <span class="font-medium">£{{ settlement_details.market_value|floatformat:0 }}</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-xs text-gray-500">Vehicle Age</span>
+                  <span class="text-xs">{{ settlement_details.vehicle_age }} years</span>
+                </div>
               </div>
+              
+              <!-- Repair Cost -->
               <div class="flex items-center justify-between">
-                <div>Covered</div>
-                <div>$5,760</div>
+                <span>Repair Cost</span>
+                <span class="font-medium">£{{ settlement_details.repair_cost|floatformat:0 }}</span>
               </div>
+              
+              <!-- Depreciation Breakdown -->
+              <div class="bg-yellow-50 rounded-lg p-3">
+                <p class="text-xs font-medium text-yellow-800 mb-2">Depreciation Factors</p>
+                <div class="space-y-1 text-xs">
+                  <div class="flex justify-between">
+                    <span>Age Depreciation ({{ settlement_details.age_depreciation_rate|mul:100|floatformat:1 }}%):</span>
+                    <span class="text-red-600">-£{{ settlement_details.market_value|mul:settlement_details.age_depreciation_rate|floatformat:0 }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Damage Depreciation ({{ settlement_details.damage_depreciation_rate|mul:100|floatformat:1 }}%):</span>
+                    <span class="text-red-600">-£{{ settlement_details.market_value|mul:settlement_details.damage_depreciation_rate|floatformat:0 }}</span>
+                  </div>
+                  <div class="flex justify-between border-t pt-1 font-medium">
+                    <span>Total Depreciation:</span>
+                    <span class="text-red-600">-£{{ settlement_details.depreciation_amount|floatformat:0 }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Policy Deductible -->
               <div class="flex items-center justify-between">
-                <div>Deductible</div>
-                <div>$500</div>
+                <span>Policy Deductible</span>
+                <span class="text-red-600">-£{{ settlement_details.deductible|floatformat:0 }}</span>
               </div>
-              <div class="border-t mt-3 pt-3 flex items-center justify-between">
-                <div class="font-semibold">Estimated Settlement</div>
-                <div class="text-xl font-extrabold">$5,260</div>
+              
+              <!-- Salvage Value (if applicable) -->
+              {% if settlement_details.salvage_value > 0 %}
+              <div class="flex items-center justify-between">
+                <span>Salvage Value</span>
+                <span class="text-green-600">+£{{ settlement_details.salvage_value|floatformat:0 }}</span>
+              </div>
+              {% endif %}
+              
+              <!-- Total Loss Check -->
+              <div class="{% if settlement_details.is_total_loss %}bg-red-50 border border-red-200{% else %}bg-green-50 border border-green-200{% endif %} rounded-lg p-3">
+                <p class="text-xs font-medium mb-1 {% if settlement_details.is_total_loss %}text-red-600{% else %}text-green-600{% endif %}">
+                  {% if settlement_details.is_total_loss %}TOTAL LOSS THRESHOLD EXCEEDED{% else %}REPAIR ECONOMICALLY VIABLE{% endif %}
+                </p>
+                <p class="text-xs {% if settlement_details.is_total_loss %}text-red-700{% else %}text-green-700{% endif %}">
+                  Repair cost (£{{ settlement_details.repair_cost|floatformat:0 }}) 
+                  {% if settlement_details.is_total_loss %}exceeds{% else %}is below{% endif %} 
+                  70% threshold (£{{ settlement_details.total_loss_threshold|floatformat:0 }})
+                </p>
+              </div>
+              
+              <!-- Settlement Amount -->
+              <div class="border-t pt-3 mt-3">
+                <div class="flex items-center justify-between">
+                  <span class="font-semibold">{{ settlement_details.recommendation }}</span>
+                  <span class="text-xl font-extrabold {% if settlement_details.is_total_loss %}text-red-600{% else %}text-green-600{% endif %}">
+                    £{{ settlement_details.settlement_amount|floatformat:0 }}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Settlement Recommendation -->
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+                <p class="text-xs text-blue-600 font-medium mb-1">RECOMMENDATION</p>
+                <p class="text-xs text-blue-700">
+                  {% if settlement_details.is_total_loss %}
+                    Recommend total loss settlement. Vehicle repair cost exceeds economic threshold.
+                    {% if settlement_details.salvage_value > 0 %}
+                    Salvage value of £{{ settlement_details.salvage_value|floatformat:0 }} included in settlement.
+                    {% endif %}
+                  {% else %}
+                    Recommend repair settlement. Repair is economically viable and cost-effective.
+                  {% endif %}
+                </p>
+              </div>
+              
+              <!-- Settlement Calculation Details -->
+              <div class="mt-3 pt-3 border-t border-gray-200">
+                <button type="button" onclick="toggleCalculationDetails()" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                  <i class="fas fa-calculator mr-1"></i>Show Calculation Details
+                </button>
+                <div id="calculationDetails" class="hidden mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+                  <p class="font-medium mb-1">Settlement Calculation:</p>
+                  {% if settlement_details.is_total_loss %}
+                  <p>Market Value: £{{ settlement_details.market_value|floatformat:0 }}</p>
+                  <p>- Total Depreciation: £{{ settlement_details.depreciation_amount|floatformat:0 }}</p>
+                  <p>- Policy Deductible: £{{ settlement_details.deductible|floatformat:0 }}</p>
+                  {% if settlement_details.salvage_value > 0 %}
+                  <p>+ Salvage Value: £{{ settlement_details.salvage_value|floatformat:0 }}</p>
+                  {% endif %}
+                  {% else %}
+                  <p>Repair Cost: £{{ settlement_details.repair_cost|floatformat:0 }}</p>
+                  <p>- Policy Deductible: £{{ settlement_details.deductible|floatformat:0 }}</p>
+                  {% endif %}
+                  <p class="font-medium border-t pt-1 mt-1">= Settlement: £{{ settlement_details.settlement_amount|floatformat:0 }}</p>
+                </div>
+              </div>
+            </div>
+            
+            {% elif assessment.estimated_repair_cost and assessment.vehicle_market_value %}
+            <!-- Fallback to simple calculator -->
+            <div class="space-y-3 text-sm text-gray-700">
+              <!-- Vehicle Value -->
+              <div class="bg-gray-50 rounded-lg p-3">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs text-gray-500">Vehicle Market Value</span>
+                  <span class="font-medium">£{{ assessment.vehicle_market_value|floatformat:0 }}</span>
+                </div>
+              </div>
+              
+              <!-- Repair Cost -->
+              <div class="flex items-center justify-between">
+                <span>Repair Cost</span>
+                <span class="font-medium">{{ assessment_data.estimated_repair_cost }}</span>
+              </div>
+              
+              <!-- Depreciation (5% of market value) -->
+              <div class="flex items-center justify-between">
+                <span>Depreciation (5%)</span>
+                <span class="text-red-600">-£{{ assessment.vehicle_market_value|mul:0.05|floatformat:0 }}</span>
+              </div>
+              
+              <!-- Deductible (standard £500) -->
+              <div class="flex items-center justify-between">
+                <span>Deductible</span>
+                <span class="text-red-600">-£500</span>
+              </div>
+              
+              <!-- Total Loss Check -->
+              {% with repair_cost=assessment.estimated_repair_cost market_value=assessment.vehicle_market_value threshold=assessment.vehicle_market_value|mul:0.7 %}
+              {% if repair_cost > threshold %}
+              <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                <p class="text-xs text-red-600 font-medium mb-1">TOTAL LOSS THRESHOLD EXCEEDED</p>
+                <p class="text-xs text-red-700">Repair cost (£{{ repair_cost|floatformat:0 }}) exceeds 70% of vehicle value (£{{ threshold|floatformat:0 }})</p>
+              </div>
+              {% endif %}
+              {% endwith %}
+              
+              <!-- Settlement Amount -->
+              <div class="border-t pt-3 mt-3">
+                {% with repair_cost=assessment.estimated_repair_cost market_value=assessment.vehicle_market_value depreciation=assessment.vehicle_market_value|mul:0.05 threshold=assessment.vehicle_market_value|mul:0.7 %}
+                {% if repair_cost > threshold %}
+                  <!-- Total Loss Settlement -->
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold">Total Loss Settlement</span>
+                    <span class="text-xl font-extrabold text-red-600">
+                      £{{ market_value|sub:depreciation|sub:500|floatformat:0 }}
+                    </span>
+                  </div>
+                {% else %}
+                  <!-- Repair Settlement -->
+                  <div class="flex items-center justify-between">
+                    <span class="font-semibold">Repair Settlement</span>
+                    <span class="text-xl font-extrabold text-green-600">
+                      £{{ repair_cost|sub:500|floatformat:0 }}
+                    </span>
+                  </div>
+                {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-6 text-gray-500">
+              <i class="fas fa-calculator text-2xl mb-2"></i>
+              <p class="text-sm">Settlement calculation requires repair cost and vehicle value</p>
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Workflow History -->
+          <div class="bg-white rounded-2xl p-4 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-semibold">Workflow History</h3>
+              <button onclick="loadWorkflowHistory()" class="text-blue-600 hover:text-blue-800 text-sm">
+                <i class="fas fa-refresh mr-1"></i>Refresh
+              </button>
+            </div>
+            
+            <div id="workflowHistory" class="space-y-3">
+              <!-- Workflow history will be loaded here -->
+              <div class="text-center py-4 text-gray-500">
+                <i class="fas fa-spinner fa-spin mb-2"></i>
+                <p class="text-sm">Loading workflow history...</p>
               </div>
             </div>
           </div>
@@ -229,12 +943,648 @@
 
       <!-- Footer actions -->
       <div class="mt-8 bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
-        <div class="text-sm text-gray-600">Last updated: 2025-09-27 • Assessor: L. Ndlovu</div>
+        <div class="text-sm text-gray-600">Last updated: {{ assessment.updated_at|date:"M d, Y" }} • Assessor: {{ assessment_data.assessor }}</div>
         <div class="flex gap-2">
-          <button class="px-3 py-2 bg-white rounded-xl shadow-sm">Request Update</button>
-          <button class="px-3 py-2 bg-yellow-500 text-white rounded-xl">Send Back</button>
-          <button class="px-3 py-2 bg-red-600 text-white rounded-xl">Close Case</button>
+          <!-- Report Generation Dropdown -->
+          <div class="relative inline-block text-left">
+            <button type="button" class="px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors flex items-center gap-1" onclick="toggleReportDropdown()">
+              <i class="fas fa-file-pdf"></i>
+              Generate Report
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <div id="reportDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-10">
+              <div class="py-1">
+                <a href="{% url 'insurance:assessment_report' assessment_id=assessment.id %}?type=detailed" 
+                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-xl">
+                  <i class="fas fa-file-alt mr-2"></i>Detailed Report
+                </a>
+                <a href="{% url 'insurance:assessment_report' assessment_id=assessment.id %}?type=summary" 
+                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <i class="fas fa-file-text mr-2"></i>Summary Report
+                </a>
+                <a href="{% url 'insurance:assessment_report' assessment_id=assessment.id %}?type=photos_only" 
+                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-xl">
+                  <i class="fas fa-images mr-2"></i>Photos Only
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <button class="px-3 py-2 bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow" onclick="requestUpdate()">Request Update</button>
+          {% csrf_token %}
+          {% if assessment.agent_status == 'pending_review' or assessment.agent_status == 'under_review' %}
+          <button class="workflow-action-btn px-3 py-2 bg-yellow-500 text-white rounded-xl hover:bg-yellow-600 transition-colors" onclick="sendBack()">Send Back</button>
+          <button class="workflow-action-btn px-3 py-2 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-colors" onclick="approveAssessment()">Approve</button>
+          <button class="workflow-action-btn px-3 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors" onclick="rejectAssessment()">Reject</button>
+          {% elif assessment.agent_status == 'pending_review' %}
+          <button class="workflow-action-btn px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors" onclick="performWorkflowAction('start_review', '')">Start Review</button>
+          {% elif assessment.agent_status == 'changes_requested' %}
+          <button class="workflow-action-btn px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors" onclick="performWorkflowAction('start_review', '')">Resume Review</button>
+          {% else %}
+          <button class="px-3 py-2 bg-gray-400 text-white rounded-xl cursor-not-allowed" disabled>{{ assessment.get_agent_status_display }}</button>
+          {% endif %}
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Modal -->
+  <div id="photoModal" class="fixed inset-0 bg-black bg-opacity-75 hidden z-50 flex items-center justify-center">
+    <div class="max-w-4xl max-h-full p-4">
+      <div class="relative">
+        <img id="modalImage" src="" alt="" class="max-w-full max-h-full object-contain" />
+        <button onclick="closePhotoModal()" class="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75">
+          <i class="fas fa-times"></i>
+        </button>
+        <div id="modalCaption" class="absolute bottom-4 left-4 text-white bg-black bg-opacity-50 px-3 py-2 rounded"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openPhotoModal(imageUrl, caption) {
+      document.getElementById('modalImage').src = imageUrl;
+      document.getElementById('modalCaption').textContent = caption;
+      document.getElementById('photoModal').classList.remove('hidden');
+    }
+
+    function closePhotoModal() {
+      document.getElementById('photoModal').classList.add('hidden');
+    }
+
+    function requestUpdate() {
+      // Implement request update functionality
+      alert('Update request sent to assessor');
+    }
+
+    function sendBack() {
+      const reason = prompt('Please provide details for the requested changes:');
+      if (reason && reason.trim()) {
+        performWorkflowAction('request_changes', reason);
+      } else if (reason !== null) {
+        alert('Details are required for requesting changes.');
+      }
+    }
+
+    function approveAssessment() {
+      const notes = prompt('Add approval notes (optional):');
+      if (notes !== null) { // User didn't cancel
+        performWorkflowAction('approve', notes);
+      }
+    }
+    
+    // Settlement calculator functionality
+    function toggleCalculationDetails() {
+      const details = document.getElementById('calculationDetails');
+      const button = event.target;
+      
+      if (details.classList.contains('hidden')) {
+        details.classList.remove('hidden');
+        button.innerHTML = '<i class="fas fa-calculator mr-1"></i>Hide Calculation Details';
+      } else {
+        details.classList.add('hidden');
+        button.innerHTML = '<i class="fas fa-calculator mr-1"></i>Show Calculation Details';
+      }
+    }
+
+    function rejectAssessment() {
+      const reason = prompt('Please provide a reason for rejection:');
+      if (reason && reason.trim()) {
+        performWorkflowAction('reject', reason);
+      } else if (reason !== null) {
+        alert('A reason is required for rejection.');
+      }
+    }
+
+    function performWorkflowAction(action, notes) {
+      const assessmentId = '{{ assessment.assessment_id }}';
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      
+      // Show loading state
+      const buttons = document.querySelectorAll('.workflow-action-btn');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+      });
+      
+      fetch(`/insurance/assessments/${assessmentId}/workflow/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrfToken
+        },
+        body: `action=${action}&notes=${encodeURIComponent(notes || '')}`
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update status display
+          const statusElement = document.querySelector('.status-badge');
+          if (statusElement) {
+            statusElement.textContent = data.status_display;
+            // Update status badge color based on new status
+            statusElement.className = 'px-3 py-2 rounded-full text-sm status-badge';
+            if (data.new_status === 'approved') {
+              statusElement.classList.add('bg-green-100', 'text-green-700');
+            } else if (data.new_status === 'rejected') {
+              statusElement.classList.add('bg-red-100', 'text-red-700');
+            } else if (data.new_status === 'changes_requested') {
+              statusElement.classList.add('bg-orange-100', 'text-orange-700');
+            } else if (data.new_status === 'under_review') {
+              statusElement.classList.add('bg-blue-100', 'text-blue-700');
+            } else if (data.new_status === 'on_hold') {
+              statusElement.classList.add('bg-gray-100', 'text-gray-700');
+            }
+          }
+          
+          // Show success message
+          showNotification(data.message, 'success');
+          
+          // Refresh the page after a short delay to show updated workflow history
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          
+        } else {
+          showNotification(data.error || 'An error occurred', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error occurred', 'error');
+      })
+      .finally(() => {
+        // Restore button states
+        buttons.forEach(btn => {
+          btn.disabled = false;
+          btn.style.opacity = '1';
+        });
+      });
+    }
+
+    function showNotification(message, type) {
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full`;
+      
+      const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+      notification.classList.add(bgColor, 'text-white');
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      // Animate in
+      setTimeout(() => {
+        notification.classList.remove('translate-x-full');
+      }, 100);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 5000);
+    }
+
+    function loadWorkflowHistory() {
+      const assessmentId = '{{ assessment.assessment_id }}';
+      const historyContainer = document.getElementById('workflowHistory');
+      
+      // Show loading state
+      historyContainer.innerHTML = `
+        <div class="text-center py-4 text-gray-500">
+          <i class="fas fa-spinner fa-spin mb-2"></i>
+          <p class="text-sm">Loading workflow history...</p>
+        </div>
+      `;
+      
+      fetch(`/insurance/assessments/${assessmentId}/workflow/history/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success && data.history.length > 0) {
+            historyContainer.innerHTML = data.history.map(entry => `
+              <div class="border-l-4 border-blue-200 pl-4 py-2">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-medium text-sm capitalize">${entry.step.replace('_', ' ')}</span>
+                  <span class="text-xs text-gray-500">${entry.completed_at_relative} ago</span>
+                </div>
+                <p class="text-sm text-gray-600 mb-1">${entry.notes}</p>
+                <div class="flex items-center text-xs text-gray-500">
+                  <i class="fas fa-user mr-1"></i>
+                  <span>${entry.completed_by}</span>
+                  <span class="mx-2">•</span>
+                  <span>${entry.completed_at}</span>
+                </div>
+              </div>
+            `).join('');
+          } else {
+            historyContainer.innerHTML = `
+              <div class="text-center py-4 text-gray-500">
+                <i class="fas fa-history mb-2"></i>
+                <p class="text-sm">No workflow history available</p>
+              </div>
+            `;
+          }
+        })
+        .catch(error => {
+          console.error('Error loading workflow history:', error);
+          historyContainer.innerHTML = `
+            <div class="text-center py-4 text-red-500">
+              <i class="fas fa-exclamation-triangle mb-2"></i>
+              <p class="text-sm">Error loading workflow history</p>
+            </div>
+          `;
+        });
+    }
+
+    // Load workflow history when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      loadWorkflowHistory();
+    });
+
+    function openShareModal() {
+      document.getElementById('shareModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeShareModal() {
+      document.getElementById('shareModal').classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    function shareReport() {
+      const form = document.getElementById('shareReportForm');
+      const formData = new FormData(form);
+      const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+      
+      // Show loading state
+      const submitBtn = document.getElementById('shareSubmitBtn');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Sending...';
+      submitBtn.disabled = true;
+      
+      fetch(`/insurance/assessments/{{ assessment.assessment_id }}/report/share/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken
+        },
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showNotification(data.message, 'success');
+          closeShareModal();
+          form.reset();
+        } else {
+          showNotification(data.error || 'Failed to share report', 'error');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error occurred', 'error');
+      })
+      .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      });
+    }
+
+    function toggleReportDropdown() {
+      const dropdown = document.getElementById('reportDropdown');
+      dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('reportDropdown');
+      const button = e.target.closest('button');
+      
+      if (!button || !button.onclick || button.onclick.toString().indexOf('toggleReportDropdown') === -1) {
+        dropdown.classList.add('hidden');
+      }
+    });
+
+    // Close modal when clicking outside
+    document.getElementById('photoModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closePhotoModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closePhotoModal();
+      }
+    });
+
+    // Enhanced Assessment Section Card Functionality
+    document.addEventListener('DOMContentLoaded', function() {
+      const sectionCards = document.querySelectorAll('.assessment-section-card');
+      
+      sectionCards.forEach(card => {
+        // Add enhanced hover effects
+        card.addEventListener('mouseenter', function() {
+          // Add subtle animation to the icon
+          const icon = this.querySelector('span[class*="text-3xl"]');
+          if (icon) {
+            icon.style.transform = 'scale(1.1) rotate(5deg)';
+          }
+          
+          // Show additional details
+          const quickSummary = this.querySelector('.opacity-0');
+          if (quickSummary) {
+            quickSummary.style.opacity = '1';
+          }
+          
+          // Add glow effect
+          this.style.boxShadow = '0 10px 25px -5px rgba(59, 130, 246, 0.1), 0 10px 10px -5px rgba(59, 130, 246, 0.04)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+          // Reset icon animation
+          const icon = this.querySelector('span[class*="text-3xl"]');
+          if (icon) {
+            icon.style.transform = 'scale(1) rotate(0deg)';
+          }
+          
+          // Reset shadow
+          this.style.boxShadow = '';
+        });
+        
+        // Add click analytics (for future use)
+        card.addEventListener('click', function(e) {
+          const sectionId = this.dataset.sectionId;
+          const sectionName = this.dataset.sectionName;
+          const sectionCost = this.dataset.sectionCost;
+          const sectionSeverity = this.dataset.sectionSeverity;
+          
+          // Log section interaction (can be sent to analytics)
+          console.log('Section clicked:', {
+            id: sectionId,
+            name: sectionName,
+            cost: sectionCost,
+            severity: sectionSeverity,
+            timestamp: new Date().toISOString()
+          });
+          
+          // Add loading state
+          const actionButton = this.querySelector('.inline-flex');
+          if (actionButton) {
+            const originalText = actionButton.innerHTML;
+            actionButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Loading...';
+            
+            // Reset after a short delay (the page will navigate anyway)
+            setTimeout(() => {
+              actionButton.innerHTML = originalText;
+            }, 1000);
+          }
+        });
+      });
+      
+      // Add keyboard navigation for accessibility
+      sectionCards.forEach((card, index) => {
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('role', 'button');
+        card.setAttribute('aria-label', `View details for ${card.dataset.sectionName} section`);
+        
+        card.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            const link = this.querySelector('a');
+            if (link) {
+              link.click();
+            }
+          }
+          
+          // Arrow key navigation
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const direction = e.key === 'ArrowDown' ? 1 : -1;
+            const nextIndex = (index + direction + sectionCards.length) % sectionCards.length;
+            sectionCards[nextIndex].focus();
+          }
+        });
+      });
+      
+      // Enhanced section filtering functionality
+      window.filterSections = function(severity) {
+        sectionCards.forEach(card => {
+          const cardSeverity = card.dataset.sectionSeverity;
+          if (severity === 'all' || cardSeverity === severity) {
+            card.style.display = 'block';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+          } else {
+            card.style.display = 'none';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(-10px)';
+          }
+        });
+        
+        // Update active button state
+        const filterButtons = document.querySelectorAll('[onclick*="filterSections"]');
+        filterButtons.forEach(btn => {
+          btn.classList.remove('active', 'bg-blue-100', 'text-blue-700');
+          if (btn.onclick.toString().includes(`'${severity}'`)) {
+            btn.classList.add('active', 'bg-blue-100', 'text-blue-700');
+          }
+        });
+      }
+      
+      // Add quick filter buttons (if they exist)
+      const filterButtons = document.querySelectorAll('[data-filter-severity]');
+      filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const severity = this.dataset.filterSeverity;
+          filterSections(severity);
+          
+          // Update active state
+          filterButtons.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+        });
+      });
+      
+      // Add section summary calculations
+      function updateSectionSummary() {
+        const totalSections = sectionCards.length;
+        const completedSections = Array.from(sectionCards).filter(card => 
+          card.querySelector('.fa-check-circle')).length;
+        const damagedSections = Array.from(sectionCards).filter(card => 
+          card.dataset.sectionSeverity !== 'None').length;
+        const highPrioritySections = Array.from(sectionCards).filter(card => 
+          ['Major', 'Severe'].includes(card.dataset.sectionSeverity)).length;
+        
+        // Update summary cards if they exist
+        const summaryCards = document.querySelectorAll('.assessment-summary-card');
+        if (summaryCards.length >= 4) {
+          summaryCards[0].querySelector('.text-lg').textContent = totalSections;
+          summaryCards[1].querySelector('.text-lg').textContent = completedSections;
+          summaryCards[2].querySelector('.text-lg').textContent = damagedSections;
+          summaryCards[3].querySelector('.text-lg').textContent = highPrioritySections;
+        }
+      }
+      
+      // Initialize summary
+      updateSectionSummary();
+      
+      // Add smooth scrolling to section cards
+      const assessmentSection = document.querySelector('.assessment-section-card');
+      if (assessmentSection) {
+        assessmentSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    });
+  </script>
+
+  <!-- Comments and Feedback Section -->
+  <div class="mt-8 bg-white rounded-2xl shadow-sm" data-assessment-id="{{ assessment.id }}">
+    <div class="border-b border-gray-200 px-6 py-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <h3 class="text-lg font-semibold text-gray-900">Comments & Feedback</h3>
+          <span id="comment-count" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            0
+          </span>
+        </div>
+        <a href="{% url 'insurance:add_comment' assessment_id=assessment.id %}" 
+           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+          Add Comment
+        </a>
+      </div>
+    </div>
+    
+    <div class="p-6">
+      <div id="comments-container">
+        <!-- Comments will be loaded here via JavaScript -->
+        <div class="text-center py-8 text-gray-500">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Loading comments...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notifications Panel (Hidden by default) -->
+  <div id="notifications-panel" class="fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform translate-x-full transition-transform duration-300 z-50">
+    <div class="flex items-center justify-between p-4 border-b border-gray-200">
+      <h3 class="text-lg font-semibold text-gray-900">Notifications</h3>
+      <button onclick="toggleNotifications()" class="text-gray-400 hover:text-gray-600">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="notifications-container" class="overflow-y-auto h-full pb-16">
+      <!-- Notifications will be loaded here -->
+    </div>
+  </div>
+
+  <!-- Notification Button -->
+  <button onclick="toggleNotifications()" 
+          class="fixed bottom-6 right-6 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 z-40">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-5 5v-5zM4 19h6v-2H4v2zM4 15h8v-2H4v2zM4 11h10V9H4v2z"></path>
+    </svg>
+    <span id="notification-badge" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center" style="display: none;">
+      0
+    </span>
+  </button>
+
+  <!-- Include Comment System JavaScript -->
+  <script src="{% static 'js/assessment-comments.js' %}"></script>
+  
+  <script>
+    function toggleNotifications() {
+      const panel = document.getElementById('notifications-panel');
+      const isOpen = !panel.classList.contains('translate-x-full');
+      
+      if (isOpen) {
+        panel.classList.add('translate-x-full');
+      } else {
+        panel.classList.remove('translate-x-full');
+      }
+    }
+  </script>
+
+  <!-- Share Report Modal -->
+  <div id="shareModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-900">Share Assessment Report</h3>
+          <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-600">
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+        
+        <form id="shareReportForm" onsubmit="event.preventDefault(); shareReport();">
+          {% csrf_token %}
+          
+          <div class="space-y-4">
+            <!-- Email Recipients -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Email Recipients <span class="text-red-500">*</span>
+              </label>
+              <textarea 
+                name="emails" 
+                required
+                rows="3"
+                placeholder="Enter email addresses separated by commas or semicolons"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              ></textarea>
+              <p class="text-xs text-gray-500 mt-1">Separate multiple emails with commas or semicolons</p>
+            </div>
+            
+            <!-- Report Type -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Report Type</label>
+              <select name="report_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="detailed">Detailed Report</option>
+                <option value="summary">Summary Report</option>
+                <option value="photos_only">Photos Only</option>
+              </select>
+            </div>
+            
+            <!-- Message -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Message (Optional)</label>
+              <textarea 
+                name="message" 
+                rows="4"
+                placeholder="Add a personal message to include with the report..."
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              ></textarea>
+            </div>
+            
+            <!-- Include Photos Option -->
+            <div class="flex items-center">
+              <input type="checkbox" name="include_photos" id="includePhotos" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+              <label for="includePhotos" class="ml-2 text-sm text-gray-700">Include assessment photos in email</label>
+            </div>
+          </div>
+          
+          <div class="flex gap-3 mt-6">
+            <button 
+              type="button" 
+              onclick="closeShareModal()"
+              class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Cancel
+            </button>
+            <button 
+              type="submit"
+              id="shareSubmitBtn"
+              class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <i class="fas fa-share mr-2"></i>Share Report
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
