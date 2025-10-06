@@ -1,6 +1,7 @@
 /virt
 /.kiro
 /.vscode
+.env
 
 # Test files in root folder
 authentication_fix_summary.py

@@ -130,10 +130,153 @@ def onboard_complete(request):
     return render(request, 'onboarding/onboard_vehicle_done.html', {'data': data})
 
 
-# --- Customer & Vehicle Onboarding Survey ---
+# --- Multi-Step Onboarding Workflow ---
+@login_required
+def onboarding_step_1(request):
+    """Step 1: Welcome and basic information"""
+    # Check if user already completed onboarding
+    try:
+        existing_onboarding = CustomerOnboarding.objects.get(user=request.user)
+        messages.info(request, "You've already completed onboarding. You can update your information below.")
+        return redirect('onboarding:onboarding_step_2')
+    except CustomerOnboarding.DoesNotExist:
+        pass
+    
+    if request.method == 'POST':
+        # Store basic info in session and move to step 2
+        request.session['onboarding_step_1'] = {
+            'customer_type': request.POST.get('customer_type'),
+            'preferred_communication': request.POST.get('preferred_communication'),
+            'service_radius': request.POST.get('service_radius'),
+        }
+        return redirect('onboarding:onboarding_step_2')
+    
+    return render(request, 'onboarding/step_1_welcome.html')
+
+@login_required
+def onboarding_step_2(request):
+    """Step 2: Service preferences and budget"""
+    if 'onboarding_step_1' not in request.session:
+        messages.warning(request, "Please start from the beginning.")
+        return redirect('onboarding:onboarding_step_1')
+    
+    if request.method == 'POST':
+        request.session['onboarding_step_2'] = {
+            'monthly_maintenance_budget': request.POST.get('monthly_maintenance_budget'),
+            'maintenance_knowledge': request.POST.get('maintenance_knowledge'),
+            'primary_goal': request.POST.get('primary_goal'),
+            'service_priority': request.POST.get('service_priority'),
+        }
+        return redirect('onboarding:onboarding_step_3')
+    
+    return render(request, 'onboarding/step_2_preferences.html')
+
+@login_required
+def onboarding_step_3(request):
+    """Step 3: Vehicle information"""
+    if 'onboarding_step_2' not in request.session:
+        messages.warning(request, "Please complete the previous steps.")
+        return redirect('onboarding:onboarding_step_1')
+    
+    if request.method == 'POST':
+        request.session['onboarding_step_3'] = {
+            'vin_number': request.POST.get('vin_number'),
+            'make': request.POST.get('make'),
+            'model': request.POST.get('model'),
+            'year': request.POST.get('year'),
+            'current_odometer': request.POST.get('current_odometer'),
+            'primary_usage': request.POST.get('primary_usage'),
+        }
+        return redirect('onboarding:onboarding_step_4')
+    
+    return render(request, 'onboarding/step_3_vehicle.html')
+
+@login_required
+def onboarding_step_4(request):
+    """Step 4: Final preferences and completion"""
+    if 'onboarding_step_3' not in request.session:
+        messages.warning(request, "Please complete the previous steps.")
+        return redirect('onboarding:onboarding_step_1')
+    
+    if request.method == 'POST':
+        try:
+            # Combine all session data
+            step_1_data = request.session.get('onboarding_step_1', {})
+            step_2_data = request.session.get('onboarding_step_2', {})
+            step_3_data = request.session.get('onboarding_step_3', {})
+            step_4_data = {
+                'preferred_payment_model': request.POST.get('preferred_payment_model'),
+                'parts_preference': request.POST.get('parts_preference'),
+                'how_heard_about_service': request.POST.get('how_heard_about_service'),
+            }
+            
+            # Create customer onboarding record
+            customer_data = {**step_1_data, **step_2_data, **step_4_data}
+            customer_onboarding = CustomerOnboarding.objects.create(
+                user=request.user,
+                **customer_data
+            )
+            
+            # Create vehicle onboarding record
+            vehicle_data = {**step_3_data}
+            vehicle_data['estimated_annual_mileage'] = request.POST.get('estimated_annual_mileage', '10k_15k')
+            vehicle_data['current_condition'] = request.POST.get('current_condition', 'good')
+            vehicle_data['maintenance_preference'] = request.POST.get('maintenance_preference', 'cost_effective')
+            
+            VehicleOnboarding.objects.create(
+                customer_onboarding=customer_onboarding,
+                **vehicle_data
+            )
+            
+            # Clear session data
+            for key in ['onboarding_step_1', 'onboarding_step_2', 'onboarding_step_3']:
+                if key in request.session:
+                    del request.session[key]
+            
+            # Mark onboarding as complete
+            request.session['onboarding_completed'] = True
+            
+            messages.success(request, "Onboarding completed successfully! Welcome to Carfinity.")
+            return redirect('onboarding:onboarding_complete')
+            
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error completing onboarding for user {request.user.id}: {str(e)}")
+            messages.error(request, "An error occurred while completing your onboarding. Please try again.")
+    
+    return render(request, 'onboarding/step_4_final.html')
+
+@login_required
+def onboarding_complete(request):
+    """Onboarding completion and dashboard assignment"""
+    # Check if user completed onboarding
+    if not request.session.get('onboarding_completed'):
+        try:
+            CustomerOnboarding.objects.get(user=request.user)
+        except CustomerOnboarding.DoesNotExist:
+            messages.warning(request, "Please complete the onboarding process first.")
+            return redirect('onboarding:onboarding_step_1')
+    
+    # Clear the completion flag
+    if 'onboarding_completed' in request.session:
+        del request.session['onboarding_completed']
+    
+    # Determine dashboard assignment based on user groups or default behavior
+    from .services import OnboardingService
+    dashboard_url = OnboardingService.assign_user_dashboard(request.user)
+    
+    context = {
+        'dashboard_url': dashboard_url,
+        'user': request.user,
+    }
+    
+    return render(request, 'onboarding/onboarding_complete.html', context)
+
+# --- Legacy Customer & Vehicle Onboarding Survey (kept for compatibility) ---
 @login_required
 def customer_vehicle_survey(request):
-    """Combined customer and vehicle onboarding survey"""
+    """Combined customer and vehicle onboarding survey - Legacy version"""
     
     # Check if user already completed onboarding
     existing_customer_onboarding = None

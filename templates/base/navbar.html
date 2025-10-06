@@ -8,7 +8,9 @@
     <div class="relative hidden xl:flex items-center gap-2">
       {% if user.is_authenticated %}
         <!-- Authenticated user navigation -->
-        <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'dashboard' %}">Dashboard</a>
+        {% load dashboard_extras %}
+        {% get_user_dashboard_url user as dashboard_url %}
+        <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{{ dashboard_url }}">Dashboard</a>
         <a class="inline-flex justify-center items-center text-center h-12 p-5 font-medium tracking-tight text-lg hover:text-white focus:text-white bg-transparent hover:bg-neutral-900 focus:bg-neutral-900 border border-neutral-900 rounded-lg focus:ring-4 focus:ring-neutral-400 transition duration-200" href="{% url 'logout' %}">Logout</a>
       {% else %}
         <!-- Public/unauthenticated user navigation -->

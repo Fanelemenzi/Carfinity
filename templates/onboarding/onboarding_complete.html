@@ -1,75 +1,187 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Welcome to Carfinity - Onboarding Complete{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onboarding Complete</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>Onboarding Complete - Welcome!</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
 </head>
-<body class="bg-gray-50 font-sans">
-    <div class="min-h-screen flex items-center justify-center">
-        <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-8 text-center">
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-check-circle text-success mr-2"></i>
+                            Setup Complete
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Success Card -->
+        <div class="bg-white rounded-lg shadow p-8 border border-gray-200 text-center mb-8">
             <!-- Success Icon -->
             <div class="mb-6">
-                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                <div class="w-20 h-20 bg-success rounded-full flex items-center justify-center mx-auto">
+                    <i class="fas fa-check text-white text-3xl"></i>
                 </div>
             </div>
             
             <!-- Success Message -->
-            <h1 class="text-3xl font-bold text-gray-900 mb-4">Welcome to Our Service!</h1>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Welcome to Carfinity!</h2>
             <p class="text-lg text-gray-600 mb-6">
-                Thank you for completing the onboarding survey. We now have all the information we need to provide you with personalized vehicle maintenance recommendations.
+                Thank you for completing the onboarding process. Based on your preferences, we've set up your personalized dashboard experience.
+            </p>
+        </div>
+
+        <!-- Dashboard Assignment Info -->
+        {% if dashboard_url %}
+        <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+            <h3 class="text-xl font-semibold text-red-900 mb-3">Your Personalized Dashboard</h3>
+            <p class="text-red-800 mb-4">
+                Based on your responses, we've assigned you to the perfect dashboard for your needs. 
+                Your dashboard will provide tailored recommendations and features designed specifically for your vehicle maintenance goals.
             </p>
             
-            <!-- What's Next -->
-            <div class="bg-blue-50 rounded-lg p-6 mb-8">
-                <h2 class="text-xl font-semibold text-blue-900 mb-3">What's Next?</h2>
-                <ul class="text-left text-blue-800 space-y-2">
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        We'll analyze your preferences and vehicle information
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        You'll receive personalized maintenance recommendations
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        We'll connect you with trusted service providers in your area
-                    </li>
-                    <li class="flex items-start">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                        </svg>
-                        You'll start receiving maintenance reminders based on your preferences
-                    </li>
-                </ul>
+            <!-- Dashboard Features -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                <div class="bg-white rounded-lg p-4 border border-red-100">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-check-circle text-success mr-2"></i>
+                        <span class="font-medium text-gray-900">Personalized Recommendations</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Maintenance suggestions based on your vehicle and preferences</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 border border-red-100">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-bell text-warning mr-2"></i>
+                        <span class="font-medium text-gray-900">Smart Reminders</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Maintenance alerts via your preferred communication method</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 border border-red-100">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-network-wired text-primary mr-2"></i>
+                        <span class="font-medium text-gray-900">Service Provider Network</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Trusted mechanics and service centers in your area</p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-4 border border-red-100">
+                    <div class="flex items-center mb-2">
+                        <i class="fas fa-dollar-sign text-success mr-2"></i>
+                        <span class="font-medium text-gray-900">Budget-Friendly Options</span>
+                    </div>
+                    <p class="text-sm text-gray-600">Maintenance solutions that fit your budget and priorities</p>
+                </div>
             </div>
-            
-            <!-- Action Button -->
-            <div class="space-y-4">
-                <a href="{% url 'dashboard' %}" class="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-purple-700 transition-colors duration-200">
-                    Go to Dashboard
-                </a>
-                <div class="flex justify-center space-x-4 mt-4">
-                    <a href="{% url 'customer_vehicle_survey' %}" class="text-purple-600 hover:text-purple-800 text-sm">
-                        Update Survey Responses
+        </div>
+        {% endif %}
+        <!-- Action Buttons -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 p-6 mb-8">
+            <div class="text-center">
+                {% load dashboard_extras %}
+                {% get_user_dashboard_url user as user_dashboard_url %}
+                {% if dashboard_url %}
+                    <a href="{{ dashboard_url }}" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg text-lg transition duration-200 inline-block mb-4">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Go to Your Dashboard
+                    </a>
+                {% else %}
+                    <a href="{{ user_dashboard_url }}" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-8 rounded-lg text-lg transition duration-200 inline-block mb-4">
+                        <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
+                    </a>
+                {% endif %}
+                
+                <div class="flex justify-center space-x-6 mt-4">
+                    <a href="{% url 'onboarding:onboarding_step_1' %}" class="text-danger hover:text-red-800 text-sm font-medium">
+                        <i class="fas fa-edit mr-1"></i>Update Preferences
+                    </a>
+                    <a href="{% url 'onboarding:customer_vehicle_survey' %}" class="text-danger hover:text-red-800 text-sm font-medium">
+                        <i class="fas fa-plus mr-1"></i>Add Another Vehicle
                     </a>
                 </div>
+            </div>
+        </div>
+        <!-- Help Section -->
+        <div class="bg-white rounded-lg shadow border border-gray-200 p-6">
+            <h3 class="text-lg font-semibold text-gray-900 mb-6 text-center">Need Help Getting Started?</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-question-circle text-white text-xl"></i>
+                    </div>
+                    <p class="font-medium text-gray-900 mb-2">Quick Start Guide</p>
+                    <p class="text-gray-600">Learn how to use your dashboard</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-success rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-comments text-white text-xl"></i>
+                    </div>
+                    <p class="font-medium text-gray-900 mb-2">Support Chat</p>
+                    <p class="text-gray-600">Get help from our team</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-warning rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fas fa-book text-white text-xl"></i>
+                    </div>
+                    <p class="font-medium text-gray-900 mb-2">Knowledge Base</p>
+                    <p class="text-gray-600">Browse helpful articles</p>
+                </div>
+            </div>
+            
+            <!-- Footer Note -->
+            <div class="mt-6 pt-4 border-t border-gray-200 text-center">
                 <p class="text-sm text-gray-500">
-                    You can always update your preferences in your account settings.
+                    You can always update your preferences and vehicle information in your account settings.
                 </p>
             </div>
         </div>
     </div>
 </body>
 </html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

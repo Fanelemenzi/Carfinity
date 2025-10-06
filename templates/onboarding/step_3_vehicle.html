@@ -1,0 +1,201 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Vehicle Information - Step 3{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Information</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-car text-danger mr-2"></i>
+                            Vehicle Information
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01. Welcome ✓</div>
+            <div class="text-sm font-medium text-success">02. Preferences ✓</div>
+            <div class="text-sm font-medium text-danger">03. Vehicle Information</div>
+            <div class="text-sm font-medium text-gray-400">04. Final Setup</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Vehicle Information
+                    </h2>
+                    <p class="text-gray-600">Tell us about your primary vehicle.</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step 3 of 4</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Vehicle Details</h3>
+                <p class="text-sm text-gray-500">Provide information about your vehicle for personalized maintenance</p>
+            </div>
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- VIN Number -->
+                    <div>
+                        <label for="vin_number" class="block text-sm font-medium text-gray-700 mb-2">
+                            Vehicle Identification Number (VIN)
+                        </label>
+                        <input type="text" name="vin_number" id="vin_number" maxlength="17" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" placeholder="Enter 17-character VIN">
+                        <p class="text-sm text-gray-500 mt-1">Optional - helps us provide accurate maintenance schedules</p>
+                    </div>
+
+                    <!-- Manual Vehicle Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="make" class="block text-sm font-medium text-gray-700 mb-2">
+                                Make <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="make" id="make" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" placeholder="e.g., Toyota" required>
+                        </div>
+                        <div>
+                            <label for="model" class="block text-sm font-medium text-gray-700 mb-2">
+                                Model <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="model" id="model" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" placeholder="e.g., Camry" required>
+                        </div>
+                        <div>
+                            <label for="year" class="block text-sm font-medium text-gray-700 mb-2">
+                                Year <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="year" id="year" min="1990" max="2030" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" placeholder="2020" required>
+                        </div>
+                    </div>
+
+                    <!-- Current Odometer -->
+                    <div>
+                        <label for="current_odometer" class="block text-sm font-medium text-gray-700 mb-2">
+                            Current Odometer Reading (miles) <span class="text-red-500">*</span>
+                        </label>
+                        <input type="number" name="current_odometer" id="current_odometer" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-danger focus:border-danger" placeholder="e.g., 45000" required>
+                    </div>
+
+                    <!-- Primary Usage -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">How do you primarily use this vehicle? <span class="text-red-500">*</span></label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="daily_commute" class="mr-4 text-danger focus:ring-danger" required>
+                                <span class="text-gray-700">Daily commuting</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="weekend_only" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Weekend/recreational use</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="business" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Business/work vehicle</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="family_trips" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Family trips and errands</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="delivery" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Delivery/commercial use</span>
+                            </label>
+                            <label class="flex items-center p-4 border-2 border-gray-200 rounded-lg hover:border-danger hover:bg-red-50 cursor-pointer transition-colors">
+                                <input type="radio" name="primary_usage" value="emergency_only" class="mr-4 text-danger focus:ring-danger">
+                                <span class="text-gray-700">Emergency/backup vehicle</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex justify-between items-center space-x-4">
+                    <a href="{% url 'onboarding:onboarding_step_2' %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Back
+                    </a>
+                    <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        Continue to Final Setup<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Text -->
+        <div class="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-red-600"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">Vehicle Information Tips</h3>
+                    <div class="mt-2 text-sm text-red-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>VIN:</strong> Found on dashboard, driver's door, or registration documents</li>
+                            <li><strong>Odometer:</strong> Current mileage helps determine maintenance schedules</li>
+                            <li><strong>Usage:</strong> Different usage patterns require different maintenance approaches</li>
+                            <li><strong>Accuracy:</strong> Correct information ensures proper maintenance recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}
