@@ -150,7 +150,11 @@ async function networkFirst(request, cacheName) {
     const cache = await caches.open(cacheName);
     
     try {
-        const networkResponse = await fetch(request);
+        // Include credentials for same-origin requests to maintain session
+        const fetchOptions = {
+            credentials: 'include'
+        };
+        const networkResponse = await fetch(request, fetchOptions);
         if (networkResponse.ok) {
             cache.put(request, networkResponse.clone());
         }
@@ -169,7 +173,7 @@ async function staleWhileRevalidate(request, cacheName) {
     const cachedResponse = await cache.match(request);
     
     // Always try to update cache in background
-    const networkResponsePromise = fetch(request).then(response => {
+    const networkResponsePromise = fetch(request, { credentials: 'include' }).then(response => {
         if (response.ok) {
             cache.put(request, response.clone());
         }
@@ -196,7 +200,7 @@ async function cacheFirstWithFallback(request, cacheName) {
     }
     
     try {
-        const networkResponse = await fetch(request);
+        const networkResponse = await fetch(request, { credentials: 'include' });
         if (networkResponse.ok) {
             cache.put(request, networkResponse.clone());
         }

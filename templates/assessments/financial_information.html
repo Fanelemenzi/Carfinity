@@ -1,180 +1,269 @@
-{% extends "base/base.html" %}
+{% extends 'base/base.html' %}
 {% load static %}
 
+{% block title %}Financial Information - Carfinity{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Progress Indicator -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Information</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <div class="flex items-center justify-center w-6 h-6 bg-green-600 text-white rounded-full text-xs font-medium">
-                        ✓
-                    </div>
-                    <span class="ml-2 text-xs font-medium text-gray-900">Categorization</span>
-                </div>
-                <div class="flex-1 mx-2">
-                    <div class="h-1 bg-gray-200 rounded-full">
-                        <div class="h-1 bg-green-600 rounded-full" style="width: 86%"></div>
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-dollar-sign text-danger mr-2"></i>
+                            Financial Information
+                        </h1>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-6 h-6 bg-danger text-white rounded-full text-xs font-medium">
-                        13
-                    </div>
-                    <span class="ml-2 text-xs font-medium text-gray-900">Financial</span>
-                </div>
-                <div class="flex-1 mx-2">
-                    <div class="h-1 bg-gray-200 rounded-full">
-                        <div class="h-1 bg-danger rounded-full" style="width: 93%"></div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
                     </div>
                 </div>
-                <span class="text-xs text-gray-500">Step {{ step }} of {{ total_steps }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-12. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-danger">13. Financial Information</div>
+            <div class="text-sm font-medium text-gray-400">14. Final Notes...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Financial Information and Valuation
+                    </h2>
+                    <p class="text-gray-600">Enter cost estimates and vehicle valuations</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Financial Information</h1>
-            <p class="mt-2 text-gray-600">Enter cost estimates and vehicle valuations for {{ assessment.assessment_id }}</p>
-        </div>
-
         <!-- Assessment Info -->
-        <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <svg class="h-5 w-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                    </svg>
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
                     <div>
-                        <h3 class="text-sm font-medium text-blue-800">Assessment: {{ assessment.assessment_id }}</h3>
-                        <p class="text-sm text-blue-700">Vehicle: {{ assessment.vehicle }} | Status: {{ assessment.get_status_display }}</p>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-blue-700">Progress: <span class="font-medium">86% Complete</span></p>
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
                 </div>
             </div>
         </div>
 
         <!-- Form -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Financial Assessment</h3>
-            </div>
-            <form method="post" class="px-6 py-6">
-                {% csrf_token %}
-                
-                <div class="space-y-6">
-                    <!-- Estimated Repair Cost -->
-                    <div>
-                        <label for="{{ form.estimated_repair_cost.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            Estimated Repair Cost
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">$</span>
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Financial Values -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Financial Values</h3>
+                    <p class="text-sm text-gray-500">Enter cost estimates and vehicle valuations</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Estimated Repair Cost -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-wrench mr-1"></i>Estimated Repair Cost
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">$</span>
+                                </div>
+                                <input type="number" name="estimated_repair_cost" id="id_estimated_repair_cost" 
+                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       step="0.01" min="0" placeholder="0.00" value="{{ form.estimated_repair_cost.value|default:'' }}">
                             </div>
-                            {{ form.estimated_repair_cost }}
+                            {% if form.estimated_repair_cost.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.estimated_repair_cost.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">Total estimated cost for all repairs including parts and labor</p>
                         </div>
-                        {% if form.estimated_repair_cost.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.estimated_repair_cost.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">Total estimated cost for all repairs including parts and labor</p>
-                    </div>
 
-                    <!-- Vehicle Market Value -->
-                    <div>
-                        <label for="{{ form.vehicle_market_value.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            Vehicle Market Value
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">$</span>
+                        <!-- Vehicle Market Value -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-car mr-1"></i>Vehicle Market Value
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">$</span>
+                                </div>
+                                <input type="number" name="vehicle_market_value" id="id_vehicle_market_value"
+                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       step="0.01" min="0" placeholder="0.00" value="{{ form.vehicle_market_value.value|default:'' }}">
                             </div>
-                            {{ form.vehicle_market_value }}
+                            {% if form.vehicle_market_value.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.vehicle_market_value.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">Current market value of the vehicle before damage</p>
                         </div>
-                        {% if form.vehicle_market_value.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.vehicle_market_value.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">Current market value of the vehicle before damage</p>
-                    </div>
 
-                    <!-- Salvage Value -->
-                    <div>
-                        <label for="{{ form.salvage_value.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            Salvage Value
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">$</span>
+                        <!-- Salvage Value -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-recycle mr-1"></i>Salvage Value
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-sm">$</span>
+                                </div>
+                                <input type="number" name="salvage_value" id="id_salvage_value"
+                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       step="0.01" min="0" placeholder="0.00" value="{{ form.salvage_value.value|default:'' }}">
                             </div>
-                            {{ form.salvage_value }}
+                            {% if form.salvage_value.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.salvage_value.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">Estimated value if sold for parts or scrap</p>
                         </div>
-                        {% if form.salvage_value.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.salvage_value.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">Estimated value if sold for parts or scrap</p>
                     </div>
                 </div>
+            </div>
 
-                <!-- Cost Analysis -->
-                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Cost Analysis</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="text-center p-4 bg-white rounded-lg border">
+            <!-- Cost Analysis -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-calculator mr-2"></i>Cost Analysis
+                    </h3>
+                    <p class="text-sm text-gray-500">Real-time financial analysis and recommendations</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border">
+                            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-percentage text-blue-600"></i>
+                            </div>
                             <h5 class="text-sm font-medium text-gray-700">Repair vs Market Value</h5>
                             <div id="repair-ratio" class="mt-2 text-2xl font-bold text-gray-900">--</div>
                             <p class="text-xs text-gray-500">Percentage</p>
                         </div>
-                        <div class="text-center p-4 bg-white rounded-lg border">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-exclamation-triangle text-yellow-600"></i>
+                            </div>
                             <h5 class="text-sm font-medium text-gray-700">Total Loss Threshold</h5>
                             <div id="total-loss-status" class="mt-2 text-lg font-bold text-gray-900">--</div>
                             <p class="text-xs text-gray-500">70% Rule</p>
                         </div>
-                        <div class="text-center p-4 bg-white rounded-lg border">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg border">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-lightbulb text-green-600"></i>
+                            </div>
                             <h5 class="text-sm font-medium text-gray-700">Economic Decision</h5>
                             <div id="economic-decision" class="mt-2 text-lg font-bold text-gray-900">--</div>
                             <p class="text-xs text-gray-500">Recommendation</p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Form Actions -->
-                <div class="mt-8 flex justify-between">
-                    <a href="{% url 'assessments:categorization' assessment.id %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        ← Back to Categorization
-                    </a>
-                    <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
-                        Continue to Final Notes →
-                    </button>
-                </div>
-            </form>
-        </div>
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:categorization' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Categorization
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Final Notes<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
 
-        <!-- Help Text -->
-        <div class="mt-6 bg-red-50 border border-red-200 rounded-md p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                    </svg>
+        <!-- Financial Guidelines -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Financial Assessment Guidelines
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Valuation Guidelines</h4>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span><strong>Repair Cost:</strong> Include all parts, labor, and associated costs</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span><strong>Market Value:</strong> Use current market prices for similar vehicles</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span><strong>Salvage Value:</strong> Consider parts value and scrap metal value</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-blue-800">Financial Assessment Guidelines</h3>
-                    <div class="mt-2 text-sm text-blue-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li><strong>Repair Cost:</strong> Include all parts, labor, and associated costs</li>
-                            <li><strong>Market Value:</strong> Use current market prices for similar vehicles</li>
-                            <li><strong>Salvage Value:</strong> Consider parts value and scrap metal value</li>
-                            <li><strong>70% Rule:</strong> If repair costs exceed 70% of market value, consider total loss</li>
-                        </ul>
-                    </div>
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Decision Rules</h4>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 mr-2 mt-0.5"></i>
+                            <span><strong>70% Rule:</strong> If repair costs exceed 70% of market value, consider total loss</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calculator text-blue-500 mr-2 mt-0.5"></i>
+                            <span><strong>Economic Total Loss:</strong> When repair cost + salvage value > market value</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-balance-scale text-purple-500 mr-2 mt-0.5"></i>
+                            <span><strong>Consider:</strong> Hidden damage, depreciation, and safety factors</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
 
 <script>
 // Real-time cost analysis

@@ -198,10 +198,10 @@ class DashboardService:
             'active_alerts_count': len(vehicle.all_active_alerts) if hasattr(vehicle, 'all_active_alerts') else 0
         }
         
-        if hasattr(vehicle, 'vehiclevaluation') and vehicle.vehiclevaluation:
-            overview['estimated_value'] = float(vehicle.vehiclevaluation.estimated_value)
-            overview['condition_rating'] = vehicle.vehiclevaluation.condition_rating
-            overview['valuation_last_updated'] = vehicle.vehiclevaluation.last_updated
+        if hasattr(vehicle, 'valuation') and vehicle.valuation:
+            overview['estimated_value'] = float(vehicle.valuation.estimated_value)
+            overview['condition_rating'] = vehicle.valuation.condition_rating
+            overview['valuation_last_updated'] = vehicle.valuation.last_updated
         
         return overview
     
@@ -331,8 +331,8 @@ class DashboardService:
         # Caching temporarily disabled
         
         valuation_data = {}
-        if hasattr(vehicle, 'vehiclevaluation') and vehicle.vehiclevaluation:
-            valuation = vehicle.vehiclevaluation
+        if hasattr(vehicle, 'valuation') and vehicle.valuation:
+            valuation = vehicle.valuation
             valuation_data = {
                 'estimated_value': float(valuation.estimated_value),
                 'condition_rating': valuation.condition_rating,
@@ -384,7 +384,7 @@ class DashboardService:
             # Single optimized query with all necessary joins and prefetches
             def fetch_vehicle_overview():
                 return Vehicle.objects.select_related(
-                    'vehiclevaluation'  # Use correct related name for valuation
+                    'valuation'  # Use correct related name for valuation
                 ).prefetch_related(
                     # Optimize maintenance history queries - limit to latest 5 records
                     Prefetch(
@@ -457,11 +457,11 @@ class DashboardService:
             }
             
             # Add valuation if available with error handling
-            if hasattr(vehicle, 'vehiclevaluation') and vehicle.vehiclevaluation:
+            if hasattr(vehicle, 'valuation') and vehicle.valuation:
                 try:
-                    overview['estimated_value'] = ErrorHandler.safe_float_conversion(vehicle.vehiclevaluation.estimated_value)
-                    overview['condition_rating'] = vehicle.vehiclevaluation.condition_rating
-                    overview['valuation_last_updated'] = vehicle.vehiclevaluation.last_updated
+                    overview['estimated_value'] = ErrorHandler.safe_float_conversion(vehicle.valuation.estimated_value)
+                    overview['condition_rating'] = vehicle.valuation.condition_rating
+                    overview['valuation_last_updated'] = vehicle.valuation.last_updated
                 except Exception as e:
                     logger.warning(f"Failed to process valuation data for vehicle {vehicle_id}: {str(e)}")
             

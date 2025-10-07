@@ -697,9 +697,26 @@ def continue_assessment(request, assessment_id):
             break
     
     # Update URLs with assessment ID
+    url_mapping = {
+        'incident_location': f"/assessments/{assessment_id}/location/",
+        'exterior_damage': f"/assessments/{assessment_id}/exterior-damage/",
+        'wheels_tires': f"/assessments/{assessment_id}/wheels-tires/",
+        'interior_damage': f"/assessments/{assessment_id}/interior-damage/",
+        'mechanical_systems': f"/assessments/{assessment_id}/mechanical/",
+        'electrical_systems': f"/assessments/{assessment_id}/electrical/",
+        'safety_systems': f"/assessments/{assessment_id}/safety/",
+        'structural_assessment': f"/assessments/{assessment_id}/structural/",
+        'fluid_systems': f"/assessments/{assessment_id}/fluids/",
+        'documentation_assessment': f"/assessments/{assessment_id}/documentation/",
+        'categorization': f"/assessments/{assessment_id}/categorization/",
+        'financial_information': f"/assessments/{assessment_id}/financial/",
+        'assessment_notes': f"/assessments/{assessment_id}/notes/"
+    }
+    
     for step_name, step_data in step_progress.items():
         if step_data['url'] != '#':
-            step_data['url'] = f"/assessments/{assessment_id}/{step_data['url'].split(':')[-1]}/"
+            url_name = step_data['url'].split(':')[-1]
+            step_data['url'] = url_mapping.get(url_name, '#')
     
     progress_percentage = int((completed_steps / total_steps) * 100)
     

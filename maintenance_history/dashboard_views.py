@@ -23,8 +23,21 @@ class AutoCareDashboardView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        # Get user's vehicles for the dropdown
+        from vehicles.models import Vehicle
+        user_vehicles = Vehicle.objects.filter(
+            ownerships__user=self.request.user,
+            ownerships__is_current_owner=True
+        ).order_by('make', 'model', 'manufacture_year')
+        
+        # Get the current vehicle (first one if no specific vehicle selected)
+        vehicle = user_vehicles.first() if user_vehicles.exists() else None
+        
         # Add context data for the AutoCare dashboard
         context.update({
+            'user_first_name': self.request.user.first_name or self.request.user.username,
+            'user_vehicles': user_vehicles,
+            'vehicle': vehicle,
             'total_vehicles': 156,
             'pending_maintenance': 23,
             'completed_today': 8,

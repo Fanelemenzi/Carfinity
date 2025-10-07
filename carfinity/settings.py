@@ -35,7 +35,7 @@ SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45
 DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS = [ 'carfinity.onrender.com']
+ALLOWED_HOSTS = [ 'carfinity.onrender.com', '127.0.0.1']
 
 
 # Application definition
@@ -353,3 +353,12 @@ SECURITY_MONITORING = {
     'MAX_FAILED_ATTEMPTS_PER_HOUR': 10,
     'ALERT_ON_MULTIPLE_VEHICLE_ACCESS_ATTEMPTS': True,
 }
+
+# Session Configuration for Persistent Login
+SESSION_COOKIE_AGE = 7776000  # 90 days in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Persist beyond browser close
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on each request
+SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only in production
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+SESSION_COOKIE_NAME = 'carfinity_sessionid'  # Custom name for clarity

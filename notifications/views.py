@@ -37,12 +37,23 @@ class AutoCareDashboardView(LoginRequiredMixin, TemplateView):
         user_name = self.request.user.first_name or self.request.user.username
         
         try:
+            # Get user vehicles first to ensure we have the list
+            user_vehicles = ErrorHandler.handle_data_retrieval(
+                lambda: self.get_user_vehicles(),
+                fallback_value=[],
+                error_message="Failed to load user vehicles list"
+            )
+            
             # Get user's vehicle or default to first vehicle with error handling
             vehicle = ErrorHandler.handle_data_retrieval(
                 lambda: self.get_user_vehicle(vehicle_id),
                 fallback_value=None,
                 error_message=f"Failed to get vehicle for user {self.request.user.id}"
             )
+            
+            # If no specific vehicle found but user has vehicles, use the first one
+            if not vehicle and user_vehicles:
+                vehicle = user_vehicles[0]
             
             if vehicle:
                 dashboard_service = DashboardService()
@@ -90,13 +101,6 @@ class AutoCareDashboardView(LoginRequiredMixin, TemplateView):
                     lambda: dashboard_service.get_vehicle_valuation(vehicle.id, self.request.user),
                     fallback_value={},
                     error_message="Failed to load vehicle valuation"
-                )
-                
-                # Get user vehicles for switching
-                user_vehicles = ErrorHandler.handle_data_retrieval(
-                    lambda: self.get_user_vehicles(),
-                    fallback_value=[],
-                    error_message="Failed to load user vehicles list"
                 )
                 
                 context.update({
@@ -157,7 +161,7 @@ class AutoCareDashboardView(LoginRequiredMixin, TemplateView):
         try:
             if vehicle_id:
                 # Get specific vehicle with ownership validation
-                vehicle = Vehicle.objects.select_related('vehiclevaluation').get(
+                vehicle = Vehicle.objects.select_related('valuation').get(
                     id=vehicle_id,
                     ownerships__user=self.request.user,
                     ownerships__is_current_owner=True
@@ -165,7 +169,7 @@ class AutoCareDashboardView(LoginRequiredMixin, TemplateView):
                 return vehicle
             else:
                 # Get user's first vehicle
-                vehicle = Vehicle.objects.select_related('vehiclevaluation').filter(
+                vehicle = Vehicle.objects.select_related('valuation').filter(
                     ownerships__user=self.request.user,
                     ownerships__is_current_owner=True
                 ).first()

@@ -54,7 +54,7 @@ self.addEventListener('fetch', function(event) {
           return response;
         }
         
-        return fetch(event.request).then(function(response) {
+        return fetch(event.request, { credentials: 'include' }).then(function(response) {
           // Don't cache non-successful responses
           if (!response || response.status !== 200 || response.type !== 'basic') {
             return response;

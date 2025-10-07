@@ -24,12 +24,12 @@ class SecurityConfig:
     """Central configuration for security settings"""
     
     # Session security settings
-    SESSION_COOKIE_AGE = 3600  # 1 hour
+    SESSION_COOKIE_AGE = 7776000  # 90 days
     SESSION_COOKIE_SECURE = not settings.DEBUG  # HTTPS only in production
     SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
     SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
     SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on activity
-    SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Clear on browser close
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Persist beyond browser close
     
     # CSRF protection settings
     CSRF_COOKIE_SECURE = not settings.DEBUG  # HTTPS only in production

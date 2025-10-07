@@ -3700,66 +3700,7 @@ class AssessmentVersionCompareView(LoginRequiredMixin, View):
         return html
 
 
-@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
-class AssessmentRollbackView(LoginRequiredMixin, View):
-    """View for rolling back assessment to a previous version"""
-    
-    def post(self, request, assessment_id):
-        from assessments.models import VehicleAssessment
-        
-        # Get assessment
-        assessment = get_object_or_404(
-            VehicleAssessment,
-            assessment_id=assessment_id,
-            assigned_agent=request.user
-        )
-        
-        version_id = request.POST.get('version_id')
-        rollback_reason = request.POST.get('reason', '')
-        
-        if not version_id:
-            return JsonResponse({'success': False, 'error': 'Version ID is required'})
-        
-        try:
-            version = AssessmentVersion.objects.get(
-                id=version_id,
-                assessment=assessment
-            )
-        except AssessmentVersion.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Invalid version specified'})
-        
-        # Check permissions (only admin or original assessor can rollback)
-        if not (request.user.is_staff or assessment.user == request.user):
-            return JsonResponse({'success': False, 'error': 'Permission denied'})
-        
-        # Create history entry for rollback
-        AssessmentHistory.objects.create(
-            assessment=assessment,
-            activity_type='workflow_action',
-            user=request.user,
-            description=f'Assessment rolled back to version {version.version_number}',
-            notes=rollback_reason,
-            old_value=str(assessment.agent_status),
-            new_value='under_review'  # Set to under review after rollback
-        )
-        
-        # Update assessment status
-        assessment.agent_status = 'under_review'
-        assessment.save()
-        
-        # Create notification
-        AssessmentNotification.objects.create(
-            assessment=assessment,
-            recipient=assessment.user,
-            notification_type='status_change',
-            title=f'Assessment {assessment.assessment_id} Rolled Back',
-            message=f'Your assessment has been rolled back to version {version.version_number}. Reason: {rollback_reason}'
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'message': f'Assessment successfully rolled back to version {version.version_number}'
-        })
+
 
 
 # Utility functions for assessment history tracking

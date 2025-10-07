@@ -1,0 +1,260 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Electrical Systems Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electrical Systems Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-bolt text-danger mr-2"></i>
+                            Electrical Systems Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-06. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-danger">07. Electrical Systems</div>
+            <div class="text-sm font-medium text-gray-400">08. Continue Assessment...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Electrical Systems Assessment
+                    </h2>
+                    <p class="text-gray-600">Evaluate all electrical and electronic systems functionality</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Lighting Systems -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Lighting Systems</h3>
+                    <p class="text-sm text-gray-500">Test all exterior and interior lighting functionality</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Headlight Function -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Headlight Function</label>
+                            <div class="space-y-2">
+                                {{ form.headlight_function }}
+                                {{ form.headlight_function_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Taillight Function -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Taillight Function</label>
+                            <div class="space-y-2">
+                                {{ form.taillight_function }}
+                                {{ form.taillight_function_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Interior Lighting -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Interior Lighting</label>
+                            <div class="space-y-2">
+                                {{ form.interior_lighting }}
+                                {{ form.interior_lighting_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Warning Lights -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Warning Lights</label>
+                            <div class="space-y-2">
+                                {{ form.warning_lights }}
+                                {{ form.warning_lights_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Power Systems -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Power Systems</h3>
+                    <p class="text-sm text-gray-500">Test power windows, locks, and other electrical components</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Power Windows -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Power Windows</label>
+                            <div class="space-y-2">
+                                {{ form.power_windows }}
+                                {{ form.power_windows_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Power Locks -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Power Locks</label>
+                            <div class="space-y-2">
+                                {{ form.power_locks }}
+                                {{ form.power_locks_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Climate Control -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Climate Control Systems</h3>
+                    <p class="text-sm text-gray-500">Test air conditioning and heating systems</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Air Conditioning -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Air Conditioning</label>
+                            <div class="space-y-2">
+                                {{ form.air_conditioning }}
+                                {{ form.air_conditioning_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Heating System -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Heating System</label>
+                            <div class="space-y-2">
+                                {{ form.heating_system }}
+                                {{ form.heating_system_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:mechanical_systems' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Mechanical
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Safety Systems<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Function Test Guide -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Function Test Guide
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">F</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Fully Functional</h4>
+                    <p class="text-xs text-gray-600">Works perfectly</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-yellow-600 font-bold">P</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Partially Functional</h4>
+                    <p class="text-xs text-gray-600">Works with issues</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-red-600 font-bold">N</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Non-Functional</h4>
+                    <p class="text-xs text-gray-600">Does not work</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-gray-600 font-bold">U</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Unable to Test</h4>
+                    <p class="text-xs text-gray-600">Cannot be tested</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}
