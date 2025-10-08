@@ -76,6 +76,7 @@
                     <i class="fas fa-info-circle text-red-600 mr-2"></i>
                     <div>
                         <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Organization: {{ assessment.organization.name }}</p>
                         <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
                     </div>
                 </div>
@@ -95,10 +96,17 @@
                 <p class="text-sm text-gray-500">Key findings and metrics from the assessment</p>
             </div>
             <div class="px-6 py-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
                     <div class="text-center p-4 bg-blue-50 rounded-lg border">
                         <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                            <i class="fas fa-car text-blue-600"></i>
+                            <i class="fas fa-building text-blue-600"></i>
+                        </div>
+                        <h4 class="text-sm font-medium text-gray-700">Organization</h4>
+                        <p class="text-lg font-bold text-gray-900">{{ assessment.organization.name|default:"Not specified" }}</p>
+                    </div>
+                    <div class="text-center p-4 bg-purple-50 rounded-lg border">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-car text-purple-600"></i>
                         </div>
                         <h4 class="text-sm font-medium text-gray-700">Vehicle</h4>
                         <p class="text-lg font-bold text-gray-900">{{ assessment.vehicle|default:"Not specified" }}</p>
@@ -388,6 +396,7 @@
     EXECUTIVE SUMMARY
 
     Assessment ID: {{ assessment.assessment_id }}
+    Organization: {{ assessment.organization.name|default:"Not specified" }}
     Vehicle: {{ assessment.vehicle }}
     Assessment Date: {{ assessment.assessment_date|date:"F d, Y" }}
     Assessor: {{ assessment.assessor_name|default:"Not specified" }}

@@ -11,42 +11,7 @@ from django.contrib import messages
 from users.permissions import require_group, check_permission_conflicts
 
 # AutoCare Dashboard Views - Matching AutoAssess Pattern
-@method_decorator([require_group('AutoCare'), check_permission_conflicts], name='dispatch')
-class AutoCareDashboardView(LoginRequiredMixin, ListView):
-    template_name = 'dashboard/autocare_dashboard.html'
-    context_object_name = 'maintenance_records'
-    
-    def get_queryset(self):
-        # Return empty queryset for now - will be populated with actual maintenance data later
-        return []
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Get user's vehicles for the dropdown
-        from vehicles.models import Vehicle
-        user_vehicles = Vehicle.objects.filter(
-            ownerships__user=self.request.user,
-            ownerships__is_current_owner=True
-        ).order_by('make', 'model', 'manufacture_year')
-        
-        # Get the current vehicle (first one if no specific vehicle selected)
-        vehicle = user_vehicles.first() if user_vehicles.exists() else None
-        
-        # Add context data for the AutoCare dashboard
-        context.update({
-            'user_first_name': self.request.user.first_name or self.request.user.username,
-            'user_vehicles': user_vehicles,
-            'vehicle': vehicle,
-            'total_vehicles': 156,
-            'pending_maintenance': 23,
-            'completed_today': 8,
-            'avg_health_score': '87.3%',
-            'monthly_revenue': '£45.2K',
-            'customer_satisfaction': '4.8/5',
-        })
-        
-        return context
+# Note: AutoCareDashboardView has been moved to notifications.views to avoid conflicts
 
 @method_decorator([require_group('AutoCare'), check_permission_conflicts], name='dispatch')
 class MaintenanceDetailView(LoginRequiredMixin, TemplateView):

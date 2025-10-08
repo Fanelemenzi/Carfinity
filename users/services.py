@@ -55,7 +55,7 @@ class AuthenticationService:
         ),
         'autocare': DashboardInfo(
             name='autocare',
-            url='/maintenance/dashboard/',
+            url='/notifications/dashboard/',
             display_name='AutoCare Dashboard',
             required_groups=['AutoCare']
         ),

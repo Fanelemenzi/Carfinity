@@ -714,15 +714,15 @@ class DashboardService:
             #     return cached_valuation
             # Caching temporarily disabled
             
-            vehicle = Vehicle.objects.select_related('vehiclevaluation').get(
+            vehicle = Vehicle.objects.select_related('valuation').get(
                 id=vehicle_id,
                 ownerships__user=user,
                 ownerships__is_current_owner=True
             )
             
             valuation_data = {}
-            if hasattr(vehicle, 'vehiclevaluation') and vehicle.vehiclevaluation:
-                valuation = vehicle.vehiclevaluation
+            if hasattr(vehicle, 'valuation') and vehicle.valuation:
+                valuation = vehicle.valuation
                 valuation_data = {
                     'estimated_value': float(valuation.estimated_value),
                     'condition_rating': valuation.condition_rating,

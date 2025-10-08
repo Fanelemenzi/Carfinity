@@ -59,7 +59,7 @@ def assessment_dashboard(request):
 def start_assessment(request):
     """Start a new assessment - Step 1: Vehicle Details"""
     if request.method == 'POST':
-        form = VehicleDetailsForm(request.POST)
+        form = VehicleDetailsForm(request.POST, user=request.user)
         if form.is_valid():
             assessment = form.save(commit=False)
             assessment.user = request.user
@@ -70,7 +70,7 @@ def start_assessment(request):
             messages.success(request, f'Assessment {assessment.assessment_id} started successfully!')
             return redirect('assessments:incident_location', assessment_id=assessment.id)
     else:
-        form = VehicleDetailsForm()
+        form = VehicleDetailsForm(user=request.user)
     
     return render(request, 'assessments/start_assessment.html', {'form': form})
 

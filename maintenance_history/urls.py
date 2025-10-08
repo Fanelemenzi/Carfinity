@@ -7,9 +7,8 @@ app_name = 'maintenance_history'
 
 urlpatterns = [
     # AutoCare Dashboard URLs (matching AutoAssess pattern)
-    path('maintenance/dashboard/', 
-         dashboard_views.AutoCareDashboardView.as_view(), 
-         name='autocare_dashboard'),
+    # Note: Main dashboard moved to notifications app to avoid conflicts
+    # path('maintenance/dashboard/', dashboard_views.AutoCareDashboardView.as_view(), name='autocare_dashboard'),
     path('maintenance/detail/<str:maintenance_id>/', 
          dashboard_views.MaintenanceDetailView.as_view(), 
          name='maintenance_detail'),

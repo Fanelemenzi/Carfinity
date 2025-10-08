@@ -412,7 +412,7 @@ def _convert_url_to_view_name(redirect_url):
     """
     url_to_view_mapping = {
         '/dashboard/': 'dashboard',
-        '/maintenance/dashboard/': 'notifications:autocare_dashboard',
+        '/notifications/dashboard/': 'notifications:autocare_dashboard',
         '/insurance/': 'insurance:insurance_dashboard',
         '/dashboard-selector/': 'dashboard_selector',
         '/access-denied/': 'access_denied',

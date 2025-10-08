@@ -40,6 +40,27 @@ class MaintenanceRecord(models.Model):
     mileage = models.PositiveIntegerField(verbose_name="Vehicle Mileage at Service")
     notes = models.TextField(blank=True, verbose_name="Additional Notes")
     
+    # Service provider and cost information
+    service_provider = models.CharField(
+        max_length=255, 
+        blank=True, 
+        verbose_name="Service Provider",
+        help_text="Name of the service provider or garage"
+    )
+    cost = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True,
+        verbose_name="Total Service Cost",
+        help_text="Total cost of the maintenance service"
+    )
+    parts_replaced = models.TextField(
+        blank=True, 
+        verbose_name="Parts Replaced",
+        help_text="List of parts that were replaced during service"
+    )
+    
     # Image fields for proof of work
     service_image = models.ImageField(
         upload_to=maintenance_image_upload_path,
@@ -71,7 +92,21 @@ class MaintenanceRecord(models.Model):
         verbose_name_plural = "Maintenance Records"
 
     def __str__(self):
-        return f"{self.vehicle.vin} - {self.date_performed.strftime('%Y-%m-%d')}"
+        return f"{self.vehicle.vin} - {self.date_performed.strftime('%Y-%m-%d')} - {self.work_done[:50]}"
+    
+    @property
+    def total_cost(self):
+        """Calculate total cost including parts if no direct cost is set"""
+        if self.cost:
+            return self.cost
+        
+        # Calculate from parts used if no direct cost
+        parts_total = sum(
+            part_usage.total_cost or 0 
+            for part_usage in self.parts_used.all() 
+            if part_usage.total_cost
+        )
+        return parts_total if parts_total > 0 else None
     
     @property
     def has_service_image(self):

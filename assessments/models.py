@@ -15,6 +15,11 @@ try:
 except ImportError:
     MaintenanceRecord = None
 
+try:
+    from organizations.models import Organization
+except ImportError:
+    Organization = None
+
 
 # Custom Manager for VehicleAssessment
 class VehicleAssessmentManager(models.Manager):
@@ -100,6 +105,14 @@ class VehicleAssessment(models.Model):
     # Related Models
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assessments')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='assessments')
+    organization = models.ForeignKey(
+        Organization, 
+        on_delete=models.CASCADE, 
+        related_name='assessments',
+        null=True,
+        blank=True,
+        help_text="Organization this assessment is being conducted for"
+    )
     maintenance_history = models.ManyToManyField(MaintenanceRecord, blank=True)
     
     # Assessment Details

@@ -55,7 +55,7 @@ class VehicleOwnerPermission(BasePermission):
         Utility method to check vehicle ownership by ID with enhanced error handling
         """
         try:
-            vehicle = Vehicle.objects.select_related('vehiclevaluation').get(
+            vehicle = Vehicle.objects.select_related('valuation').get(
                 id=vehicle_id,
                 ownerships__user=user,
                 ownerships__is_current_owner=True

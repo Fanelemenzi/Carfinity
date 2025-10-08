@@ -434,6 +434,7 @@
           headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
           },
           credentials: 'same-origin'
         })
@@ -451,7 +452,7 @@
         }
 
         // Update vehicle overview section
-        updateVehicleOverview(data.vehicle);
+        updateVehicleOverview(data.vehicle_overview);
 
         // Update upcoming maintenance
         updateUpcomingMaintenance(data.upcoming_maintenance);
@@ -485,24 +486,38 @@
         const vinMileageElement = overviewSection.querySelector('p.text-sm.text-gray-500');
         if (vinMileageElement) {
           const vinDisplay = vehicle.vin ? vehicle.vin.substring(0, 8) + '...' : 'N/A';
-          const mileageDisplay = vehicle.mileage ? vehicle.mileage.toLocaleString() + ' mi' : 'N/A';
+          const mileageDisplay = vehicle.mileage ? vehicle.mileage.toLocaleString() + ' km' : 'N/A';
           vinMileageElement.innerHTML = `VIN: <span class="font-medium">${vinDisplay}</span> • Mileage: <span class="font-medium">${mileageDisplay}</span>`;
         }
 
         // Update next service info
         const serviceInfoDivs = overviewSection.querySelectorAll('.rounded-lg.bg-gray-50');
         if (serviceInfoDivs.length >= 2) {
-          // Next service timing
+          // Next service timing - calculate days from next_service_date
           const nextServiceDiv = serviceInfoDivs[0].querySelector('.font-semibold');
-          if (nextServiceDiv && vehicle.next_service_days !== undefined) {
-            nextServiceDiv.textContent = vehicle.next_service_days > 0 ? `${vehicle.next_service_days} days` : 'Overdue';
-            nextServiceDiv.className = `font-semibold ${getServiceUrgencyClass(vehicle.next_service_days)}`;
+          if (nextServiceDiv && vehicle.next_service_date) {
+            const nextDate = new Date(vehicle.next_service_date);
+            const today = new Date();
+            const diffTime = nextDate - today;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 0) {
+              nextServiceDiv.textContent = `${Math.abs(diffDays)} days overdue`;
+            } else if (diffDays === 0) {
+              nextServiceDiv.textContent = 'Due today';
+            } else {
+              nextServiceDiv.textContent = `In ${diffDays} days`;
+            }
+            nextServiceDiv.className = `font-semibold ${getServiceUrgencyClass(diffDays)}`;
+          } else if (nextServiceDiv) {
+            nextServiceDiv.textContent = 'Not scheduled';
+            nextServiceDiv.className = 'font-semibold text-gray-500';
           }
 
           // Next service mileage
           const nextMileageDiv = serviceInfoDivs[1].querySelector('.font-semibold');
           if (nextMileageDiv) {
-            const mileageDisplay = vehicle.next_service_mileage ? vehicle.next_service_mileage.toLocaleString() + ' mi' : 'N/A';
+            const mileageDisplay = vehicle.next_service_mileage ? vehicle.next_service_mileage.toLocaleString() + ' km' : 'N/A';
             nextMileageDiv.textContent = mileageDisplay;
           }
         }
@@ -761,6 +776,21 @@
       }
 
       // Utility functions
+      function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
+          }
+        }
+        return cookieValue;
+      }
+
       function formatCurrency(amount) {
         if (!amount && amount !== 0) return 'E0';
         return 'E' + Math.round(amount).toLocaleString();

@@ -222,7 +222,7 @@ class DashboardAPIView(APIView):
             
             # Critical data - if this fails, return error
             try:
-                dashboard_data['vehicle'] = dashboard_service.get_vehicle_overview(vehicle_id, request.user)
+                dashboard_data['vehicle_overview'] = dashboard_service.get_vehicle_overview(vehicle_id, request.user)
             except Exception as e:
                 logger.error(f"Critical error: Failed to get vehicle overview for vehicle {vehicle_id}: {str(e)}")
                 raise DataRetrievalError("vehicle overview", e)
@@ -261,7 +261,7 @@ class DashboardAPIView(APIView):
             
             # Add metadata about data availability
             dashboard_data['data_status'] = {
-                'vehicle_overview': bool(dashboard_data.get('vehicle')),
+                'vehicle_overview': bool(dashboard_data.get('vehicle_overview')),
                 'upcoming_maintenance': bool(dashboard_data.get('upcoming_maintenance')),
                 'alerts': bool(dashboard_data.get('alerts')),
                 'service_history': bool(dashboard_data.get('service_history')),

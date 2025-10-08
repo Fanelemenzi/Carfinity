@@ -15,6 +15,7 @@ from .models import (
     AssessmentPhoto,
     AssessmentReport
 )
+from organizations.models import Organization
 
 
 class VehicleDetailsForm(forms.ModelForm):
@@ -23,10 +24,14 @@ class VehicleDetailsForm(forms.ModelForm):
     class Meta:
         model = VehicleAssessment
         fields = [
-            'assessment_type', 'vehicle', 'assessor_name', 'assessor_certification'
+            'assessment_type', 'organization', 'vehicle', 'assessor_name', 'assessor_certification'
         ]
         widgets = {
             'assessment_type': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'required': True
+            }),
+            'organization': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'required': True
             }),
@@ -44,6 +49,26 @@ class VehicleDetailsForm(forms.ModelForm):
                 'placeholder': 'Certification number or credentials'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+            # Filter organizations based on user's organization memberships
+            user_organizations = Organization.objects.filter(
+                organization_members__user=user,
+                organization_members__is_active=True
+            ).distinct()
+            
+            self.fields['organization'].queryset = user_organizations
+            
+            # If user belongs to only one organization, pre-select it
+            if user_organizations.count() == 1:
+                self.fields['organization'].initial = user_organizations.first()
+        else:
+            # If no user provided, show all organizations
+            self.fields['organization'].queryset = Organization.objects.all()
 
 
 class IncidentLocationForm(forms.ModelForm):

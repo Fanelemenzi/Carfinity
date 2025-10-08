@@ -214,22 +214,34 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         # Import VehicleAssessment from assessments app
         from assessments.models import VehicleAssessment
+        from organizations.models import Organization
         
-        # Get assessments assigned to the current user (insurance agent)
+        # Get user's organizations
+        user_organizations = Organization.objects.filter(
+            organization_members__user=self.request.user,
+            organization_members__is_active=True
+        ).distinct()
+        
+        # Get assessments for user's organizations OR assigned to the current user
         queryset = VehicleAssessment.objects.filter(
-            assigned_agent=self.request.user
+            models.Q(organization__in=user_organizations) |
+            models.Q(assigned_agent=self.request.user)
         ).select_related(
-            'vehicle', 'user', 'assigned_agent'
+            'vehicle', 'user', 'assigned_agent', 'organization'
         ).prefetch_related(
             'exterior_damage', 'wheels_tires', 'interior_damage',
             'mechanical_systems', 'electrical_systems', 'safety_systems',
             'frame_structural', 'fluid_systems'
-        ).order_by('-assessment_date')
+        ).distinct().order_by('-assessment_date')
         
         # Apply filters from request parameters
         status_filter = self.request.GET.get('status')
         if status_filter:
             queryset = queryset.filter(agent_status=status_filter)
+            
+        organization_filter = self.request.GET.get('organization')
+        if organization_filter:
+            queryset = queryset.filter(organization_id=organization_filter)
             
         search_query = self.request.GET.get('search')
         if search_query:
@@ -239,7 +251,8 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
                 models.Q(vehicle__make__icontains=search_query) |
                 models.Q(vehicle__model__icontains=search_query) |
                 models.Q(user__first_name__icontains=search_query) |
-                models.Q(user__last_name__icontains=search_query)
+                models.Q(user__last_name__icontains=search_query) |
+                models.Q(organization__name__icontains=search_query)
             )
         
         return queryset
@@ -249,40 +262,53 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
         
         # Import VehicleAssessment from assessments app
         from assessments.models import VehicleAssessment
+        from organizations.models import Organization
         from django.db.models import Count, Avg, Sum, Q
         from datetime import timedelta
         
-        # Get all assessments for the current agent
-        agent_assessments = VehicleAssessment.objects.filter(assigned_agent=self.request.user)
+        # Get user's organizations
+        user_organizations = Organization.objects.filter(
+            organization_members__user=self.request.user,
+            organization_members__is_active=True
+        ).distinct()
         
-        # Calculate real statistics
-        total_assessments = agent_assessments.count()
-        pending_reviews = agent_assessments.filter(agent_status='pending_review').count()
-        approved_assessments = agent_assessments.filter(agent_status='approved').count()
-        rejected_assessments = agent_assessments.filter(agent_status='rejected').count()
-        changes_requested = agent_assessments.filter(agent_status='changes_requested').count()
+        # Get all assessments for the user's organizations OR assigned to the user
+        organization_assessments = VehicleAssessment.objects.filter(
+            models.Q(organization__in=user_organizations) |
+            models.Q(assigned_agent=self.request.user)
+        ).distinct()
+        
+        # Get organizations for filtering (user's organizations)
+        organizations = user_organizations.order_by('name')
+        
+        # Calculate real statistics based on organization assessments
+        total_assessments = organization_assessments.count()
+        pending_reviews = organization_assessments.filter(agent_status='pending_review').count()
+        approved_assessments = organization_assessments.filter(agent_status='approved').count()
+        rejected_assessments = organization_assessments.filter(agent_status='rejected').count()
+        changes_requested = organization_assessments.filter(agent_status='changes_requested').count()
         
         # Calculate total estimated cost
-        total_estimated_cost = agent_assessments.aggregate(
+        total_estimated_cost = organization_assessments.aggregate(
             total_cost=Sum('estimated_repair_cost')
         )['total_cost'] or 0
         
         # Status distribution for charts
-        status_distribution = agent_assessments.values('agent_status').annotate(
+        status_distribution = organization_assessments.values('agent_status').annotate(
             count=Count('id')
         ).order_by('agent_status')
         
         # Recent assessments for quick access
-        recent_assessments = agent_assessments.order_by('-assessment_date')[:5]
+        recent_assessments = organization_assessments.order_by('-assessment_date')[:5]
         
         # Urgent assessments (those with review deadlines approaching)
-        urgent_assessments = agent_assessments.filter(
+        urgent_assessments = organization_assessments.filter(
             review_deadline__lte=timezone.now() + timedelta(days=2),
             agent_status__in=['pending_review', 'under_review']
         ).order_by('review_deadline')
         
         # Calculate average processing time based on completed assessments
-        completed_assessments = agent_assessments.filter(
+        completed_assessments = organization_assessments.filter(
             agent_status__in=['approved', 'rejected'],
             completed_date__isnull=False
         )
@@ -304,7 +330,7 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
         accuracy_rate = (approved_assessments / total_reviewed * 100) if total_reviewed > 0 else 0
         
         # Priority assessments (high value or urgent deadlines)
-        high_priority_assessments = agent_assessments.filter(
+        high_priority_assessments = organization_assessments.filter(
             Q(estimated_repair_cost__gte=10000) |
             Q(review_deadline__lte=timezone.now() + timedelta(days=1))
         ).count()
@@ -323,10 +349,12 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
             'urgent_assessments': urgent_assessments,
             'accuracy_rate': f'{accuracy_rate:.1f}%',
             'customer_satisfaction': 'N/A',  # Will be calculated from actual feedback data
+            'organizations': organizations,
             
             # Filter values for maintaining state
             'current_status_filter': self.request.GET.get('status', ''),
             'current_search_query': self.request.GET.get('search', ''),
+            'current_organization_filter': self.request.GET.get('organization', ''),
         })
         
         return context
