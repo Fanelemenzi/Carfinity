@@ -45,6 +45,32 @@ class VehicleAssessmentManager(models.Manager):
             models.Q(uk_write_off_category__in=['cat_a', 'cat_b']) |
             models.Q(south_africa_70_percent_rule=True)
         )
+    
+    def for_organization(self, organization):
+        """Filter assessments for a specific organization"""
+        return self.filter(organization=organization)
+    
+    def for_user_organizations(self, user):
+        """Filter assessments for organizations the user belongs to"""
+        if user.is_superuser:
+            return self.all()
+        
+        try:
+            from organizations.models import Organization
+            user_orgs = Organization.objects.filter(
+                organization_members__user=user,
+                organization_members__is_active=True
+            )
+            return self.filter(organization__in=user_orgs)
+        except ImportError:
+            return self.filter(user=user)
+    
+    def insurance_assessments(self):
+        """Filter assessments for insurance organizations"""
+        return self.filter(
+            models.Q(assessment_type='insurance_claim') |
+            models.Q(organization__is_insurance_provider=True)
+        )
 
 
 class VehicleAssessment(models.Model):
@@ -182,6 +208,31 @@ class VehicleAssessment(models.Model):
     
     def __str__(self):
         return f"Assessment {self.assessment_id} - {self.vehicle}"
+    
+    def get_organization_display(self):
+        """Get formatted organization display with type"""
+        if self.organization:
+            return f"{self.organization.name} ({self.organization.get_organization_type_display()})"
+        return "No Organization"
+    
+    def is_insurance_assessment(self):
+        """Check if this is an insurance-related assessment"""
+        return (
+            self.assessment_type == 'insurance_claim' or 
+            (self.organization and self.organization.is_insurance_provider)
+        )
+    
+    def get_workflow_permissions(self):
+        """Get workflow permissions based on organization type"""
+        if not self.organization:
+            return {'can_approve': False, 'requires_agent_review': False}
+        
+        return {
+            'can_approve': self.organization.organization_type in ['insurance', 'fleet'],
+            'requires_agent_review': self.organization.is_insurance_provider,
+            'auto_approve_threshold': getattr(self.organization, 'insurance_details', None) and 
+                                    self.organization.insurance_details.auto_approve_low_risk
+        }
 
 
 class ExteriorBodyDamage(models.Model):

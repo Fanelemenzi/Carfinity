@@ -26,12 +26,19 @@ from datetime import datetime
 @login_required
 def assessment_dashboard(request):
     """Dashboard showing all assessments for the current user"""
-    assessments = VehicleAssessment.objects.filter(user=request.user).order_by('-assessment_date')
+    assessments = VehicleAssessment.objects.filter(user=request.user).select_related(
+        'organization', 'vehicle', 'assigned_agent'
+    ).order_by('-assessment_date')
     
     # Filter by status if provided
     status_filter = request.GET.get('status')
     if status_filter:
         assessments = assessments.filter(status=status_filter)
+    
+    # Filter by organization if provided
+    org_filter = request.GET.get('organization')
+    if org_filter:
+        assessments = assessments.filter(organization_id=org_filter)
     
     # Pagination
     paginator = Paginator(assessments, 10)
@@ -46,10 +53,19 @@ def assessment_dashboard(request):
         'total': VehicleAssessment.objects.filter(user=request.user).count(),
     }
     
+    # Get user's organizations for filtering
+    from organizations.models import Organization
+    user_organizations = Organization.objects.filter(
+        organization_members__user=request.user,
+        organization_members__is_active=True
+    ).distinct()
+    
     context = {
         'page_obj': page_obj,
         'status_counts': status_counts,
         'current_status': status_filter,
+        'current_organization': org_filter,
+        'user_organizations': user_organizations,
         'status_choices': VehicleAssessment.STATUS_CHOICES,
     }
     return render(request, 'assessments/dashboard.html', context)
@@ -65,6 +81,21 @@ def start_assessment(request):
             assessment.user = request.user
             assessment.assessment_id = f"ASS-{uuid.uuid4().hex[:8].upper()}"
             assessment.status = 'in_progress'
+            
+            # Auto-assign organization if not set
+            if not assessment.organization:
+                from organizations.models import Organization
+                user_org = Organization.objects.filter(
+                    organization_members__user=request.user,
+                    organization_members__is_active=True
+                ).first()
+                if user_org:
+                    assessment.organization = user_org
+            
+            # Auto-assign user as agent if not set
+            if not assessment.assigned_agent:
+                assessment.assigned_agent = request.user
+            
             assessment.save()
             
             messages.success(request, f'Assessment {assessment.assessment_id} started successfully!')
@@ -503,6 +534,26 @@ def upload_photos(request, assessment_id):
         'photos': photos,
     }
     return render(request, 'assessments/upload_photos.html', context)
+
+
+@login_required
+def delete_photo(request, assessment_id):
+    """Delete a photo from assessment"""
+    assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
+    
+    if request.method == 'POST':
+        photo_id = request.POST.get('photo_id')
+        if photo_id:
+            try:
+                photo = assessment.photos.get(id=photo_id)
+                photo.delete()
+                messages.success(request, 'Photo deleted successfully!')
+            except AssessmentPhoto.DoesNotExist:
+                messages.error(request, 'Photo not found.')
+        else:
+            messages.error(request, 'Invalid photo ID.')
+    
+    return redirect('assessments:upload_photos', assessment_id=assessment.id)
 
 
 @login_required

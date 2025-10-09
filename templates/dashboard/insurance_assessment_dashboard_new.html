@@ -715,11 +715,14 @@
                                     <div class="flex-1">
                                         <div class="text-sm font-medium text-gray-900">{{ assessment.assessment_id }}
                                         </div>
-                                        <div class="text-xs text-gray-500">{{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</div>
-                                        <div class="text-xs text-gray-400">{{ assessment.assessment_date|date:"M d, Y" }}</div>
+                                        <div class="text-xs text-gray-500">{{ assessment.vehicle.manufacture_year }} {{
+                                            assessment.vehicle.make }} {{ assessment.vehicle.model }}</div>
+                                        <div class="text-xs text-gray-400">{{ assessment.assessment_date|date:"M d, Y"
+                                            }}</div>
                                     </div>
                                     <div class="ml-2">
-                                        <span class="text-xs px-2 py-1 rounded-full {% if assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-800{% elif assessment.agent_status == 'under_review' %}bg-blue-100 text-blue-800{% elif assessment.agent_status == 'approved' %}bg-green-100 text-green-800{% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-800{% elif assessment.agent_status == 'changes_requested' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        <span
+                                            class="text-xs px-2 py-1 rounded-full {% if assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-800{% elif assessment.agent_status == 'under_review' %}bg-blue-100 text-blue-800{% elif assessment.agent_status == 'approved' %}bg-green-100 text-green-800{% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-800{% elif assessment.agent_status == 'changes_requested' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
                                             {{ assessment.get_agent_status_display }}
                                         </span>
                                         {% if assessment.estimated_repair_cost %}
@@ -785,16 +788,23 @@
                                 <!-- Filter Row -->
                                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-4">
                                     <!-- Status Filter -->
-                                    <select id="statusFilter" 
-                                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                            data-filter="status">
+                                    <select id="statusFilter"
+                                        class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        data-filter="status">
                                         <option value="">All Status</option>
-                                        <option value="pending_review" {% if current_status_filter == 'pending_review' %}selected{% endif %}>Pending Review</option>
-                                        <option value="under_review" {% if current_status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
-                                        <option value="approved" {% if current_status_filter == 'approved' %}selected{% endif %}>Approved</option>
-                                        <option value="rejected" {% if current_status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
-                                        <option value="changes_requested" {% if current_status_filter == 'changes_requested' %}selected{% endif %}>Changes Requested</option>
-                                        <option value="on_hold" {% if current_status_filter == 'on_hold' %}selected{% endif %}>On Hold</option>
+                                        <option value="pending_review" {% if current_status_filter=='pending_review'
+                                            %}selected{% endif %}>Pending Review</option>
+                                        <option value="under_review" {% if current_status_filter=='under_review'
+                                            %}selected{% endif %}>Under Review</option>
+                                        <option value="approved" {% if current_status_filter=='approved' %}selected{%
+                                            endif %}>Approved</option>
+                                        <option value="rejected" {% if current_status_filter=='rejected' %}selected{%
+                                            endif %}>Rejected</option>
+                                        <option value="changes_requested" {% if
+                                            current_status_filter=='changes_requested' %}selected{% endif %}>Changes
+                                            Requested</option>
+                                        <option value="on_hold" {% if current_status_filter=='on_hold' %}selected{%
+                                            endif %}>On Hold</option>
                                     </select>
 
                                     <!-- Organization Filter -->
@@ -803,7 +813,9 @@
                                         data-filter="organization">
                                         <option value="">All Organizations</option>
                                         {% for org in organizations %}
-                                        <option value="{{ org.id }}" {% if current_organization_filter == org.id|stringformat:"s" %}selected{% endif %}>{{ org.name }}</option>
+                                        <option value="{{ org.id }}" {% if
+                                            current_organization_filter==org.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ org.name }}</option>
                                         {% endfor %}
                                     </select>
 
@@ -886,7 +898,7 @@
                                     data-claim-id="{{ assessment.assessment_id }}"
                                     data-status="{{ assessment.agent_status|upper }}"
                                     data-priority="{% if assessment.review_deadline and assessment.review_deadline <= '2024-10-04'|date:'Y-m-d H:i:s' %}HIGH{% elif assessment.estimated_repair_cost and assessment.estimated_repair_cost >= 10000 %}HIGH{% else %}NORMAL{% endif %}"
-                                    data-vehicle="{{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}"
+                                    data-vehicle="{{ assessment.vehicle.manufacture_year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}"
                                     data-value="{{ assessment.estimated_repair_cost|default:0 }}"
                                     data-date="{{ assessment.assessment_date|date:'Y-m-d' }}"
                                     data-customer="{{ assessment.user.get_full_name|default:assessment.user.username }}"
@@ -896,12 +908,14 @@
 
                                     <!-- Priority Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {% if assessment.review_deadline and assessment.review_deadline <= '2024-10-04'|date:'Y-m-d H:i:s' %}
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                URGENT
+                                        {% if assessment.review_deadline and assessment.review_deadline <= '2024-10-04'
+                                            |date:'Y-m-d H:i:s' %} <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            URGENT
                                             </span>
-                                        {% elif assessment.estimated_repair_cost and assessment.estimated_repair_cost >= 10000 %}
+                                            {% elif assessment.estimated_repair_cost and
+                                            assessment.estimated_repair_cost >= 10000 %}
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                                 <i class="fas fa-star mr-1"></i>
@@ -936,7 +950,7 @@
                                     <!-- Vehicle Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900">
-                                            {{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{
+                                            {{ assessment.vehicle.manufacture_year }} {{ assessment.vehicle.make }} {{
                                             assessment.vehicle.model }}
                                         </div>
                                         <div class="text-sm text-gray-500">
@@ -1082,9 +1096,10 @@
                                         class="px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-indigo-600 rounded-md">
                                         {{ num }}
                                     </span>
-                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                        <a href="?page={{ num }}{% if current_search_query %}&search={{ current_search_query }}{% endif %}{% if current_status_filter %}&status={{ current_status_filter }}{% endif %}{% if current_organization_filter %}&organization={{ current_organization_filter }}{% endif %}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                                            {{ num }}
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                                        href="?page={{ num }}{% if current_search_query %}&search={{ current_search_query }}{% endif %}{% if current_status_filter %}&status={{ current_status_filter }}{% endif %}{% if current_organization_filter %}&organization={{ current_organization_filter }}{% endif %}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                        {{ num }}
                                         </a>
                                         {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
                                         <span class="px-3 py-2 text-sm font-medium text-gray-400">...</span>

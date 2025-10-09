@@ -28,6 +28,7 @@ urlpatterns = [
     path('<int:assessment_id>/continue/', views.continue_assessment, name='continue_assessment'),
     path('<int:assessment_id>/update-status/', views.update_assessment_status, name='update_status'),
     path('<int:assessment_id>/photos/', views.upload_photos, name='upload_photos'),
+    path('<int:assessment_id>/delete-photo/', views.delete_photo, name='delete_photo'),
     path('<int:assessment_id>/report/', views.generate_report, name='generate_report'),
     path('<int:assessment_id>/delete/', views.delete_assessment, name='delete_assessment'),
 ]

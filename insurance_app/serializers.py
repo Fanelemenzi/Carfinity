@@ -29,7 +29,7 @@ class MaintenanceComplianceSerializer(serializers.ModelSerializer):
             'vin': obj.vehicle.vin,
             'make': obj.vehicle.make,
             'model': obj.vehicle.model,
-            'year': obj.vehicle.year
+            'year': obj.vehicle.manufacture_year
         }
 
 class VehicleConditionScoreSerializer(serializers.ModelSerializer):
@@ -59,7 +59,7 @@ class AccidentSerializer(serializers.ModelSerializer):
             'vin': obj.vehicle.vin,
             'make': obj.vehicle.make,
             'model': obj.vehicle.model,
-            'year': obj.vehicle.year
+            'year': obj.vehicle.manufacture_year
         }
     
     def get_detailed_accident_info(self, obj):
@@ -81,7 +81,7 @@ class RiskAlertSerializer(serializers.ModelSerializer):
             'vin': obj.vehicle.vin,
             'make': obj.vehicle.make,
             'model': obj.vehicle.model,
-            'year': obj.vehicle.year,
+            'year': obj.vehicle.manufacture_year,
             'policy_number': obj.vehicle.policy.policy_number
         }
 

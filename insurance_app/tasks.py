@@ -79,7 +79,7 @@ def check_condition_deterioration():
                         vehicle=vehicle,
                         alert_type='condition_deterioration',
                         severity='medium',
-                        title=f'Condition Deterioration: {vehicle.year} {vehicle.make} {vehicle.model}',
+                        title=f'Condition Deterioration: {vehicle.manufacture_year} {vehicle.make} {vehicle.model}',
                         description=f'Vehicle health index dropped from {previous_score} to {latest_score}',
                         risk_score_impact=abs(previous_score - latest_score) * 0.05
                     )

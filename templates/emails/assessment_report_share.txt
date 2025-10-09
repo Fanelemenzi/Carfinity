@@ -11,7 +11,7 @@ Message from {{ sender_name }}:
 {% endif %}
 
 Vehicle Information:
-- Vehicle: {{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}
+- Vehicle: {{ assessment.vehicle.manufacture_year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}
 - VIN: {{ assessment.vehicle.vin }}
 - Assessment Date: {{ assessment.assessment_date|date:"F d, Y" }}
 - Assessment ID: {{ assessment.assessment_id }}

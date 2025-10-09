@@ -222,10 +222,11 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
             organization_members__is_active=True
         ).distinct()
         
-        # Get assessments for user's organizations OR assigned to the current user
+        # Get assessments for user's organizations OR assigned to the current user OR created by the user
         queryset = VehicleAssessment.objects.filter(
             models.Q(organization__in=user_organizations) |
-            models.Q(assigned_agent=self.request.user)
+            models.Q(assigned_agent=self.request.user) |
+            models.Q(user=self.request.user)
         ).select_related(
             'vehicle', 'user', 'assigned_agent', 'organization'
         ).prefetch_related(
@@ -272,10 +273,11 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
             organization_members__is_active=True
         ).distinct()
         
-        # Get all assessments for the user's organizations OR assigned to the user
+        # Get all assessments for the user's organizations OR assigned to the user OR created by the user
         organization_assessments = VehicleAssessment.objects.filter(
             models.Q(organization__in=user_organizations) |
-            models.Q(assigned_agent=self.request.user)
+            models.Q(assigned_agent=self.request.user) |
+            models.Q(user=self.request.user)
         ).distinct()
         
         # Get organizations for filtering (user's organizations)
@@ -1116,7 +1118,7 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
         salvage_value = float(assessment.salvage_value or 0)
         
         # Vehicle age-based depreciation calculation
-        vehicle_age = timezone.now().year - assessment.vehicle.year
+        vehicle_age = timezone.now().year - assessment.vehicle.manufacture_year
         age_depreciation_rate = min(0.15, 0.02 * vehicle_age)  # 2% per year, max 15%
         
         # Damage-based depreciation
@@ -1297,7 +1299,7 @@ class AssessmentReportShareView(LoginRequiredMixin, View):
             
             try:
                 # Prepare email
-                subject = f"Vehicle Assessment Report - {assessment.vehicle.year} {assessment.vehicle.make} {assessment.vehicle.model}"
+                subject = f"Vehicle Assessment Report - {assessment.vehicle.manufacture_year} {assessment.vehicle.make} {assessment.vehicle.model}"
                 
                 # Render email template
                 email_context = {
@@ -2179,7 +2181,7 @@ class VehicleViewSet(viewsets.ModelViewSet):
             'overdue_maintenance': overdue_maintenance,
             'recent_accidents': recent_accidents,
             'condition_score': condition_score,
-            'vehicle_age': timezone.now().year - vehicle.year,
+            'vehicle_age': timezone.now().year - vehicle.manufacture_year,
             'mileage': vehicle.mileage
         }
         

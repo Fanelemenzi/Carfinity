@@ -303,14 +303,20 @@ class VehicleAssessmentAdmin(admin.ModelAdmin):
             }
             color = org_type_colors.get(obj.organization.organization_type, '#6c757d')
             
+            # Add insurance provider indicator
+            insurance_indicator = ''
+            if obj.organization.is_insurance_provider:
+                insurance_indicator = ' <span style="color: #28a745;">🛡️</span>'
+            
             return format_html(
                 '<div style="display: flex; align-items: center;">'
                 '<span style="display: inline-block; width: 12px; height: 12px; '
                 'background-color: {}; border-radius: 50%; margin-right: 8px;"></span>'
-                '<strong>{}</strong><br><small style="color: #666;">{}</small>'
+                '<strong>{}</strong>{}<br><small style="color: #666;">{}</small>'
                 '</div>',
                 color,
                 obj.organization.name,
+                insurance_indicator,
                 obj.organization.get_organization_type_display()
             )
         return format_html(
@@ -373,16 +379,20 @@ class VehicleAssessmentAdmin(admin.ModelAdmin):
                 kwargs["queryset"] = Organization.objects.filter(
                     organization_members__user=request.user,
                     organization_members__is_active=True
-                ).distinct()
+                ).distinct().select_related()
             else:
-                kwargs["queryset"] = Organization.objects.all()
+                kwargs["queryset"] = Organization.objects.all().select_related()
+        
+        elif db_field.name == "vehicle":
+            # Optimize vehicle queryset with select_related
+            kwargs["queryset"] = kwargs.get("queryset", db_field.related_model.objects.all()).select_related()
         
         elif db_field.name == "assigned_agent":
             # Show only users who are insurance agents
             kwargs["queryset"] = User.objects.filter(
                 org_organization_users__role__in=['AGENT', 'CLAIMS_ADJUSTER'],
                 org_organization_users__is_active=True
-            ).distinct()
+            ).distinct().select_related()
         
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
@@ -397,6 +407,19 @@ class VehicleAssessmentAdmin(admin.ModelAdmin):
             if not obj.assessment_id:
                 import uuid
                 obj.assessment_id = f"ASS-{uuid.uuid4().hex[:8].upper()}"
+            
+            # Auto-assign organization if not set
+            if not obj.organization:
+                user_org = Organization.objects.filter(
+                    organization_members__user=request.user,
+                    organization_members__is_active=True
+                ).first()
+                if user_org:
+                    obj.organization = user_org
+            
+            # Auto-assign user as agent if not set
+            if not obj.assigned_agent:
+                obj.assigned_agent = request.user
         
         super().save_model(request, obj, form, change)
     
