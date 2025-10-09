@@ -7,54 +7,123 @@
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50 p-6 lg:p-10">
-    <div class="max-w-6xl mx-auto">
-        <!-- Breadcrumb + Header -->
-        <div class="flex items-center justify-between mb-6">
-            <div>
-                <nav class="text-sm text-gray-500 mb-2"> 
-                    <a href="{% url 'insurance:assessment_dashboard' %}" class="hover:underline">Dashboard</a>
-                    <span class="mx-2">/</span>
-                    <a href="{% url 'insurance:assessment_detail' claim_id=claim_id %}" class="hover:underline">
-                        {{ assessment.vehicle.make }} {{ assessment.vehicle.model }} • {{ assessment.assessment_id }}
-                    </a>
-                    <span class="mx-2">/</span>
-                    <span class="text-gray-700 font-medium">{{ section_data_dict.name }}</span>
-                </nav>
-                <h1 class="text-2xl font-extrabold">{{ section_data_dict.name }} — Assessment Details</h1>
-                <p class="text-sm text-gray-500 mt-1">
-                    Detailed inspection points, damage assessment, and repair cost estimates for this section.
-                </p>
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Section Detail - Carfinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-danger mr-2"></i>
+                            Section Assessment Detail
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center gap-3">
-                <a href="{% url 'insurance:assessment_detail' claim_id=claim_id %}" 
-                   class="px-4 py-2 bg-white rounded-lg shadow-sm border hover:bg-gray-50">
-                    Back to Assessment
-                </a>
-                <button onclick="openSectionPhotoGallery('{{ section_data_dict.name }}')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                    View All Photos
-                </button>
-                <button onclick="demonstrateBeforeAfterComparison()" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                    Demo Comparison
-                </button>
-                <button class="px-4 py-2 bg-white rounded-lg shadow-sm border hover:bg-gray-50">
-                    Download Report
-                </button>
-                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
-                    Export Section
-                </button>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <nav class="text-sm text-gray-500 mb-2"> 
+                        <a href="{% url 'insurance:assessment_dashboard' %}" class="hover:underline text-danger">Dashboard</a>
+                        <span class="mx-2">/</span>
+                        <a href="{% url 'insurance:assessment_detail' claim_id=claim_id %}" class="hover:underline text-danger">
+                            {{ assessment.vehicle.make }} {{ assessment.vehicle.model }} • {{ assessment.assessment_id }}
+                        </a>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-700 font-medium">{{ section_data_dict.name }}</span>
+                    </nav>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        {{ section_data_dict.name }} — Assessment Details
+                    </h2>
+                    <p class="text-gray-600">
+                        Detailed inspection points, damage assessment, and repair cost estimates for this section.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'insurance:assessment_detail' claim_id=claim_id %}" 
+                       class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
+                    </a>
+                    <button onclick="openSectionPhotoGallery('{{ section_data_dict.name }}')" class="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-images mr-2"></i>View All Photos
+                    </button>
+                    <button onclick="demonstrateBeforeAfterComparison()" class="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-exchange-alt mr-2"></i>Demo Comparison
+                    </button>
+                    <button class="bg-success hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-download mr-2"></i>Download Report
+                    </button>
+                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-file-export mr-2"></i>Export Section
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_agent_status_display }}</span></p>
+                </div>
             </div>
         </div>
 
         <!-- Summary Card -->
-        <div class="bg-white rounded-xl p-6 shadow-sm mb-6">
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-6">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-4">
-                    <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center text-2xl">
-                        {{ section_data_dict.icon }}
+                    <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center text-2xl">
+                        <i class="fas fa-clipboard-check text-red-600"></i>
                     </div>
                     <div>
-                        <h2 class="text-xl font-semibold">{{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</h2>
+                        <h2 class="text-xl font-semibold text-gray-900">{{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</h2>
                         <p class="text-gray-500">{{ assessment.vehicle.manufacture_year }} • VIN: {{ assessment.vehicle.vin|truncatechars:10 }}</p>
                         <div class="flex items-center gap-3 mt-2">
                             <span class="px-3 py-1 rounded-full text-sm {% if assessment.agent_status == 'approved' %}bg-green-100 text-green-700{% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-700{% elif assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-700{% else %}bg-blue-100 text-blue-700{% endif %}">
@@ -82,44 +151,48 @@
         </div>
 
         <!-- Filters and Search -->
-        <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-                <div class="bg-white rounded-lg p-3 shadow-sm border">
-                    <label class="text-sm text-gray-600 mr-2">Filter by Severity:</label>
-                    <select id="severityFilter" class="text-sm border-0 focus:ring-0 p-0">
-                        <option value="all">All Components</option>
-                        <option value="None">No Damage</option>
-                        <option value="Minor">Minor Damage</option>
-                        <option value="Moderate">Moderate Damage</option>
-                        <option value="Major">Major Damage</option>
-                        <option value="Severe">Severe Damage</option>
-                    </select>
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-700 mr-3">Filter by Severity:</label>
+                        <select id="severityFilter" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <option value="all">All Components</option>
+                            <option value="None">No Damage</option>
+                            <option value="Minor">Minor Damage</option>
+                            <option value="Moderate">Moderate Damage</option>
+                            <option value="Major">Major Damage</option>
+                            <option value="Severe">Severe Damage</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-700 mr-3">Search:</label>
+                        <div class="relative">
+                            <input type="search" id="componentSearch" placeholder="Search components..." 
+                                   class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="bg-white rounded-lg p-3 shadow-sm border">
-                    <label class="text-sm text-gray-600 mr-2">Search:</label>
-                    <input type="search" id="componentSearch" placeholder="Search components..." 
-                           class="text-sm border-0 focus:ring-0 p-0 w-48" />
+                <div class="text-sm text-gray-500">
+                    <i class="fas fa-list mr-1"></i>
+                    Showing <span id="visibleCount">{{ section_data_dict.component_count }}</span> of {{ section_data_dict.component_count }} inspection points
                 </div>
-            </div>
-            <div class="text-sm text-gray-500">
-                Showing <span id="visibleCount">{{ section_data_dict.component_count }}</span> of {{ section_data_dict.component_count }} inspection points
             </div>
         </div>
 
         <!-- Inspection Points Grid -->
-        <div class="space-y-4" id="inspectionPointsContainer">
+        <div class="space-y-6" id="inspectionPointsContainer">
             {% for component in section_data_dict.components %}
-            <div class="inspection-point bg-white rounded-xl p-6 shadow-sm border" 
+            <div class="inspection-point bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200" 
                  data-severity="{{ component.severity }}" 
                  data-name="{{ component.name|lower }}">
                 <div class="flex items-start gap-6">
                     <!-- Component Icon/Status -->
-                    <div class="w-14 h-14 rounded-xl flex items-center justify-center {% if component.severity == 'None' %}bg-green-100{% elif component.severity == 'Minor' %}bg-yellow-100{% elif component.severity == 'Moderate' %}bg-orange-100{% elif component.severity == 'Major' %}bg-red-100{% elif component.severity == 'Severe' %}bg-red-200{% else %}bg-gray-100{% endif %}">
-                        <svg class="w-7 h-7 {% if component.severity == 'None' %}text-green-600{% elif component.severity == 'Minor' %}text-yellow-600{% elif component.severity == 'Moderate' %}text-orange-600{% elif component.severity == 'Major' %}text-red-600{% elif component.severity == 'Severe' %}text-red-700{% else %}text-gray-600{% endif %}" 
-                             fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
+                    <div class="w-14 h-14 rounded-lg flex items-center justify-center {% if component.severity == 'None' %}bg-green-100{% elif component.severity == 'Minor' %}bg-yellow-100{% elif component.severity == 'Moderate' %}bg-orange-100{% elif component.severity == 'Major' %}bg-red-100{% elif component.severity == 'Severe' %}bg-red-200{% else %}bg-gray-100{% endif %}">
+                        <i class="fas fa-{% if component.severity == 'None' %}check-circle{% elif component.severity == 'Minor' %}exclamation-triangle{% elif component.severity == 'Moderate' %}exclamation-circle{% elif component.severity == 'Major' %}times-circle{% elif component.severity == 'Severe' %}ban{% else %}question-circle{% endif %} text-xl {% if component.severity == 'None' %}text-green-600{% elif component.severity == 'Minor' %}text-yellow-600{% elif component.severity == 'Moderate' %}text-orange-600{% elif component.severity == 'Major' %}text-red-600{% elif component.severity == 'Severe' %}text-red-700{% else %}text-gray-600{% endif %}"></i>
                     </div>
 
                     <!-- Component Details -->
@@ -149,32 +222,44 @@
 
                                 <!-- Repair Recommendations -->
                                 {% if component.severity != 'None' and component.severity != 'Unknown' %}
-                                <div class="bg-blue-50 rounded-lg p-3 mb-3">
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-3">
                                     <div class="flex items-center justify-between mb-2">
-                                        <h4 class="text-sm font-medium text-blue-900">Recommended Actions</h4>
-                                        <span class="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                                        <h4 class="text-sm font-medium text-red-900">
+                                            <i class="fas fa-tools text-red-600 mr-2"></i>
+                                            Recommended Actions
+                                        </h4>
+                                        <span class="text-xs text-red-700 bg-red-100 px-2 py-1 rounded-full">
                                             {{ component.repair_timeline.description }}
                                         </span>
                                     </div>
-                                    <ul class="text-sm text-blue-800 space-y-1">
+                                    <ul class="text-sm text-red-800 space-y-1">
                                         {% for recommendation in component.repair_recommendations %}
-                                        <li>• {{ recommendation }}</li>
+                                        <li class="flex items-start">
+                                            <i class="fas fa-chevron-right text-red-600 mr-2 mt-0.5 text-xs"></i>
+                                            {{ recommendation }}
+                                        </li>
                                         {% endfor %}
                                     </ul>
                                 </div>
                                 {% endif %}
 
                                 {% if component.notes %}
-                                <div class="bg-gray-50 rounded-lg p-3">
-                                    <h4 class="text-sm font-medium text-gray-900 mb-1">Assessor Notes</h4>
+                                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                    <h4 class="text-sm font-medium text-gray-900 mb-2">
+                                        <i class="fas fa-sticky-note text-gray-600 mr-2"></i>
+                                        Assessor Notes
+                                    </h4>
                                     <p class="text-sm text-gray-700">{{ component.notes }}</p>
                                 </div>
                                 {% endif %}
                             </div>
                             
                             <!-- Cost Breakdown -->
-                            <div class="ml-6 text-right bg-gray-50 rounded-lg p-4 min-w-[200px]">
-                                <p class="text-sm text-gray-500 mb-1">Repair Estimate</p>
+                            <div class="ml-6 text-right bg-red-50 border border-red-200 rounded-lg p-4 min-w-[200px]">
+                                <p class="text-sm text-gray-500 mb-1">
+                                    <i class="fas fa-pound-sign text-red-600 mr-1"></i>
+                                    Repair Estimate
+                                </p>
                                 <p class="text-2xl font-bold text-gray-900 mb-2">{{ component.cost }}</p>
                                 
                                 {% if component.raw_cost > 0 %}
@@ -187,12 +272,12 @@
                                         <span>Labor:</span>
                                         <span>£{{ component.labor_cost|floatformat:0 }}</span>
                                     </div>
-                                    <hr class="my-1">
+                                    <hr class="my-1 border-red-200">
                                     <div class="flex justify-between font-medium">
                                         <span>Total:</span>
                                         <span>{{ component.cost }}</span>
                                     </div>
-                                    <div class="flex justify-between text-blue-600 mt-2">
+                                    <div class="flex justify-between text-red-600 mt-2">
                                         <span>Timeline:</span>
                                         <span>{{ component.repair_timeline.days }} day{{ component.repair_timeline.days|pluralize }}</span>
                                     </div>
@@ -201,7 +286,7 @@
                                 
                                 <!-- Priority Indicator -->
                                 <div class="mt-3">
-                                    <span class="inline-block px-2 py-1 rounded text-xs {% if component.severity == 'Severe' or component.severity == 'Major' %}bg-red-100 text-red-700{% elif component.severity == 'Moderate' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">
+                                    <span class="inline-block px-2 py-1 rounded-full text-xs font-medium {% if component.severity == 'Severe' or component.severity == 'Major' %}bg-red-100 text-red-700{% elif component.severity == 'Moderate' %}bg-yellow-100 text-yellow-700{% else %}bg-green-100 text-green-700{% endif %}">
                                         {% if component.severity == 'Severe' or component.severity == 'Major' %}High Priority{% elif component.severity == 'Moderate' %}Medium Priority{% else %}Low Priority{% endif %}
                                     </span>
                                 </div>
@@ -211,16 +296,17 @@
                         <!-- Photo Thumbnails -->
                         {% if component.photos %}
                         <div class="mb-4">
-                            <h4 class="text-sm font-medium text-gray-900 mb-2">
+                            <h4 class="text-sm font-medium text-gray-900 mb-3">
+                                <i class="fas fa-camera text-red-600 mr-2"></i>
                                 Assessment Photos ({{ component.photo_count }})
                             </h4>
-                            <div class="flex gap-2 overflow-x-auto pb-2">
+                            <div class="flex gap-3 overflow-x-auto pb-2">
                                 {% for photo in component.photos %}
                                 <div class="flex-shrink-0 relative group cursor-pointer" 
                                      onclick="openComponentPhotoGallery('{{ component.field_name }}', {{ forloop.counter0 }})">
                                     <img src="{{ photo.thumbnail_url }}" 
                                          alt="{{ photo.description }}"
-                                         class="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 hover:border-blue-400 transition-colors"
+                                         class="w-20 h-20 object-cover rounded-lg border-2 border-gray-200 hover:border-red-400 transition-colors shadow-sm"
                                          data-full-url="{{ photo.image_url }}"
                                          data-description="{{ photo.description }}"
                                          data-taken-at="{{ photo.taken_at|date:'c' }}"
@@ -231,16 +317,12 @@
                                          data-is-primary="{{ photo.is_primary|yesno:'true,false' }}"
                                          data-temporal-sequence="{{ photo.temporal_sequence|default:'' }}">
                                     {% if photo.is_primary %}
-                                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <svg class="w-2 h-2 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                        </svg>
+                                    <div class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-check text-white text-xs"></i>
                                     </div>
                                     {% endif %}
                                     <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 rounded-lg transition-opacity flex items-center justify-center">
-                                        <svg class="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                                        </svg>
+                                        <i class="fas fa-search-plus text-white opacity-0 group-hover:opacity-100 transition-opacity"></i>
                                     </div>
                                 </div>
                                 {% endfor %}
@@ -252,25 +334,28 @@
                         <div class="flex items-center gap-3">
                             {% if component.notes %}
                             <button onclick="toggleDetails('{{ component.field_name }}')" 
-                                    class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm">
-                                View Details
+                                    class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                <i class="fas fa-eye mr-2"></i>View Details
                             </button>
                             {% endif %}
                             <button onclick="openComponentPhotoGallery('{{ component.field_name }}', 0)" 
-                                    class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 text-sm">
-                                Photos ({{ component.photo_count }})
+                                    class="bg-primary hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                <i class="fas fa-images mr-2"></i>Photos ({{ component.photo_count }})
                             </button>
                             {% if component.severity != 'None' %}
-                            <button class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">
-                                Recommend Repair
+                            <button class="bg-success hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                                <i class="fas fa-wrench mr-2"></i>Recommend Repair
                             </button>
                             {% endif %}
                         </div>
 
                         <!-- Expandable Details -->
                         {% if component.notes %}
-                        <div id="details-{{ component.field_name }}" class="mt-4 hidden bg-gray-50 rounded-lg p-4 border">
-                            <h4 class="font-medium text-gray-900 mb-2">Detailed Assessment Notes:</h4>
+                        <div id="details-{{ component.field_name }}" class="mt-4 hidden bg-red-50 border border-red-200 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-900 mb-2">
+                                <i class="fas fa-clipboard-list text-red-600 mr-2"></i>
+                                Detailed Assessment Notes:
+                            </h4>
                             <p class="text-sm text-gray-700">{{ component.notes }}</p>
                         </div>
                         {% endif %}
@@ -278,12 +363,9 @@
                 </div>
             </div>
             {% empty %}
-            <div class="text-center py-12">
+            <div class="bg-white rounded-lg shadow p-12 border border-gray-200 text-center">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    <i class="fas fa-clipboard-list text-gray-400 text-2xl"></i>
                 </div>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">No Assessment Data Available</h3>
                 <p class="text-gray-500">This section has not been assessed yet or no data is available.</p>
@@ -293,22 +375,25 @@
 
         <!-- Summary Statistics -->
         {% if section_data_dict.components %}
-        <div class="mt-8 bg-white rounded-xl p-6 shadow-sm">
-            <h3 class="text-lg font-semibold mb-4">Section Summary</h3>
+        <div class="mt-8 bg-white rounded-lg shadow p-6 border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">
+                <i class="fas fa-chart-bar text-red-600 mr-2"></i>
+                Section Summary
+            </h3>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="text-center">
+                <div class="text-center p-4 bg-gray-50 rounded-lg">
                     <div class="text-2xl font-bold text-gray-900">{{ section_data_dict.component_count }}</div>
                     <div class="text-sm text-gray-500">Total Components</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center p-4 bg-red-50 rounded-lg">
                     <div class="text-2xl font-bold text-red-600">{{ section_data_dict.damaged_components }}</div>
                     <div class="text-sm text-gray-500">Damaged Components</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center p-4 bg-green-50 rounded-lg">
                     <div class="text-2xl font-bold text-green-600">{{ section_data_dict.estimated_cost }}</div>
                     <div class="text-sm text-gray-500">Total Repair Cost</div>
                 </div>
-                <div class="text-center">
+                <div class="text-center p-4 bg-blue-50 rounded-lg">
                     <div class="text-2xl font-bold text-blue-600">{{ section_data_dict.completion_percentage }}%</div>
                     <div class="text-sm text-gray-500">Assessment Complete</div>
                 </div>
@@ -316,7 +401,12 @@
         </div>
         {% endif %}
     </div>
-</div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
 
 
 

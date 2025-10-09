@@ -58,8 +58,8 @@
         <!-- Step Progress -->
         <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
             <div class="text-sm font-medium text-success">01-14. Assessment Steps ✓</div>
-            <div class="text-sm font-medium text-danger">Photo Documentation</div>
-            <div class="text-sm font-medium text-gray-400">Complete Assessment...</div>
+            <div class="text-sm font-medium text-danger">15. Photo Documentation</div>
+            <div class="text-sm font-medium text-gray-400">16. Notes & Completion...</div>
         </div>
 
         <!-- Header Card -->
@@ -151,12 +151,17 @@
 
             <!-- Form Actions -->
             <div class="flex justify-between items-center space-x-4">
-                <a href="{% url 'assessments:assessment_detail' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
-                    <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
+                <a href="{% url 'assessments:financial_information' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Financial Info
                 </a>
-                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
-                    Upload Photo<i class="fas fa-upload ml-2"></i>
-                </button>
+                <div class="flex space-x-3">
+                    <button type="submit" class="bg-success hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        Upload Photo<i class="fas fa-upload ml-2"></i>
+                    </button>
+                    <button type="submit" name="continue_to_notes" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        Continue to Notes<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
             </div>
         </form>
 
