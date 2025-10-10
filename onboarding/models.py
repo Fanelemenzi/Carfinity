@@ -176,17 +176,63 @@ class CustomerOnboarding(models.Model):
     potential_referrals = models.BooleanField(default=False,help_text="Do you know others who might benefit from our services?")
     interested_in_referral_rewards = models.BooleanField(default=False,help_text="Would you be interested in earning referral rewards?")
     
-    # Onboarding completion
-    completed_at = models.DateTimeField(auto_now_add=True)
+    # Onboarding status and completion tracking
+    STATUS_CHOICES = [
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('cancelled', 'Cancelled'),
+    ]
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default='in_progress')
+    completed_date = models.DateTimeField(null=True, blank=True)
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['status', 'created_at']),
+        ]
+    
     def __str__(self):
-        return f"Onboarding - {self.user.username} ({self.customer_type})"
+        return f"Onboarding - {self.user.username} ({self.customer_type}) - {self.get_status_display()}"
+    
+    def get_completion_percentage(self):
+        """Calculate completion percentage based on filled fields"""
+        total_fields = 15
+        completed_fields = 0
+        
+        # Check important fields
+        important_fields = [
+            self.customer_type, self.preferred_communication,
+            self.monthly_maintenance_budget, self.maintenance_knowledge,
+            self.primary_goal, self.service_priority,
+            self.preferred_payment_model, self.parts_preference,
+            self.how_heard_about_service
+        ]
+        
+        completed_fields = sum(1 for field in important_fields if field)
+        
+        # Add vehicle completion if exists
+        try:
+            vehicle = self.vehicle_onboarding
+            vehicle_fields = [
+                vehicle.make, vehicle.model, vehicle.year,
+                vehicle.current_odometer, vehicle.primary_usage,
+                vehicle.estimated_annual_mileage
+            ]
+            completed_fields += sum(1 for field in vehicle_fields if field)
+        except:
+            pass
+        
+        return int((completed_fields / total_fields) * 100)
 
 class VehicleOnboarding(models.Model):
     """Vehicle-specific onboarding questions - can have multiple vehicles per customer"""
     
-    customer_onboarding = models.ForeignKey(CustomerOnboarding, on_delete=models.CASCADE, related_name='vehicles')
+    customer_onboarding = models.OneToOneField(CustomerOnboarding, on_delete=models.CASCADE, related_name='vehicle_onboarding')
     
     # Basic vehicle information
     vin_number = models.CharField(

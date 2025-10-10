@@ -1,8 +1,8 @@
-{% extends 'base/base.html'%}
+{% extends 'base/base.html' %}
 {% load static %}
 
 {% block content %}
-<br></br>
+<br>
 {% if user.is_authenticated %}
 <!DOCTYPE html>
 <html lang="en">
@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
     <link rel="stylesheet" href="{% static 'css/optimized-dashboard.min.css' %}" data-critical="true">
     <link rel="stylesheet" href="{% static 'css/dashboard-integration.css' %}" data-critical="false">
+
     <script>
         tailwind.config = {
             theme: {
@@ -33,6 +34,7 @@
             }
         }
     </script>
+
     <style>
         /* Assessment Dashboard Custom Styles */
         .assessment-card {
@@ -59,16 +61,6 @@
         .assessment-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        .health-index-circle {
-            position: relative;
-            width: 120px;
-            height: 120px;
-        }
-
-        .health-index-progress {
-            transform: rotate(-90deg);
         }
 
         .pulse-dot {
@@ -123,13 +115,7 @@
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
         }
 
-        .glass-effect {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Mobile-First Responsive Design */
+        /* Mobile Navigation */
         .mobile-nav-toggle {
             display: none;
         }
@@ -172,29 +158,10 @@
             min-width: 44px;
         }
 
-        .swipe-container {
-            overflow-x: auto;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .swipe-item {
-            scroll-snap-align: start;
-            flex-shrink: 0;
-        }
-
-        /* Mobile Tablet Breakpoints */
+        /* Responsive Design */
         @media (max-width: 1024px) {
             .desktop-only {
                 display: none !important;
-            }
-
-            .tablet-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .tablet-single {
-                grid-template-columns: 1fr;
             }
         }
 
@@ -224,24 +191,6 @@
                 border-bottom: 1px solid #e5e7eb;
             }
 
-            .mobile-stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 0.75rem;
-            }
-
-            .mobile-action-cards {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .assessment-card {
-                margin-bottom: 1rem;
-            }
-
-            .assessment-card .p-6 {
-                padding: 1rem;
-            }
-
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.5rem;
@@ -250,22 +199,6 @@
             .mobile-title {
                 font-size: 1.5rem;
                 line-height: 1.3;
-            }
-
-            .mobile-subtitle {
-                font-size: 0.875rem;
-                line-height: 1.4;
-            }
-
-            .mobile-card {
-                border-radius: 0.75rem;
-                padding: 1rem;
-                margin-bottom: 1rem;
-            }
-
-            .mobile-card-compact {
-                padding: 0.75rem;
-                border-radius: 0.5rem;
             }
 
             .mobile-button {
@@ -290,61 +223,10 @@
                 gap: 0.75rem;
             }
 
-            .welcome-section h2 {
-                font-size: 1.25rem;
-            }
-
-            .mobile-single-column {
-                grid-template-columns: 1fr;
-            }
-
-            .mobile-compact .assessment-card {
-                padding: 0.75rem;
-            }
-
-            .mobile-compact .stats-card {
-                padding: 0.75rem;
-            }
-
             .mobile-nav-item {
                 padding: 1rem;
                 border-bottom: 1px solid #f3f4f6;
                 font-size: 1.125rem;
-            }
-
-            .mobile-activity {
-                max-height: 300px;
-                overflow-y: auto;
-            }
-
-            .mobile-activity-item {
-                padding: 0.75rem;
-                border-bottom: 1px solid #f3f4f6;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .mobile-dashboard {
-                padding: 0.75rem;
-            }
-
-            .mobile-header {
-                padding: 0.5rem 0.75rem;
-            }
-
-            .mobile-title {
-                font-size: 1.25rem;
-            }
-
-            .mobile-card {
-                padding: 0.75rem;
-                margin-bottom: 0.75rem;
-            }
-
-            .mobile-button {
-                min-height: 44px;
-                padding: 0.625rem 1.25rem;
-                font-size: 0.875rem;
             }
         }
 
@@ -528,9 +410,10 @@
         </div>
     </div>
 
+    <!-- Main Dashboard Content -->
     <div class="max-w-7xl mx-auto mobile-dashboard px-4 sm:px-6 lg:px-8 py-4 md:py-8">
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stats-grid">
             <div class="bg-white rounded-lg shadow p-6 card-hover">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -597,7 +480,7 @@
         </div>
 
         <!-- Additional Stats Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 stats-grid">
             <div class="bg-white rounded-lg shadow p-6 card-hover">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -662,7 +545,6 @@
                 </div>
             </div>
         </div>
-
         <!-- Assessment Data Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 md:gap-8">
             <!-- Assessment Analytics Panel -->
@@ -715,11 +597,14 @@
                                     <div class="flex-1">
                                         <div class="text-sm font-medium text-gray-900">{{ assessment.assessment_id }}
                                         </div>
-                                        <div class="text-xs text-gray-500">{{ assessment.vehicle.year }} {{ assessment.vehicle.make }} {{ assessment.vehicle.model }}</div>
-                                        <div class="text-xs text-gray-400">{{ assessment.assessment_date|date:"M d, Y" }}</div>
+                                        <div class="text-xs text-gray-500">{{ assessment.vehicle.year }} {{
+                                            assessment.vehicle.make }} {{ assessment.vehicle.model }}</div>
+                                        <div class="text-xs text-gray-400">{{ assessment.assessment_date|date:"M d, Y"
+                                            }}</div>
                                     </div>
                                     <div class="ml-2">
-                                        <span class="text-xs px-2 py-1 rounded-full {% if assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-800{% elif assessment.agent_status == 'under_review' %}bg-blue-100 text-blue-800{% elif assessment.agent_status == 'approved' %}bg-green-100 text-green-800{% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-800{% elif assessment.agent_status == 'changes_requested' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        <span
+                                            class="text-xs px-2 py-1 rounded-full {% if assessment.agent_status == 'pending_review' %}bg-yellow-100 text-yellow-800{% elif assessment.agent_status == 'under_review' %}bg-blue-100 text-blue-800{% elif assessment.agent_status == 'approved' %}bg-green-100 text-green-800{% elif assessment.agent_status == 'rejected' %}bg-red-100 text-red-800{% elif assessment.agent_status == 'changes_requested' %}bg-orange-100 text-orange-800{% else %}bg-gray-100 text-gray-800{% endif %}">
                                             {{ assessment.get_agent_status_display }}
                                         </span>
                                         {% if assessment.estimated_repair_cost %}
@@ -785,16 +670,23 @@
                                 <!-- Filter Row -->
                                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 lg:space-x-4">
                                     <!-- Status Filter -->
-                                    <select id="statusFilter" 
-                                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                            data-filter="status">
+                                    <select id="statusFilter"
+                                        class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        data-filter="status">
                                         <option value="">All Status</option>
-                                        <option value="pending_review" {% if current_status_filter == 'pending_review' %}selected{% endif %}>Pending Review</option>
-                                        <option value="under_review" {% if current_status_filter == 'under_review' %}selected{% endif %}>Under Review</option>
-                                        <option value="approved" {% if current_status_filter == 'approved' %}selected{% endif %}>Approved</option>
-                                        <option value="rejected" {% if current_status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
-                                        <option value="changes_requested" {% if current_status_filter == 'changes_requested' %}selected{% endif %}>Changes Requested</option>
-                                        <option value="on_hold" {% if current_status_filter == 'on_hold' %}selected{% endif %}>On Hold</option>
+                                        <option value="pending_review" {% if current_status_filter=='pending_review'
+                                            %}selected{% endif %}>Pending Review</option>
+                                        <option value="under_review" {% if current_status_filter=='under_review'
+                                            %}selected{% endif %}>Under Review</option>
+                                        <option value="approved" {% if current_status_filter=='approved' %}selected{%
+                                            endif %}>Approved</option>
+                                        <option value="rejected" {% if current_status_filter=='rejected' %}selected{%
+                                            endif %}>Rejected</option>
+                                        <option value="changes_requested" {% if
+                                            current_status_filter=='changes_requested' %}selected{% endif %}>Changes
+                                            Requested</option>
+                                        <option value="on_hold" {% if current_status_filter=='on_hold' %}selected{%
+                                            endif %}>On Hold</option>
                                     </select>
 
                                     <!-- Organization Filter -->
@@ -803,7 +695,9 @@
                                         data-filter="organization">
                                         <option value="">All Organizations</option>
                                         {% for org in organizations %}
-                                        <option value="{{ org.id }}" {% if current_organization_filter == org.id|stringformat:"s" %}selected{% endif %}>{{ org.name }}</option>
+                                        <option value="{{ org.id }}" {% if
+                                            current_organization_filter==org.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ org.name }}</option>
                                         {% endfor %}
                                     </select>
 
@@ -844,7 +738,6 @@
                             </div>
                         </div>
                     </div>
-
                     <!-- Claims Table -->
                     <div class="overflow-x-auto">
                         <table class="claims-table min-w-full divide-y divide-gray-200">
@@ -876,7 +769,8 @@
                                     </th>
                                     <th
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Action</th>
+                                        Action
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="claimsTableBody" class="bg-white divide-y divide-gray-200">
@@ -896,12 +790,14 @@
 
                                     <!-- Priority Column -->
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        {% if assessment.review_deadline and assessment.review_deadline <= '2024-10-04'|date:'Y-m-d H:i:s' %}
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                URGENT
+                                        {% if assessment.review_deadline and assessment.review_deadline <= '2024-10-04'
+                                            |date:'Y-m-d H:i:s' %} <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                                            URGENT
                                             </span>
-                                        {% elif assessment.estimated_repair_cost and assessment.estimated_repair_cost >= 10000 %}
+                                            {% elif assessment.estimated_repair_cost and
+                                            assessment.estimated_repair_cost >= 10000 %}
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                                 <i class="fas fa-star mr-1"></i>
@@ -1034,7 +930,6 @@
                             </tbody>
                         </table>
                     </div>
-
                     <!-- Pagination Controls -->
                     {% if is_paginated %}
                     <div class="px-6 py-4 border-t border-gray-200 bg-white">
@@ -1082,9 +977,10 @@
                                         class="px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-indigo-600 rounded-md">
                                         {{ num }}
                                     </span>
-                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                        <a href="?page={{ num }}{% if current_search_query %}&search={{ current_search_query }}{% endif %}{% if current_status_filter %}&status={{ current_status_filter }}{% endif %}{% if current_organization_filter %}&organization={{ current_organization_filter }}{% endif %}" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
-                                            {{ num }}
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %} <a
+                                        href="?page={{ num }}{% if current_search_query %}&search={{ current_search_query }}{% endif %}{% if current_status_filter %}&status={{ current_status_filter }}{% endif %}{% if current_organization_filter %}&organization={{ current_organization_filter }}{% endif %}"
+                                        class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                        {{ num }}
                                         </a>
                                         {% elif num == page_obj.number|add:'-4' or num == page_obj.number|add:'4' %}
                                         <span class="px-3 py-2 text-sm font-medium text-gray-400">...</span>
@@ -1155,14 +1051,16 @@
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
         // View claim function
         function viewClaim(claimId) {
             window.location.href = `{% url 'insurance:assessment_detail' 'PLACEHOLDER' %}`.replace('PLACEHOLDER', claimId);
         }
 
-        // Initialize mobile navigation
+        // Initialize mobile navigation and dashboard functionality
         document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Navigation
             const mobileMenuToggle = document.getElementById('mobileMenuToggle');
             const mobileMenuClose = document.getElementById('mobileMenuClose');
             const mobileNavMenu = document.getElementById('mobileNavMenu');
@@ -1192,32 +1090,48 @@
                 mobileNavOverlay.addEventListener('click', closeMobileMenu);
             }
 
-            // Initialize search and filter functionality
+            // Search and Filter Functionality
             const searchInput = document.getElementById('globalSearch');
             const statusFilter = document.getElementById('statusFilter');
             const organizationFilter = document.getElementById('organizationFilter');
+            const priorityFilter = document.getElementById('priorityFilter');
+            const dateFromFilter = document.getElementById('dateFrom');
+            const dateToFilter = document.getElementById('dateTo');
+            const valueFromFilter = document.getElementById('valueFrom');
+            const valueToFilter = document.getElementById('valueTo');
             const clearFiltersBtn = document.getElementById('clearFilters');
-            const tableRows = document.querySelectorAll('#claimsTableBody tr');
+            const tableRows = document.querySelectorAll('#claimsTableBody tr[data-claim-id]');
 
             function filterTable() {
-                const searchTerm = searchInput.value.toLowerCase();
-                const statusValue = statusFilter.value.toLowerCase();
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                const statusValue = statusFilter ? statusFilter.value.toLowerCase() : '';
                 const organizationValue = organizationFilter ? organizationFilter.value : '';
+                const priorityValue = priorityFilter ? priorityFilter.value : '';
+                const dateFrom = dateFromFilter ? dateFromFilter.value : '';
+                const dateTo = dateToFilter ? dateToFilter.value : '';
+                const valueFrom = valueFromFilter ? parseFloat(valueFromFilter.value) || 0 : 0;
+                const valueTo = valueToFilter ? parseFloat(valueToFilter.value) || Infinity : Infinity;
+
                 let visibleCount = 0;
 
                 tableRows.forEach(row => {
-                    // Skip empty rows or header rows
-                    if (!row.dataset.claimId) return;
-
                     const searchableText = row.textContent.toLowerCase();
-                    const rowStatus = row.dataset.status.toLowerCase();
+                    const rowStatus = (row.dataset.status || '').toLowerCase();
                     const rowOrganization = row.dataset.organization || '';
+                    const rowPriority = row.dataset.priority || '';
+                    const rowDate = row.dataset.date || '';
+                    const rowValue = parseFloat(row.dataset.value) || 0;
 
                     const matchesSearch = !searchTerm || searchableText.includes(searchTerm);
                     const matchesStatus = !statusValue || rowStatus.includes(statusValue);
                     const matchesOrganization = !organizationValue || rowOrganization === organizationValue;
+                    const matchesPriority = !priorityValue || rowPriority === priorityValue;
+                    const matchesDateFrom = !dateFrom || rowDate >= dateFrom;
+                    const matchesDateTo = !dateTo || rowDate <= dateTo;
+                    const matchesValueRange = rowValue >= valueFrom && rowValue <= valueTo;
 
-                    if (matchesSearch && matchesStatus && matchesOrganization) {
+                    if (matchesSearch && matchesStatus && matchesOrganization && matchesPriority &&
+                        matchesDateFrom && matchesDateTo && matchesValueRange) {
                         row.style.display = '';
                         visibleCount++;
                     } else {
@@ -1225,34 +1139,12 @@
                     }
                 });
 
-                // Update filter count display
                 updateFilterCount(visibleCount, tableRows.length);
-
-                // Update URL parameters for server-side filtering on page reload
-                const url = new URL(window.location);
-                if (searchTerm) {
-                    url.searchParams.set('search', searchInput.value);
-                } else {
-                    url.searchParams.delete('search');
-                }
-
-                if (statusValue) {
-                    url.searchParams.set('status', statusFilter.value);
-                } else {
-                    url.searchParams.delete('status');
-                }
-
-                if (organizationValue) {
-                    url.searchParams.set('organization', organizationFilter.value);
-                } else {
-                    url.searchParams.delete('organization');
-                }
-
-                window.history.replaceState({}, '', url);
+                updateURL();
             }
 
             function updateFilterCount(visible, total) {
-                let countElement = document.querySelector('.filter-count');
+                const countElement = document.querySelector('.filter-count');
                 if (countElement) {
                     if (visible === total) {
                         countElement.textContent = `Showing ${total} assessment${total !== 1 ? 's' : ''}`;
@@ -1262,6 +1154,32 @@
                 }
             }
 
+            function updateURL() {
+                const url = new URL(window.location);
+
+                // Update URL parameters for server-side filtering on page reload
+                if (searchInput && searchInput.value) {
+                    url.searchParams.set('search', searchInput.value);
+                } else {
+                    url.searchParams.delete('search');
+                }
+
+                if (statusFilter && statusFilter.value) {
+                    url.searchParams.set('status', statusFilter.value);
+                } else {
+                    url.searchParams.delete('status');
+                }
+
+                if (organizationFilter && organizationFilter.value) {
+                    url.searchParams.set('organization', organizationFilter.value);
+                } else {
+                    url.searchParams.delete('organization');
+                }
+
+                window.history.replaceState({}, '', url);
+            }
+
+            // Event Listeners
             if (searchInput) {
                 searchInput.addEventListener('input', filterTable);
             }
@@ -1274,16 +1192,41 @@
                 organizationFilter.addEventListener('change', filterTable);
             }
 
+            if (priorityFilter) {
+                priorityFilter.addEventListener('change', filterTable);
+            }
+
+            if (dateFromFilter) {
+                dateFromFilter.addEventListener('change', filterTable);
+            }
+
+            if (dateToFilter) {
+                dateToFilter.addEventListener('change', filterTable);
+            }
+
+            if (valueFromFilter) {
+                valueFromFilter.addEventListener('input', filterTable);
+            }
+
+            if (valueToFilter) {
+                valueToFilter.addEventListener('input', filterTable);
+            }
+
             if (clearFiltersBtn) {
                 clearFiltersBtn.addEventListener('click', function () {
-                    searchInput.value = '';
-                    statusFilter.value = '';
+                    if (searchInput) searchInput.value = '';
+                    if (statusFilter) statusFilter.value = '';
                     if (organizationFilter) organizationFilter.value = '';
+                    if (priorityFilter) priorityFilter.value = '';
+                    if (dateFromFilter) dateFromFilter.value = '';
+                    if (dateToFilter) dateToFilter.value = '';
+                    if (valueFromFilter) valueFromFilter.value = '';
+                    if (valueToFilter) valueToFilter.value = '';
                     filterTable();
                 });
             }
 
-            // Enhanced sorting functionality
+            // Enhanced Sorting Functionality
             const sortableHeaders = document.querySelectorAll('.sortable');
             let currentSort = { column: null, direction: 'asc' };
 
@@ -1291,7 +1234,7 @@
                 header.addEventListener('click', function () {
                     const sortColumn = this.dataset.sort;
                     const tbody = document.getElementById('claimsTableBody');
-                    const rows = Array.from(tbody.querySelectorAll('tr[data-filterable]'));
+                    const rows = Array.from(tbody.querySelectorAll('tr[data-claim-id]'));
 
                     // Update sort direction
                     if (currentSort.column === sortColumn) {
@@ -1320,12 +1263,7 @@
 
                         switch (sortColumn) {
                             case 'priority':
-                                const priorityOrder = {
-                                    'HIGH': 3,
-                                    'URGENT': 4,
-                                    'NORMAL': 1,
-                                    'LOW': 0
-                                };
+                                const priorityOrder = { 'HIGH': 3, 'URGENT': 4, 'NORMAL': 1, 'LOW': 0 };
                                 aVal = priorityOrder[a.dataset.priority] || 0;
                                 bVal = priorityOrder[b.dataset.priority] || 0;
                                 break;

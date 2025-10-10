@@ -137,10 +137,10 @@ def track_comment_creation(sender, instance, created, **kwargs):
         AssessmentHistory.objects.create(
             assessment=instance.assessment,
             activity_type='comment_added',
-            user=instance.user,
+            user=instance.author,
             description=f"Comment added: {instance.content[:100]}{'...' if len(instance.content) > 100 else ''}",
             related_comment_id=instance.id,
-            related_section=instance.related_section,
+            related_section=getattr(instance, 'related_section', ''),
         )
 
 
