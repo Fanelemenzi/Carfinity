@@ -529,11 +529,11 @@
                 <div class="text-xs text-gray-600 space-y-1 bg-gray-50 rounded p-2">
                   <div class="flex justify-between">
                     <span>Parts & Materials:</span>
-                    <span>£{{ section_data.parts_cost|floatformat:0 }}</span>
+                    <span>E{{ section_data.parts_cost|floatformat:0 }}</span>
                   </div>
                   <div class="flex justify-between">
                     <span>Labor (70%):</span>
-                    <span>£{{ section_data.labor_cost|floatformat:0 }}</span>
+                    <span>E{{ section_data.labor_cost|floatformat:0 }}</span>
                   </div>
                 </div>
                 {% endif %}
@@ -547,27 +547,27 @@
             <div class="border-t border-gray-200 pt-3 space-y-2 text-sm">
               <div class="flex justify-between">
                 <span>Subtotal (Parts + Labor):</span>
-                <span class="font-medium">£{{ detailed_costs.subtotal|floatformat:0 }}</span>
+                <span class="font-medium">E{{ detailed_costs.subtotal|floatformat:0 }}</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Paint & Materials (15%):</span>
-                <span>£{{ detailed_costs.paint_materials|floatformat:0 }}</span>
+                <span>E{{ detailed_costs.paint_materials|floatformat:0 }}</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>Shop Supplies (8%):</span>
-                <span>£{{ detailed_costs.shop_supplies|floatformat:0 }}</span>
+                <span>E{{ detailed_costs.shop_supplies|floatformat:0 }}</span>
               </div>
               <div class="flex justify-between border-t pt-2">
                 <span>Subtotal before VAT:</span>
-                <span class="font-medium">£{{ detailed_costs.total_before_tax|floatformat:0 }}</span>
+                <span class="font-medium">E{{ detailed_costs.total_before_tax|floatformat:0 }}</span>
               </div>
               <div class="flex justify-between text-gray-600">
                 <span>VAT (20%):</span>
-                <span>£{{ detailed_costs.vat|floatformat:0 }}</span>
+                <span>E{{ detailed_costs.vat|floatformat:0 }}</span>
               </div>
               <div class="flex justify-between border-t pt-2 text-lg font-bold text-red-600">
                 <span>Total Repair Cost:</span>
-                <span>£{{ detailed_costs.grand_total|floatformat:0 }}</span>
+                <span>E{{ detailed_costs.grand_total|floatformat:0 }}</span>
               </div>
             </div>
             
@@ -663,19 +663,19 @@
                 <div>
                   <p class="text-gray-500">Lowest Quote</p>
                   <p class="font-medium text-green-600">
-                    {% if min_quote %}£{{ min_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
+                    {% if min_quote %}E{{ min_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
                   </p>
                 </div>
                 <div>
                   <p class="text-gray-500">Average Quote</p>
                   <p class="font-medium">
-                    £{{ avg_amount|floatformat:0 }}
+                    E{{ avg_amount|floatformat:0 }}
                   </p>
                 </div>
                 <div>
                   <p class="text-gray-500">Highest Quote</p>
                   <p class="font-medium text-red-600">
-                    {% if max_quote %}£{{ max_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
+                    {% if max_quote %}E{{ max_quote.amount|floatformat:0 }}{% else %}N/A{% endif %}
                   </p>
                 </div>
                 {% endwith %}
@@ -709,7 +709,7 @@
                       <p class="text-xs text-gray-500">Regional estimate</p>
                     </div>
                   </td>
-                  <td class="py-3 font-medium text-right">£{{ assessment.estimated_repair_cost|add_num:500|floatformat:0 }}</td>
+                  <td class="py-3 font-medium text-right">E{{ assessment.estimated_repair_cost|add_num:500|floatformat:0 }}</td>
                 </tr>
                 <tr class="border-t border-gray-100">
                   <td class="py-3">
@@ -718,7 +718,7 @@
                       <p class="text-xs text-gray-500">Lower bound</p>
                     </div>
                   </td>
-                  <td class="py-3 font-medium text-right">£{{ assessment.estimated_repair_cost|sub:800|floatformat:0 }}</td>
+                  <td class="py-3 font-medium text-right">E{{ assessment.estimated_repair_cost|sub:800|floatformat:0 }}</td>
                 </tr>
                 {% else %}
                 <tr class="border-t border-gray-100">
@@ -743,7 +743,7 @@
               <div class="bg-gray-50 rounded-lg p-3">
                 <div class="flex items-center justify-between mb-1">
                   <span class="text-xs text-gray-500">Vehicle Market Value</span>
-                  <span class="font-medium">£{{ settlement_details.market_value|floatformat:0 }}</span>
+                  <span class="font-medium">E{{ settlement_details.market_value|floatformat:0 }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span class="text-xs text-gray-500">Vehicle Age</span>
@@ -754,7 +754,7 @@
               <!-- Repair Cost -->
               <div class="flex items-center justify-between">
                 <span>Repair Cost</span>
-                <span class="font-medium">£{{ settlement_details.repair_cost|floatformat:0 }}</span>
+                <span class="font-medium">E{{ settlement_details.repair_cost|floatformat:0 }}</span>
               </div>
               
               <!-- Depreciation Breakdown -->
@@ -763,15 +763,15 @@
                 <div class="space-y-1 text-xs">
                   <div class="flex justify-between">
                     <span>Age Depreciation ({{ settlement_details.age_depreciation_rate|mul:100|floatformat:1 }}%):</span>
-                    <span class="text-red-600">-£{{ settlement_details.market_value|mul:settlement_details.age_depreciation_rate|floatformat:0 }}</span>
+                    <span class="text-red-600">-E{{ settlement_details.market_value|mul:settlement_details.age_depreciation_rate|floatformat:0 }}</span>
                   </div>
                   <div class="flex justify-between">
                     <span>Damage Depreciation ({{ settlement_details.damage_depreciation_rate|mul:100|floatformat:1 }}%):</span>
-                    <span class="text-red-600">-£{{ settlement_details.market_value|mul:settlement_details.damage_depreciation_rate|floatformat:0 }}</span>
+                    <span class="text-red-600">-E{{ settlement_details.market_value|mul:settlement_details.damage_depreciation_rate|floatformat:0 }}</span>
                   </div>
                   <div class="flex justify-between border-t pt-1 font-medium">
                     <span>Total Depreciation:</span>
-                    <span class="text-red-600">-£{{ settlement_details.depreciation_amount|floatformat:0 }}</span>
+                    <span class="text-red-600">-E{{ settlement_details.depreciation_amount|floatformat:0 }}</span>
                   </div>
                 </div>
               </div>
@@ -779,14 +779,14 @@
               <!-- Policy Deductible -->
               <div class="flex items-center justify-between">
                 <span>Policy Deductible</span>
-                <span class="text-red-600">-£{{ settlement_details.deductible|floatformat:0 }}</span>
+                <span class="text-red-600">-E{{ settlement_details.deductible|floatformat:0 }}</span>
               </div>
               
               <!-- Salvage Value (if applicable) -->
               {% if settlement_details.salvage_value > 0 %}
               <div class="flex items-center justify-between">
                 <span>Salvage Value</span>
-                <span class="text-green-600">+£{{ settlement_details.salvage_value|floatformat:0 }}</span>
+                <span class="text-green-600">+E{{ settlement_details.salvage_value|floatformat:0 }}</span>
               </div>
               {% endif %}
               
@@ -796,9 +796,9 @@
                   {% if settlement_details.is_total_loss %}TOTAL LOSS THRESHOLD EXCEEDED{% else %}REPAIR ECONOMICALLY VIABLE{% endif %}
                 </p>
                 <p class="text-xs {% if settlement_details.is_total_loss %}text-red-700{% else %}text-green-700{% endif %}">
-                  Repair cost (£{{ settlement_details.repair_cost|floatformat:0 }}) 
+                  Repair cost (E{{ settlement_details.repair_cost|floatformat:0 }}) 
                   {% if settlement_details.is_total_loss %}exceeds{% else %}is below{% endif %} 
-                  70% threshold (£{{ settlement_details.total_loss_threshold|floatformat:0 }})
+                  70% threshold (E{{ settlement_details.total_loss_threshold|floatformat:0 }})
                 </p>
               </div>
               
@@ -807,7 +807,7 @@
                 <div class="flex items-center justify-between">
                   <span class="font-semibold">{{ settlement_details.recommendation }}</span>
                   <span class="text-xl font-extrabold {% if settlement_details.is_total_loss %}text-red-600{% else %}text-green-600{% endif %}">
-                    £{{ settlement_details.settlement_amount|floatformat:0 }}
+                    E{{ settlement_details.settlement_amount|floatformat:0 }}
                   </span>
                 </div>
               </div>
@@ -835,17 +835,17 @@
                 <div id="calculationDetails" class="hidden mt-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
                   <p class="font-medium mb-1">Settlement Calculation:</p>
                   {% if settlement_details.is_total_loss %}
-                  <p>Market Value: £{{ settlement_details.market_value|floatformat:0 }}</p>
-                  <p>- Total Depreciation: £{{ settlement_details.depreciation_amount|floatformat:0 }}</p>
-                  <p>- Policy Deductible: £{{ settlement_details.deductible|floatformat:0 }}</p>
+                  <p>Market Value: E{{ settlement_details.market_value|floatformat:0 }}</p>
+                  <p>- Total Depreciation: E{{ settlement_details.depreciation_amount|floatformat:0 }}</p>
+                  <p>- Policy Deductible: E{{ settlement_details.deductible|floatformat:0 }}</p>
                   {% if settlement_details.salvage_value > 0 %}
-                  <p>+ Salvage Value: £{{ settlement_details.salvage_value|floatformat:0 }}</p>
+                  <p>+ Salvage Value: E{{ settlement_details.salvage_value|floatformat:0 }}</p>
                   {% endif %}
                   {% else %}
                   <p>Repair Cost: £{{ settlement_details.repair_cost|floatformat:0 }}</p>
-                  <p>- Policy Deductible: £{{ settlement_details.deductible|floatformat:0 }}</p>
+                  <p>- Policy Deductible: E{{ settlement_details.deductible|floatformat:0 }}</p>
                   {% endif %}
-                  <p class="font-medium border-t pt-1 mt-1">= Settlement: £{{ settlement_details.settlement_amount|floatformat:0 }}</p>
+                  <p class="font-medium border-t pt-1 mt-1">= Settlement: E{{ settlement_details.settlement_amount|floatformat:0 }}</p>
                 </div>
               </div>
             </div>
@@ -857,7 +857,7 @@
               <div class="bg-gray-50 rounded-lg p-3">
                 <div class="flex items-center justify-between mb-2">
                   <span class="text-xs text-gray-500">Vehicle Market Value</span>
-                  <span class="font-medium">£{{ assessment.vehicle_market_value|floatformat:0 }}</span>
+                  <span class="font-medium">E{{ assessment.vehicle_market_value|floatformat:0 }}</span>
                 </div>
               </div>
               
@@ -870,13 +870,13 @@
               <!-- Depreciation (5% of market value) -->
               <div class="flex items-center justify-between">
                 <span>Depreciation (5%)</span>
-                <span class="text-red-600">-£{{ assessment.vehicle_market_value|mul:0.05|floatformat:0 }}</span>
+                <span class="text-red-600">-E{{ assessment.vehicle_market_value|mul:0.05|floatformat:0 }}</span>
               </div>
               
               <!-- Deductible (standard £500) -->
               <div class="flex items-center justify-between">
                 <span>Deductible</span>
-                <span class="text-red-600">-£500</span>
+                <span class="text-red-600">-E500</span>
               </div>
               
               <!-- Total Loss Check -->
@@ -884,7 +884,7 @@
               {% if repair_cost > threshold %}
               <div class="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p class="text-xs text-red-600 font-medium mb-1">TOTAL LOSS THRESHOLD EXCEEDED</p>
-                <p class="text-xs text-red-700">Repair cost (£{{ repair_cost|floatformat:0 }}) exceeds 70% of vehicle value (£{{ threshold|floatformat:0 }})</p>
+                <p class="text-xs text-red-700">Repair cost (E{{ repair_cost|floatformat:0 }}) exceeds 70% of vehicle value (£{{ threshold|floatformat:0 }})</p>
               </div>
               {% endif %}
               {% endwith %}
@@ -897,7 +897,7 @@
                   <div class="flex items-center justify-between">
                     <span class="font-semibold">Total Loss Settlement</span>
                     <span class="text-xl font-extrabold text-red-600">
-                      £{{ market_value|sub:depreciation|sub:500|floatformat:0 }}
+                      E{{ market_value|sub:depreciation|sub:500|floatformat:0 }}
                     </span>
                   </div>
                 {% else %}
@@ -905,7 +905,7 @@
                   <div class="flex items-center justify-between">
                     <span class="font-semibold">Repair Settlement</span>
                     <span class="text-xl font-extrabold text-green-600">
-                      £{{ repair_cost|sub:500|floatformat:0 }}
+                      E{{ repair_cost|sub:500|floatformat:0 }}
                     </span>
                   </div>
                 {% endif %}
