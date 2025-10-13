@@ -89,16 +89,8 @@ def login_user(request):
             # Log successful authentication
             SecurityEventLogger.log_authentication_attempt(username, True, client_ip)
             
-            # Check if "remember me" is selected
-            remember_me = request.POST.get('remember_me')
-            
-            # Set session expiry based on remember me
-            if remember_me:
-                # Remember for 30 days
-                request.session.set_expiry(30 * 24 * 60 * 60)
-            else:
-                # Default session expiry (browser close)
-                request.session.set_expiry(0)
+            # Set session expiry to 90 days for persistent login
+            request.session.set_expiry(90 * 24 * 60 * 60)
             
             login(request, user)
             
@@ -163,7 +155,7 @@ def dashboard(request):
             # Check if user has AutoCare dashboard access
             if 'autocare' in permissions.available_dashboards:
                 logger.info(f"AutoCare user {request.user.id} ({request.user.username}) redirecting to AutoCare dashboard")
-                return redirect('maintenance_history:autocare_dashboard')
+                return redirect('notifications:autocare_dashboard')
             
             # Check if user has AutoAssess dashboard access
             elif 'autoassess' in permissions.available_dashboards:
@@ -420,7 +412,7 @@ def _convert_url_to_view_name(redirect_url):
     """
     url_to_view_mapping = {
         '/dashboard/': 'dashboard',
-        '/maintenance/dashboard/': 'maintenance_history:autocare_dashboard',
+        '/notifications/dashboard/': 'notifications:autocare_dashboard',
         '/insurance/': 'insurance:insurance_dashboard',
         '/dashboard-selector/': 'dashboard_selector',
         '/access-denied/': 'access_denied',

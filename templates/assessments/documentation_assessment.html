@@ -1,0 +1,213 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Documentation Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-file-alt text-danger mr-2"></i>
+                            Documentation Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-10. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-danger">11. Documentation</div>
+            <div class="text-sm font-medium text-gray-400">12. Continue Assessment...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Documentation and Identification Assessment
+                    </h2>
+                    <p class="text-gray-600">Verify vehicle identification and documentation integrity</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Vehicle Identification -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Vehicle Identification</h3>
+                    <p class="text-sm text-gray-500">VIN plate and identification markers</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- VIN Plate -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">VIN Plate</label>
+                            <div class="space-y-2">
+                                {{ form.vin_plate }}
+                                {{ form.vin_plate_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Door Jamb Stickers -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Door Jamb Stickers</label>
+                            <div class="space-y-2">
+                                {{ form.door_jamb_stickers }}
+                                {{ form.door_jamb_stickers_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance and Records -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Compliance and Records</h3>
+                    <p class="text-sm text-gray-500">Emissions stickers and maintenance records</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Emissions Stickers -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Emissions Stickers</label>
+                            <div class="space-y-2">
+                                {{ form.emissions_stickers }}
+                                {{ form.emissions_stickers_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Maintenance Records -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Maintenance Records</label>
+                            <div class="space-y-2">
+                                {{ form.maintenance_records }}
+                                {{ form.maintenance_records_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:fluid_systems' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Fluid Systems
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Categorization<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Documentation Status Guide -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Documentation Status Guide
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">P</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Present</h4>
+                    <p class="text-xs text-gray-600">Document/sticker present and legible</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-yellow-600 font-bold">D</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Damaged</h4>
+                    <p class="text-xs text-gray-600">Present but damaged/illegible</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-red-600 font-bold">M</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Missing</h4>
+                    <p class="text-xs text-gray-600">Not present or removed</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-gray-600 font-bold">N</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Not Applicable</h4>
+                    <p class="text-xs text-gray-600">Not required for this vehicle</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

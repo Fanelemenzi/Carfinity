@@ -346,15 +346,15 @@ class VehicleOnboardingInline(admin.TabularInline):
 class CustomerOnboardingAdmin(admin.ModelAdmin):
     list_display = (
         'user', 'customer_type', 'primary_goal', 'maintenance_knowledge', 
-        'service_priority', 'completed_at', 'get_vehicle_count'
+        'service_priority', 'completed_date', 'get_vehicle_count'
     )
     list_filter = (
         'customer_type', 'maintenance_knowledge', 'primary_goal', 
         'service_priority', 'preferred_payment_model', 'parts_preference',
-        'completed_at'
+        'completed_date'
     )
     search_fields = ('user__username', 'user__email', 'user__first_name', 'user__last_name')
-    readonly_fields = ('completed_at', 'updated_at')
+    readonly_fields = ('completed_date', 'updated_at')
     inlines = [VehicleOnboardingInline]
     
     fieldsets = (
@@ -400,7 +400,7 @@ class CustomerOnboardingAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Timestamps', {
-            'fields': ('completed_at', 'updated_at'),
+            'fields': ('completed_date', 'updated_at'),
             'classes': ('collapse',)
         }),
     )

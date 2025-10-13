@@ -137,14 +137,14 @@
                                     </div>
                                 </a>
 
-                                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}"
+                                <a href="{% url 'onboarding:start_onboarding' %}"
                                     class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition duration-150 touch-manipulation">
                                     <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center mr-3">
                                         <i class="fas fa-car-side text-indigo-600 text-sm"></i>
                                     </div>
                                     <div>
                                         <p class="font-medium">Vehicle Onboarding</p>
-                                        <p class="text-xs text-gray-500">Add new vehicle</p>
+                                        <p class="text-xs text-gray-500">6-step workflow</p>
                                     </div>
                                 </a>
 
@@ -399,10 +399,10 @@
                                 <i class="fas fa-search-plus mr-3 w-5 text-blue-600"></i>Initial Inspection
                                 <span class="ml-auto text-xs text-gray-500">160-point</span>
                             </a>
-                            <a href="{% url 'onboarding:technician_vehicle_onboarding' %}" @click="mobileOpen = false"
+                            <a href="{% url 'onboarding:start_onboarding' %}" @click="mobileOpen = false"
                                 class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-car-side mr-3 w-5 text-indigo-600"></i>Vehicle Onboarding
-                                <span class="ml-auto text-xs text-gray-500">Add vehicle</span>
+                                <span class="ml-auto text-xs text-gray-500">6-step workflow</span>
                             </a>
                             <a href="{% url 'maintenance_history:create_record' %}" @click="mobileOpen = false"
                                 class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
@@ -444,6 +444,10 @@
                             <a href="{% url 'maintenance_history:inspection_list' %}" @click="mobileOpen = false"
                                 class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
                                 <i class="fas fa-chart-bar mr-3 w-5"></i>All Records
+                            </a>
+                            <a href="{% url 'onboarding:onboarding_dashboard' %}" @click="mobileOpen = false"
+                                class="flex items-center px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition duration-200 touch-manipulation">
+                                <i class="fas fa-car-side mr-3 w-5"></i>Onboarding Dashboard
                             </a>
                         </div>
 
@@ -561,7 +565,7 @@
         </div>
 
         <!-- Additional Metrics Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Vehicle Assessments -->
             <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
                 <div class="flex items-center">
@@ -590,6 +594,22 @@
                         <p class="text-sm font-medium text-gray-500">Pending Assessments</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ pending_assessments|default:0 }}</p>
                         <p class="text-xs text-orange-600">In progress</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onboarding Records -->
+            <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-indigo-600 bg-opacity-20 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-car-side text-indigo-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Onboarding Records</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ total_onboardings|default:0 }}</p>
+                        <p class="text-xs text-indigo-600">Customer setups</p>
                     </div>
                 </div>
             </div>
@@ -658,7 +678,7 @@
                     </div>
                 </a>
 
-                <a href="{% url 'onboarding:technician_vehicle_onboarding' %}"
+                <a href="{% url 'onboarding:start_onboarding' %}"
                     class="bg-white rounded-lg shadow p-6 border border-gray-200 hover:shadow-md transition-shadow duration-200 group">
                     <div class="flex items-center">
                         <div class="flex-shrink-0">
@@ -669,7 +689,7 @@
                         </div>
                         <div class="ml-4">
                             <p class="text-sm font-medium text-gray-900">Vehicle Onboarding</p>
-                            <p class="text-xs text-gray-500">Add new vehicle</p>
+                            <p class="text-xs text-gray-500">6-step workflow</p>
                         </div>
                     </div>
                 </a>
@@ -746,7 +766,7 @@
                 <h2 class="text-xl font-bold text-gray-900">Inspection Workflows</h2>
                 <span class="text-sm text-gray-500">Complete Processes</span>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-5 gap-6">
                 <!-- Start New Inspection Card -->
                 <div
                     class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
@@ -853,6 +873,59 @@
                     </div>
                 </div>
 
+                <!-- Vehicle Onboarding Card -->
+                <div
+                    class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
+                    <div class="flex items-center mb-4">
+                        <span class="text-2xl mr-3">🚗</span>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Vehicle Onboarding</h3>
+                            <p class="text-sm text-gray-600">6-step customer & vehicle setup</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3 mb-6">
+                        <div
+                            class="flex items-center p-3 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                1</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Customer Information</div>
+                                <div class="text-xs text-gray-600">Type, communication preferences</div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center p-3 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                2</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Service & Vehicle Setup</div>
+                                <div class="text-xs text-gray-600">Budget, vehicle details, maintenance</div>
+                            </div>
+                        </div>
+                        <div
+                            class="flex items-center p-3 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors duration-200">
+                            <div
+                                class="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
+                                3</div>
+                            <div class="flex-1">
+                                <div class="font-semibold text-gray-900 text-sm">Payment & Completion</div>
+                                <div class="text-xs text-gray-600">Payment model, parts preferences</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="{% url 'onboarding:start_onboarding' %}"
+                            class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors duration-200 shadow-sm hover:shadow-md">
+                            <span class="mr-2">🚗</span>
+                            Start Onboarding
+                        </a>
+                    </div>
+                </div>
+
                 <!-- Vehicle Assessment Card -->
                 <div
                     class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-all duration-200 hover:-translate-y-1">
@@ -947,6 +1020,12 @@
                             class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
                             <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🔧</span>
                             <span class="font-medium text-gray-900 text-sm">Create Maintenance Record</span>
+                        </a>
+
+                        <a href="{% url 'onboarding:onboarding_dashboard' %}"
+                            class="flex items-center w-full p-3 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 group">
+                            <span class="text-lg mr-3 group-hover:scale-110 transition-transform duration-200">🚗</span>
+                            <span class="font-medium text-gray-900 text-sm">Onboarding Dashboard</span>
                         </a>
                     </div>
                 </div>

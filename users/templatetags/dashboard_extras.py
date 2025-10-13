@@ -107,7 +107,7 @@ def get_dashboard_switch_options(user, current_dashboard):
         # Define dashboard options
         dashboard_options = {
             'staff': {'name': 'staff', 'display_name': 'Staff Dashboard', 'url': '/admin/', 'icon': 'fas fa-shield-alt'},
-            'autocare': {'name': 'autocare', 'display_name': 'AutoCare Dashboard', 'url': '/maintenance/dashboard/', 'icon': 'fas fa-car'},
+            'autocare': {'name': 'autocare', 'display_name': 'AutoCare Dashboard', 'url': '/notifications/dashboard/', 'icon': 'fas fa-car'},
             'autoassess': {'name': 'autoassess', 'display_name': 'AutoAssess Dashboard', 'url': '/insurance/', 'icon': 'fas fa-clipboard-check'}
         }
 
@@ -327,7 +327,7 @@ def get_dashboard_info(dashboard_name):
         'autocare': {
             'name': 'autocare',
             'display_name': 'AutoCare Dashboard',
-            'url': '/maintenance/dashboard/',
+            'url': '/notifications/dashboard/',
             'description': 'Vehicle maintenance and service management',
             'required_groups': 'AutoCare',
             'required_org_types': 'All'

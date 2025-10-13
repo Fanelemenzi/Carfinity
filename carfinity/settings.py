@@ -13,7 +13,7 @@ import dj_database_url
 from pathlib import Path
 import os
 #from decouple import config
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 
 
@@ -21,7 +21,7 @@ from dotenv import load_dotenv
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv()
+#load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -35,8 +35,7 @@ SECRET_KEY = 'django-insecure-1vl^jmshdm^#^5uvg&$h4r7r2+e2prd+^tb^ijlgmqtj4e$p45
 DEBUG = 'True'
 
 #ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS = ['carfinity.co.za','https://www.carfinity.co.za', 'carfinity-production.up.railway.app', 'https://carfinity-production.up.railway.app/']
-CSRF_TRUSTED_ORIGINS = ['https://carfinity.co.za','https://www.carfinity.co.za', 'https://carfinity-production.up.railway.app/']
+ALLOWED_HOSTS = [ 'carfinity.onrender.com', '127.0.0.1']
 
 
 # Application definition
@@ -65,6 +64,7 @@ INSTALLED_APPS = [
     'onboarding',
     'insurance_app',
     'assessments',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -76,6 +76,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Dashboard monitoring middleware
+    'notifications.middleware.DatabaseQueryMonitoringMiddleware',
+    'notifications.middleware.DashboardMonitoringMiddleware',
+    'notifications.middleware.SecurityMonitoringMiddleware',
 ]
 
 ROOT_URLCONF = 'carfinity.urls'
@@ -155,9 +159,9 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
-    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
-    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+    'CLOUD_NAME': "dbl1dnmmq",
+    'API_KEY': "884782338697867",
+    'API_SECRET': "3LDVHjLAm68BFDmr6wIW8mgGrmE",
 }
 
 REST_FRAMEWORK = {
@@ -169,7 +173,38 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 25
+    'PAGE_SIZE': 25,
+    'EXCEPTION_HANDLER': 'notifications.exceptions.custom_exception_handler',
+}
+
+# Redis Configuration for Caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'carfinity-cache',
+        'TIMEOUT': 300,  # Default timeout of 5 minutes
+    }
+}
+
+# Original Redis configuration (commented out until django_redis is installed)
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://localhost:6379/1',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         },
+#         'KEY_PREFIX': 'carfinity',
+#         'TIMEOUT': 300,  # Default timeout of 5 minutes
+#     }
+# }
+
+# Cache timeout settings for different data types
+CACHE_TIMEOUTS = {
+    'VEHICLE_VALUATION': 86400,  # 24 hours
+    'HEALTH_SCORES': 3600,       # 1 hour
+    'DASHBOARD_DATA': 300,       # 5 minutes
+    'COST_ANALYTICS': 1800,      # 30 minutes
 }
 
 # Celery Configuration (if using background tasks)
@@ -181,25 +216,55 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'
 
 # Celery Beat Schedule for periodic tasks
-# from celery.schedules import crontab
-# CELERY_BEAT_SCHEDULE = {
-#     'calculate-daily-risk-scores': {
-#         'task': 'insurance.tasks.calculate_daily_risk_scores',
-#         'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
-#     },
-#     'update-compliance-scores': {
-#         'task': 'insurance.tasks.update_compliance_scores',
-#         'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM
-#     },
-#     'generate-maintenance-alerts': {
-#         'task': 'insurance.tasks.generate_maintenance_alerts',
-#         'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
-#     },
-#     'check-condition-deterioration': {
-#         'task': 'insurance.tasks.check_condition_deterioration',
-#         'schedule': crontab(hour=12, minute=0),  # Daily at noon
-#     },
-# }
+try:
+    from celery.schedules import crontab
+    CELERY_BEAT_SCHEDULE = {
+    'calculate-daily-risk-scores': {
+        'task': 'insurance_app.tasks.calculate_daily_risk_scores',
+        'schedule': crontab(hour=2, minute=0),  # Daily at 2 AM
+    },
+    'update-compliance-scores': {
+        'task': 'insurance_app.tasks.update_compliance_scores',
+        'schedule': crontab(hour=1, minute=0),  # Daily at 1 AM
+    },
+    'generate-maintenance-alerts': {
+        'task': 'insurance_app.tasks.generate_maintenance_alerts',
+        'schedule': crontab(hour=8, minute=0),  # Daily at 8 AM
+    },
+    'check-condition-deterioration': {
+        'task': 'insurance_app.tasks.check_condition_deterioration',
+        'schedule': crontab(hour=12, minute=0),  # Daily at noon
+    },
+    # Cost Analytics Tasks
+    'calculate-monthly-cost-analytics': {
+        'task': 'notifications.tasks.calculate_monthly_cost_analytics',
+        'schedule': crontab(day_of_month=1, hour=2, minute=30),  # Run on 1st of each month at 2:30 AM
+    },
+    'cleanup-old-analytics': {
+        'task': 'notifications.tasks.cleanup_old_analytics',
+        'schedule': crontab(day_of_month=15, hour=3, minute=0),  # Run on 15th of each month at 3 AM
+    },
+    'generate-cost-analytics-report': {
+        'task': 'notifications.tasks.generate_cost_analytics_report',
+        'schedule': crontab(day_of_month=1, hour=4, minute=0),  # Run on 1st of each month at 4 AM
+    },
+    # Alert Generation Tasks
+    'generate-vehicle-alerts': {
+        'task': 'notifications.tasks.generate_vehicle_alerts',
+        'schedule': crontab(day_of_week=1, hour=8, minute=30),  # Run every Monday at 8:30 AM
+    },
+    'check-insurance-expiry-alerts': {
+        'task': 'notifications.tasks.check_insurance_expiry_alerts',
+        'schedule': crontab(hour=9, minute=30),  # Run daily at 9:30 AM
+    },
+    'cleanup-resolved-alerts': {
+        'task': 'notifications.tasks.cleanup_resolved_alerts',
+        'schedule': crontab(day_of_month=1, hour=1, minute=30),  # Run on 1st of each month at 1:30 AM
+    },
+    }
+except ImportError:
+    # Celery not available, skip beat schedule
+    CELERY_BEAT_SCHEDULE = {}
 
 
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'static/js', 'serviceworker.js')
@@ -247,3 +312,53 @@ PWA_APP_LANG = 'en-US'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Logging Configuration
+# Import logging configuration from notifications app
+from notifications.logging_config import LOGGING_CONFIG
+
+# Apply the logging configuration
+LOGGING = LOGGING_CONFIG
+LOGGING_CONFIG = None  # Disable Django's default logging config function
+
+# Additional logging settings for production monitoring
+if not DEBUG:
+    # In production, also log to syslog for centralized logging
+    LOGGING['handlers']['syslog'] = {
+        'class': 'logging.handlers.SysLogHandler',
+        'address': '/dev/log',
+        'facility': 'local0',
+        'formatter': 'structured',
+    }
+    
+    # Add syslog to all loggers in production
+    for logger_name in LOGGING['loggers']:
+        if 'handlers' in LOGGING['loggers'][logger_name]:
+            LOGGING['loggers'][logger_name]['handlers'].append('syslog')
+
+# Performance monitoring settings
+DASHBOARD_MONITORING = {
+    'ENABLE_PERFORMANCE_LOGGING': True,
+    'ENABLE_SECURITY_LOGGING': True,
+    'SLOW_QUERY_THRESHOLD_MS': 1000,  # Log queries slower than 1 second
+    'CACHE_HIT_RATE_THRESHOLD': 0.8,  # Alert if cache hit rate drops below 80%
+    'API_RESPONSE_TIME_THRESHOLD_MS': 2000,  # Alert if API responses exceed 2 seconds
+}
+
+# Security monitoring settings
+SECURITY_MONITORING = {
+    'LOG_FAILED_LOGIN_ATTEMPTS': True,
+    'LOG_PERMISSION_DENIALS': True,
+    'LOG_SUSPICIOUS_ACTIVITY': True,
+    'MAX_FAILED_ATTEMPTS_PER_HOUR': 10,
+    'ALERT_ON_MULTIPLE_VEHICLE_ACCESS_ATTEMPTS': True,
+}
+
+# Session Configuration for Persistent Login
+SESSION_COOKIE_AGE = 7776000  # 90 days in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Persist beyond browser close
+SESSION_SAVE_EVERY_REQUEST = True  # Refresh session on each request
+SESSION_COOKIE_SECURE = not DEBUG  # HTTPS only in production
+SESSION_COOKIE_HTTPONLY = True  # Prevent JavaScript access
+SESSION_COOKIE_SAMESITE = 'Lax'  # CSRF protection
+SESSION_COOKIE_NAME = 'carfinity_sessionid'  # Custom name for clarity

@@ -11,29 +11,7 @@ from django.contrib import messages
 from users.permissions import require_group, check_permission_conflicts
 
 # AutoCare Dashboard Views - Matching AutoAssess Pattern
-@method_decorator([require_group('AutoCare'), check_permission_conflicts], name='dispatch')
-class AutoCareDashboardView(LoginRequiredMixin, ListView):
-    template_name = 'dashboard/autocare_dashboard.html'
-    context_object_name = 'maintenance_records'
-    
-    def get_queryset(self):
-        # Return empty queryset for now - will be populated with actual maintenance data later
-        return []
-    
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        
-        # Add context data for the AutoCare dashboard
-        context.update({
-            'total_vehicles': 156,
-            'pending_maintenance': 23,
-            'completed_today': 8,
-            'avg_health_score': '87.3%',
-            'monthly_revenue': '£45.2K',
-            'customer_satisfaction': '4.8/5',
-        })
-        
-        return context
+# Note: AutoCareDashboardView has been moved to notifications.views to avoid conflicts
 
 @method_decorator([require_group('AutoCare'), check_permission_conflicts], name='dispatch')
 class MaintenanceDetailView(LoginRequiredMixin, TemplateView):

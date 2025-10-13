@@ -44,3 +44,59 @@ run_test.bat
 simple_auth_test.py
 standalone_auth_test.py
 test_autocare_auth.py
+create_sample_history.py
+simple_permission_check.py
+test_all_alerts.py
+test_caching.py
+test_dashboard_routing.py
+test_logging_system.py
+test_maintenance_alerts.py
+test_part_replacement_alerts.py
+test_periodic_alerts.py
+test_query_optimization.py
+test_vehicle_permissions.py
+test_vehicle_properties.py
+test_vehicle_valuation.py
+verify_alert_system.py
+verify_vehicle_permissions.py
+
+# Organization implementation test files
+test_organization_assessment.py
+test_new_dashboard_template.py
+test_admin_organization_selection.py
+final_organization_test.py
+test_template_render.py
+test_template_syntax.py
+
+# Organization implementation documentation
+ORGANIZATION_ASSESSMENT_IMPLEMENTATION_SUMMARY.md
+COMPLETE_ORGANIZATION_IMPLEMENTATION_SUMMARY.md
+ADMIN_ORGANIZATION_SELECTION_SUMMARY.md
+
+# Additional test files
+test_dashboard.py
+test_dashboard_fix.py
+test_dropdown_functionality.py
+test_vehicle_selector.py
+test_vehicle_selector_logic.py
+final_dropdown_check.py
+final_vehicle_selector_verification.py
+debug_vehicle_issue.py
+fix_vehicle_ownership_issue.py
+
+# Additional documentation files
+ONBOARDING_IMPLEMENTATION_SUMMARY.md
+VEHICLE_SELECTOR_FIX_SUMMARY.md
+ORGANIZATION_FIELD_DIAGNOSIS.md
+ORGANIZATION_DROPDOWN_FIX_SUMMARY.md
+
+# Demo files
+dropdown_test_demo.html
+vehicle_selector_demo.html
+
+# Organization and admin test files
+test_admin_organization_selection.py
+test_admin_form_rendering.py
+simple_admin_test.py
+check_admin_interface.py
+test_organization_dropdown.py

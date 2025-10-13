@@ -100,6 +100,48 @@
                         {% endif %}
                     </div>
 
+                    <!-- Organization -->
+                    <div>
+                        <label for="{{ form.organization.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-building text-blue-600 mr-1"></i>
+                            Organization <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select name="{{ form.organization.name }}" id="{{ form.organization.id_for_label }}" 
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
+                                    required>
+                                <option value="">-- Select an Organization --</option>
+                                {% for org in form.organization.field.queryset %}
+                                <option value="{{ org.pk }}" 
+                                        data-org-type="{{ org.organization_type }}"
+                                        data-is-insurance="{% if org.is_insurance_provider %}true{% else %}false{% endif %}"
+                                        {% if form.organization.value == org.pk %}selected{% endif %}>
+                                    {{ org.name }} ({{ org.get_organization_type_display }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </div>
+                        </div>
+                        {% if form.organization.errors %}
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.organization.errors.0 }}
+                        </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Select the organization this assessment is being conducted for
+                        </p>
+                        {% if not form.organization.field.queryset %}
+                        <p class="mt-1 text-sm text-amber-600">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            No organizations available. Please contact your administrator.
+                        </p>
+                        {% endif %}
+                    </div>
+
                     <!-- Vehicle -->
                     <div>
                         <label for="{{ form.vehicle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
@@ -168,6 +210,207 @@
                 </div>
             </div>
         </div>
+
+        <!-- Organization Selection Help -->
+        <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-building text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Organization Selection</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>The organization field determines:</p>
+                        <ul class="list-disc list-inside space-y-1 mt-1">
+                            <li>Assessment workflow and approval process</li>
+                            <li>Report formatting and branding</li>
+                            <li>Data access and permissions</li>
+                            <li>Billing and cost allocation</li>
+                        </ul>
+                        <p class="mt-2 font-medium">Only organizations you are a member of will be shown in the dropdown.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for enhanced functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Enhanced organization dropdown functionality
+            const organizationSelect = document.getElementById('{{ form.organization.id_for_label }}');
+            const assessmentTypeSelect = document.getElementById('{{ form.assessment_type.id_for_label }}');
+            
+            if (organizationSelect) {
+                // Add organization type icons to options
+                Array.from(organizationSelect.options).forEach(option => {
+                    if (option.value) {
+                        const orgType = option.getAttribute('data-org-type') || 'other';
+                        let icon = '';
+                        
+                        switch(orgType) {
+                            case 'insurance':
+                                icon = '🛡️ ';
+                                break;
+                            case 'fleet':
+                                icon = '🚛 ';
+                                break;
+                            case 'dealership':
+                                icon = '🏪 ';
+                                break;
+                            case 'service':
+                                icon = '🔧 ';
+                                break;
+                            default:
+                                icon = '🏢 ';
+                        }
+                        
+                        if (!option.textContent.startsWith(icon)) {
+                            option.textContent = icon + option.textContent;
+                        }
+                    }
+                });
+                
+                // Add change event listener for organization selection
+                organizationSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    
+                    if (selectedOption.value) {
+                        // Add visual feedback for selection
+                        this.classList.remove('border-red-300', 'border-gray-300');
+                        this.classList.add('border-green-400');
+                        
+                        // Show success message
+                        showOrganizationFeedback('success', `Selected: ${selectedOption.textContent}`);
+                        
+                        // Show organization type info if available
+                        const orgType = selectedOption.getAttribute('data-org-type');
+                        if (orgType) {
+                            console.log('Selected organization type:', orgType);
+                        }
+                    } else {
+                        this.classList.remove('border-green-400');
+                        this.classList.add('border-gray-300');
+                        hideOrganizationFeedback();
+                    }
+                });
+                
+                // Check if organization is pre-selected
+                if (organizationSelect.value) {
+                    organizationSelect.classList.add('border-green-400');
+                    const selectedOption = organizationSelect.options[organizationSelect.selectedIndex];
+                    showOrganizationFeedback('success', `Pre-selected: ${selectedOption.textContent}`);
+                }
+                
+                // Add placeholder option if none exists and there are options
+                if (organizationSelect.options.length > 0 && organizationSelect.options[0].value !== '') {
+                    const placeholderOption = document.createElement('option');
+                    placeholderOption.value = '';
+                    placeholderOption.textContent = '-- Select an Organization --';
+                    placeholderOption.disabled = true;
+                    placeholderOption.selected = !organizationSelect.value;
+                    organizationSelect.insertBefore(placeholderOption, organizationSelect.firstChild);
+                } else if (organizationSelect.options.length === 0) {
+                    // No organizations available
+                    const noOrgOption = document.createElement('option');
+                    noOrgOption.value = '';
+                    noOrgOption.textContent = 'No organizations available';
+                    noOrgOption.disabled = true;
+                    noOrgOption.selected = true;
+                    organizationSelect.appendChild(noOrgOption);
+                    
+                    organizationSelect.classList.add('border-red-300', 'bg-red-50');
+                    showOrganizationFeedback('error', 'No organizations available. Please contact your administrator.');
+                }
+            }
+            
+            // Helper function to show organization feedback
+            function showOrganizationFeedback(type, message) {
+                hideOrganizationFeedback();
+                
+                const feedbackDiv = document.createElement('div');
+                feedbackDiv.className = `mt-2 p-2 rounded-md text-sm organization-feedback ${
+                    type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+                    type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
+                    'bg-blue-50 text-blue-700 border border-blue-200'
+                }`;
+                
+                const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+                feedbackDiv.innerHTML = `${icon} ${message}`;
+                
+                const orgContainer = organizationSelect.closest('div');
+                orgContainer.appendChild(feedbackDiv);
+            }
+            
+            // Helper function to hide organization feedback
+            function hideOrganizationFeedback() {
+                const existingFeedback = document.querySelector('.organization-feedback');
+                if (existingFeedback) {
+                    existingFeedback.remove();
+                }
+            }
+            
+            // Assessment type and organization compatibility check
+            if (assessmentTypeSelect && organizationSelect) {
+                assessmentTypeSelect.addEventListener('change', function() {
+                    const assessmentType = this.value;
+                    
+                    // Highlight insurance organizations for insurance claims
+                    if (assessmentType === 'insurance_claim') {
+                        Array.from(organizationSelect.options).forEach(option => {
+                            if (option.getAttribute('data-is-insurance') === 'true') {
+                                option.style.backgroundColor = '#dbeafe'; // Light blue
+                                option.style.fontWeight = 'bold';
+                            } else if (option.value) {
+                                option.style.backgroundColor = '#fef3c7'; // Light yellow
+                                option.style.fontWeight = 'normal';
+                            }
+                        });
+                    } else {
+                        // Reset styling
+                        Array.from(organizationSelect.options).forEach(option => {
+                            option.style.backgroundColor = '';
+                            option.style.fontWeight = '';
+                        });
+                    }
+                });
+            }
+            
+            // Form validation enhancement
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+                    
+                    // Check organization selection
+                    if (organizationSelect && !organizationSelect.value) {
+                        e.preventDefault();
+                        isValid = false;
+                        
+                        organizationSelect.classList.add('border-red-500');
+                        organizationSelect.focus();
+                        
+                        // Show error message
+                        let errorMsg = organizationSelect.parentNode.querySelector('.error-message');
+                        if (!errorMsg) {
+                            errorMsg = document.createElement('p');
+                            errorMsg.className = 'mt-1 text-sm text-red-600 error-message';
+                            errorMsg.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i>Please select an organization';
+                            organizationSelect.parentNode.appendChild(errorMsg);
+                        }
+                    }
+                    
+                    if (!isValid) {
+                        // Scroll to first error
+                        const firstError = document.querySelector('.border-red-500');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }
+                });
+            }
+        });
+    </script>
     </div>
 </body>
 </html>

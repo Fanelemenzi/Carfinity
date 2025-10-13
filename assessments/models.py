@@ -15,6 +15,11 @@ try:
 except ImportError:
     MaintenanceRecord = None
 
+try:
+    from organizations.models import Organization
+except ImportError:
+    Organization = None
+
 
 # Custom Manager for VehicleAssessment
 class VehicleAssessmentManager(models.Manager):
@@ -39,6 +44,32 @@ class VehicleAssessmentManager(models.Manager):
             models.Q(overall_severity='total_loss') |
             models.Q(uk_write_off_category__in=['cat_a', 'cat_b']) |
             models.Q(south_africa_70_percent_rule=True)
+        )
+    
+    def for_organization(self, organization):
+        """Filter assessments for a specific organization"""
+        return self.filter(organization=organization)
+    
+    def for_user_organizations(self, user):
+        """Filter assessments for organizations the user belongs to"""
+        if user.is_superuser:
+            return self.all()
+        
+        try:
+            from organizations.models import Organization
+            user_orgs = Organization.objects.filter(
+                organization_members__user=user,
+                organization_members__is_active=True
+            )
+            return self.filter(organization__in=user_orgs)
+        except ImportError:
+            return self.filter(user=user)
+    
+    def insurance_assessments(self):
+        """Filter assessments for insurance organizations"""
+        return self.filter(
+            models.Q(assessment_type='insurance_claim') |
+            models.Q(organization__is_insurance_provider=True)
         )
 
 
@@ -73,6 +104,16 @@ class VehicleAssessment(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     
+    # Agent Status Choices
+    AGENT_STATUS_CHOICES = [
+        ('pending_review', 'Pending Review'),
+        ('under_review', 'Under Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('changes_requested', 'Changes Requested'),
+        ('on_hold', 'On Hold'),
+    ]
+    
     # Damage Severity
     SEVERITY_CHOICES = [
         ('cosmetic', 'Cosmetic'),
@@ -90,6 +131,14 @@ class VehicleAssessment(models.Model):
     # Related Models
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assessments')
     vehicle = models.ForeignKey(Vehicle, on_delete=models.CASCADE, related_name='assessments')
+    organization = models.ForeignKey(
+        Organization, 
+        on_delete=models.CASCADE, 
+        related_name='assessments',
+        null=True,
+        blank=True,
+        help_text="Organization this assessment is being conducted for"
+    )
     maintenance_history = models.ManyToManyField(MaintenanceRecord, blank=True)
     
     # Assessment Details
@@ -117,6 +166,31 @@ class VehicleAssessment(models.Model):
     overall_notes = models.TextField(blank=True)
     recommendations = models.TextField(blank=True)
     
+    # Agent-specific fields for insurance workflow
+    assigned_agent = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='assigned_assessments',
+        help_text="Insurance agent assigned to review this assessment"
+    )
+    agent_status = models.CharField(
+        max_length=20, 
+        choices=AGENT_STATUS_CHOICES, 
+        default='pending_review',
+        help_text="Current status of agent review process"
+    )
+    agent_notes = models.TextField(
+        blank=True,
+        help_text="Notes and comments from the assigned insurance agent"
+    )
+    review_deadline = models.DateTimeField(
+        null=True, 
+        blank=True,
+        help_text="Deadline for agent review completion"
+    )
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -134,6 +208,31 @@ class VehicleAssessment(models.Model):
     
     def __str__(self):
         return f"Assessment {self.assessment_id} - {self.vehicle}"
+    
+    def get_organization_display(self):
+        """Get formatted organization display with type"""
+        if self.organization:
+            return f"{self.organization.name} ({self.organization.get_organization_type_display()})"
+        return "No Organization"
+    
+    def is_insurance_assessment(self):
+        """Check if this is an insurance-related assessment"""
+        return (
+            self.assessment_type == 'insurance_claim' or 
+            (self.organization and self.organization.is_insurance_provider)
+        )
+    
+    def get_workflow_permissions(self):
+        """Get workflow permissions based on organization type"""
+        if not self.organization:
+            return {'can_approve': False, 'requires_agent_review': False}
+        
+        return {
+            'can_approve': self.organization.organization_type in ['insurance', 'fleet'],
+            'requires_agent_review': self.organization.is_insurance_provider,
+            'auto_approve_threshold': getattr(self.organization, 'insurance_details', None) and 
+                                    self.organization.insurance_details.auto_approve_low_risk
+        }
 
 
 class ExteriorBodyDamage(models.Model):
@@ -638,6 +737,58 @@ class DocumentationAndIdentification(models.Model):
     maintenance_records_notes = models.TextField(blank=True)
 
 
+
+    
+    def __str__(self):
+        return f"Workflow {self.assessment.assessment_id} - {self.step} ({self.status})"
+
+
+class AgentAssignment(models.Model):
+    """Agent assignment model to link agents with assessments"""
+    
+    ASSIGNMENT_ROLES = [
+        ('primary_reviewer', 'Primary Reviewer'),
+        ('secondary_reviewer', 'Secondary Reviewer'),
+        ('specialist', 'Specialist'),
+        ('supervisor', 'Supervisor'),
+        ('final_approver', 'Final Approver'),
+    ]
+    
+    ASSIGNMENT_STATUS = [
+        ('assigned', 'Assigned'),
+        ('accepted', 'Accepted'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('reassigned', 'Reassigned'),
+        ('declined', 'Declined'),
+    ]
+    
+    agent = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assessment_assignments')
+    assessment = models.ForeignKey(VehicleAssessment, on_delete=models.CASCADE, related_name='agent_assignments')
+    role = models.CharField(max_length=20, choices=ASSIGNMENT_ROLES, default='primary_reviewer')
+    status = models.CharField(max_length=20, choices=ASSIGNMENT_STATUS, default='assigned')
+    assigned_date = models.DateTimeField(auto_now_add=True)
+    accepted_date = models.DateTimeField(null=True, blank=True)
+    completed_date = models.DateTimeField(null=True, blank=True)
+    is_primary = models.BooleanField(default=True)
+    
+    # Assignment metadata
+    assigned_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='assignments_made')
+    deadline = models.DateTimeField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        unique_together = ['agent', 'assessment', 'role']
+        ordering = ['-assigned_date']
+        indexes = [
+            models.Index(fields=['agent', 'status']),
+            models.Index(fields=['assessment', 'is_primary']),
+        ]
+    
+    def __str__(self):
+        return f"{self.agent.username} - {self.assessment.assessment_id} ({self.role})"
+
+
 class AssessmentPhoto(models.Model):
     """Photos and media attachments for assessments"""
     
@@ -653,10 +804,43 @@ class AssessmentPhoto(models.Model):
         ('other', 'Other'),
     ]
     
+    # Assessment section reference choices for linking photos to specific assessment points
+    SECTION_REFERENCE_CHOICES = [
+        ('exterior_damage', 'Exterior Body Damage'),
+        ('wheels_tires', 'Wheels and Tires'),
+        ('interior_damage', 'Interior Damage'),
+        ('mechanical_systems', 'Mechanical Systems'),
+        ('electrical_systems', 'Electrical Systems'),
+        ('safety_systems', 'Safety Systems'),
+        ('frame_structural', 'Frame and Structural'),
+        ('fluid_systems', 'Fluid Systems'),
+        ('documentation', 'Documentation and Identification'),
+        ('overall', 'Overall Vehicle'),
+    ]
+    
     assessment = models.ForeignKey(VehicleAssessment, on_delete=models.CASCADE, related_name='photos')
     category = models.CharField(max_length=20, choices=PHOTO_CATEGORIES)
     image = models.ImageField(upload_to='assessment_photos/%Y/%m/%d/')
     description = models.CharField(max_length=255, blank=True)
+    
+    # Section linking fields for enhanced photo organization
+    section_reference = models.CharField(
+        max_length=30, 
+        choices=SECTION_REFERENCE_CHOICES, 
+        null=True, 
+        blank=True,
+        help_text="Links photo to specific assessment section"
+    )
+    is_primary = models.BooleanField(
+        default=False,
+        help_text="Indicates if this is the main photo for the assessment section"
+    )
+    damage_point_id = models.CharField(
+        max_length=100, 
+        null=True, 
+        blank=True,
+        help_text="Specific damage location reference (e.g., 'front_bumper', 'driver_side_door')"
+    )
     
     # Metadata
     taken_at = models.DateTimeField(auto_now_add=True)
@@ -665,7 +849,12 @@ class AssessmentPhoto(models.Model):
     device_info = models.CharField(max_length=100, blank=True)
     
     class Meta:
-        ordering = ['category', 'taken_at']
+        ordering = ['section_reference', 'is_primary', 'category', 'taken_at']
+        indexes = [
+            models.Index(fields=['assessment', 'section_reference']),
+            models.Index(fields=['section_reference', 'is_primary']),
+            models.Index(fields=['damage_point_id']),
+        ]
 
 
 class AssessmentReport(models.Model):
@@ -870,6 +1059,11 @@ class AssessmentIntegration(models.Model):
 
 
 
+
+
+
+
+
 # Signals for automation
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -893,7 +1087,8 @@ def create_related_assessment_objects(sender, instance, created, **kwargs):
         AssessmentWorkflow.objects.create(
             assessment=instance,
             step='submitted',
-            notes='Assessment submitted to system'
+            notes='Assessment submitted to system',
+            completed_by=instance.user
         )
 
 @receiver(post_save, sender=VehicleAssessment)
@@ -907,5 +1102,6 @@ def update_assessment_status(sender, instance, **kwargs):
         AssessmentWorkflow.objects.create(
             assessment=instance,
             step='completed',
-            notes='Assessment automatically marked as completed'
+            notes='Assessment automatically marked as completed',
+            completed_by=instance.user
         )

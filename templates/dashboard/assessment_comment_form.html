@@ -1,0 +1,294 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Add Comment - Assessment {{ assessment.assessment_id }}{% endblock %}
+
+{% block content %}
+<br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Comment - Assessment {{ assessment.assessment_id }} - Carfinity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-comment-plus text-danger mr-2"></i>
+                            Add Assessment Comment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <nav class="text-sm text-gray-500 mb-2"> 
+                        <a href="{% url 'insurance:assessment_dashboard' %}" class="hover:underline text-danger">Dashboard</a>
+                        <span class="mx-2">/</span>
+                        <a href="{% url 'insurance:assessment_detail' claim_id=assessment.id %}" class="hover:underline text-danger">
+                            {{ assessment.vehicle.make }} {{ assessment.vehicle.model }} • {{ assessment.assessment_id }}
+                        </a>
+                        <span class="mx-2">/</span>
+                        <span class="text-gray-700 font-medium">Add Comment</span>
+                    </nav>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Add Comment — Assessment {{ assessment.assessment_id }}
+                    </h2>
+                    <p class="text-gray-600">
+                        Provide feedback, notes, or observations about this vehicle assessment.
+                    </p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'insurance:assessment_detail' claim_id=assessment.id %}" 
+                       class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle.make }} {{ assessment.vehicle.model }} ({{ assessment.vehicle.year }})</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_agent_status_display }}</span></p>
+                    <p class="text-xs text-red-600">{{ assessment.assessment_date|date:"M d, Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comment Form -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200">
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                    <i class="fas fa-edit text-red-600 mr-2"></i>
+                    Comment Details
+                </h3>
+                <p class="text-sm text-gray-600">All fields marked with <span class="text-red-500">*</span> are required</p>
+            </div>
+            
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Comment Type -->
+                <div>
+                    <label for="{{ form.comment_type.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-tag text-red-600 mr-1"></i>
+                        {{ form.comment_type.label }} <span class="text-red-500">*</span>
+                    </label>
+                    <select id="{{ form.comment_type.id_for_label }}" name="{{ form.comment_type.name }}" 
+                            class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors">
+                        <option value="">Select comment type...</option>
+                        {% for value, label in form.comment_type.field.choices %}
+                            {% if value %}
+                            <option value="{{ value }}" {% if form.comment_type.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if form.comment_type.errors %}
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.comment_type.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Subject -->
+                <div>
+                    <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-heading text-red-600 mr-1"></i>
+                        {{ form.subject.label }}
+                    </label>
+                    <input type="text" id="{{ form.subject.id_for_label }}" name="{{ form.subject.name }}" 
+                           value="{{ form.subject.value|default:'' }}"
+                           placeholder="Brief summary of your comment..."
+                           class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors">
+                    {% if form.subject.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ form.subject.help_text }}
+                        </p>
+                    {% endif %}
+                    {% if form.subject.errors %}
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.subject.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Comment Content -->
+                <div>
+                    <label for="{{ form.content.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-comment-alt text-red-600 mr-1"></i>
+                        {{ form.content.label }} <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="{{ form.content.id_for_label }}" name="{{ form.content.name }}" 
+                              rows="6"
+                              placeholder="Enter your detailed comment or feedback about this assessment..."
+                              class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-vertical">{{ form.content.value|default:'' }}</textarea>
+                    {% if form.content.help_text %}
+                        <p class="mt-1 text-sm text-gray-500">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            {{ form.content.help_text }}
+                        </p>
+                    {% endif %}
+                    {% if form.content.errors %}
+                        <p class="mt-1 text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.content.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Comment Options -->
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h4 class="text-sm font-medium text-red-900 mb-3">
+                        <i class="fas fa-cog text-red-600 mr-2"></i>
+                        Comment Options
+                    </h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="{{ form.is_important.id_for_label }}" name="{{ form.is_important.name }}" 
+                                       {% if form.is_important.value %}checked{% endif %}
+                                       class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.is_important.id_for_label }}" class="font-medium text-red-900">
+                                    <i class="fas fa-star text-red-600 mr-1"></i>
+                                    {{ form.is_important.label }}
+                                </label>
+                                {% if form.is_important.help_text %}
+                                    <p class="text-red-700 mt-1">{{ form.is_important.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="{{ form.requires_action.id_for_label }}" name="{{ form.requires_action.name }}" 
+                                       {% if form.requires_action.value %}checked{% endif %}
+                                       class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.requires_action.id_for_label }}" class="font-medium text-red-900">
+                                    <i class="fas fa-exclamation-triangle text-red-600 mr-1"></i>
+                                    {{ form.requires_action.label }}
+                                </label>
+                                {% if form.requires_action.help_text %}
+                                    <p class="text-red-700 mt-1">{{ form.requires_action.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="{{ form.is_customer_visible.id_for_label }}" name="{{ form.is_customer_visible.name }}" 
+                                       {% if form.is_customer_visible.value %}checked{% endif %}
+                                       class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500 focus:ring-2">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="{{ form.is_customer_visible.id_for_label }}" class="font-medium text-red-900">
+                                    <i class="fas fa-eye text-red-600 mr-1"></i>
+                                    {{ form.is_customer_visible.label }}
+                                </label>
+                                {% if form.is_customer_visible.help_text %}
+                                    <p class="text-red-700 mt-1">{{ form.is_customer_visible.help_text }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <a href="{% url 'insurance:assessment_detail' claim_id=assessment.id %}" 
+                       class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-times mr-2"></i>Cancel
+                    </a>
+                    <button type="submit" 
+                            class="bg-success hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>Add Comment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 class="text-sm font-medium text-blue-900 mb-2">
+                <i class="fas fa-question-circle text-blue-600 mr-2"></i>
+                Comment Guidelines
+            </h4>
+            <ul class="text-sm text-blue-800 space-y-1">
+                <li class="flex items-start">
+                    <i class="fas fa-chevron-right text-blue-600 mr-2 mt-0.5 text-xs"></i>
+                    Be specific and detailed in your observations
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-chevron-right text-blue-600 mr-2 mt-0.5 text-xs"></i>
+                    Use professional language appropriate for insurance documentation
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-chevron-right text-blue-600 mr-2 mt-0.5 text-xs"></i>
+                    Mark as "Important" if the comment affects the assessment outcome
+                </li>
+                <li class="flex items-start">
+                    <i class="fas fa-chevron-right text-blue-600 mr-2 mt-0.5 text-xs"></i>
+                    Check "Requires Action" if follow-up is needed from other team members
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

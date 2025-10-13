@@ -30,6 +30,83 @@ class Vehicle(models.Model):
     class Meta:
         verbose_name = "Vehicle"
         verbose_name_plural = "Vehicles"
+    
+    @property
+    def current_mileage(self):
+        """Get the latest mileage from maintenance records or inspections"""
+        # Check maintenance records first
+        latest_maintenance = self.maintenance_history.order_by('-date_performed').first()
+        if latest_maintenance and latest_maintenance.mileage:
+            return latest_maintenance.mileage
+            
+        # Fallback to inspection records
+        latest_inspection = self.inspections.order_by('-inspection_date').first()
+        if latest_inspection and hasattr(latest_inspection, 'inspections_form'):
+            inspections_form = latest_inspection.inspections_form
+            if inspections_form and inspections_form.mileage_at_inspection:
+                return inspections_form.mileage_at_inspection
+                
+        # Fallback to initial inspection records
+        latest_initial_inspection = self.initial_inspections.order_by('-inspection_date').first()
+        if latest_initial_inspection and latest_initial_inspection.mileage_at_inspection:
+            return latest_initial_inspection.mileage_at_inspection
+            
+        return None
+    
+    @property
+    def mileage_last_updated(self):
+        """Get the date when mileage was last recorded"""
+        latest_maintenance = self.maintenance_history.order_by('-date_performed').first()
+        if latest_maintenance and latest_maintenance.mileage:
+            return latest_maintenance.date_performed
+            
+        latest_inspection = self.inspections.order_by('-inspection_date').first()
+        if latest_inspection and hasattr(latest_inspection, 'inspections_form'):
+            inspections_form = latest_inspection.inspections_form
+            if inspections_form and inspections_form.mileage_at_inspection:
+                return latest_inspection.inspection_date
+                
+        latest_initial_inspection = self.initial_inspections.order_by('-inspection_date').first()
+        if latest_initial_inspection and latest_initial_inspection.mileage_at_inspection:
+            return latest_initial_inspection.inspection_date
+            
+        return None
+    
+    @property
+    def health_score(self):
+        """Get the latest vehicle health score from inspections"""
+        latest_inspection = self.inspections.order_by('-inspection_date').first()
+        if latest_inspection and latest_inspection.vehicle_health_index:
+            # Extract numeric score from health index string
+            try:
+                # Assuming health index format like "87/100" or "87"
+                score_str = latest_inspection.vehicle_health_index.split('/')[0]
+                return int(score_str)
+            except (ValueError, AttributeError):
+                pass
+        return None
+    
+    @property
+    def health_status(self):
+        """Get vehicle health status based on latest inspection result"""
+        latest_inspection = self.inspections.order_by('-inspection_date').first()
+        if latest_inspection and latest_inspection.inspection_result:
+            result = latest_inspection.inspection_result
+            if result in ['PAS', 'PMD']:  # Passed or Passed with minor defects
+                return 'Healthy'
+            elif result in ['PJD']:  # Passed with major defects
+                return 'Needs Attention'
+            elif result in ['FMD', 'FJD', 'FAI']:  # Failed
+                return 'Critical'
+        return 'Unknown'
+    
+    @property
+    def last_inspection_date(self):
+        """Get the date of the last inspection"""
+        latest_inspection = self.inspections.order_by('-inspection_date').first()
+        if latest_inspection:
+            return latest_inspection.inspection_date
+        return None
 
 
 class VehicleOwnership(models.Model):
@@ -203,3 +280,90 @@ class VehicleImage(models.Model):
         if self.is_primary:
             VehicleImage.objects.filter(vehicle=self.vehicle, is_primary=True).update(is_primary=False)
         super().save(*args, **kwargs)
+
+
+class VehicleValuation(models.Model):
+    """
+    Model to store vehicle valuation information including estimated market value,
+    condition rating, and valuation source data
+    """
+    CONDITION_RATINGS = [
+        ('excellent', 'Excellent'),
+        ('very_good', 'Very Good'),
+        ('good', 'Good'),
+        ('fair', 'Fair'),
+        ('poor', 'Poor'),
+    ]
+    
+    VALUATION_SOURCES = [
+        ('kbb', 'Kelley Blue Book'),
+        ('edmunds', 'Edmunds'),
+        ('nada', 'NADA Guides'),
+        ('autotrader', 'AutoTrader'),
+        ('cargurus', 'CarGurus'),
+        ('manual', 'Manual Assessment'),
+        ('insurance', 'Insurance Appraisal'),
+        ('dealer', 'Dealer Assessment'),
+    ]
+    
+    vehicle = models.OneToOneField(
+        Vehicle, 
+        on_delete=models.CASCADE, 
+        related_name='valuation',
+        help_text="Vehicle this valuation belongs to"
+    )
+    estimated_value = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2,
+        help_text="Estimated market value in local currency"
+    )
+    condition_rating = models.CharField(
+        max_length=20, 
+        choices=CONDITION_RATINGS,
+        help_text="Overall condition rating of the vehicle"
+    )
+    valuation_source = models.CharField(
+        max_length=20, 
+        choices=VALUATION_SOURCES,
+        help_text="Source of the valuation data"
+    )
+    last_updated = models.DateTimeField(
+        auto_now=True,
+        help_text="When this valuation was last updated"
+    )
+    
+    # Additional valuation details
+    mileage_at_valuation = models.PositiveIntegerField(
+        null=True, 
+        blank=True,
+        help_text="Vehicle mileage when valuation was performed"
+    )
+    valuation_notes = models.TextField(
+        blank=True,
+        help_text="Additional notes about the valuation"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Vehicle Valuation"
+        verbose_name_plural = "Vehicle Valuations"
+        ordering = ['-last_updated']
+    
+    def __str__(self):
+        return f"Valuation for {self.vehicle.vin} - ${self.estimated_value}"
+    
+    @property
+    def is_recent(self):
+        """Check if valuation is recent (within last 30 days)"""
+        from datetime import datetime, timedelta
+        from django.utils import timezone
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        return self.last_updated >= thirty_days_ago
+    
+    @property
+    def formatted_value(self):
+        """Return formatted currency value"""
+        return f"${self.estimated_value:,.2f}"

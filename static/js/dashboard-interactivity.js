@@ -27,6 +27,7 @@ function initializeDashboard() {
     initializeTabs();
     initializeModals();
     initializeDataFiltering();
+    initializePagination();
     initializeFormValidation();
     initializeMobileNavigation();
     initializeNotifications();
@@ -258,13 +259,27 @@ function applySorting() {
         const bValue = b.getAttribute(`data-${DashboardState.sortField}`);
         
         let comparison = 0;
-        if (aValue < bValue) comparison = -1;
-        if (aValue > bValue) comparison = 1;
+        
+        // Handle different data types
+        if (DashboardState.sortField === 'date') {
+            const aDate = new Date(aValue);
+            const bDate = new Date(bValue);
+            comparison = aDate - bDate;
+        } else if (DashboardState.sortField === 'value' || DashboardState.sortField === 'cost') {
+            const aNum = parseFloat(aValue.replace(/[£$,]/g, '')) || 0;
+            const bNum = parseFloat(bValue.replace(/[£$,]/g, '')) || 0;
+            comparison = aNum - bNum;
+        } else {
+            // String comparison
+            if (aValue < bValue) comparison = -1;
+            if (aValue > bValue) comparison = 1;
+        }
         
         return DashboardState.sortOrder === 'desc' ? -comparison : comparison;
     });
     
     items.forEach(item => container.appendChild(item));
+    applyPagination();
 }
 
 function updateSortIndicators() {
@@ -306,6 +321,177 @@ function updateFilterCounts() {
     if (countElement) {
         countElement.textContent = `${visibleRows.length} items`;
     }
+    
+    // Update pagination after filtering
+    applyPagination();
+}
+
+/**
+ * Pagination Management
+ */
+function initializePagination() {
+    const paginationContainer = document.getElementById('paginationControls');
+    if (!paginationContainer) return;
+    
+    // Add pagination event listeners
+    paginationContainer.addEventListener('click', function(e) {
+        if (e.target.matches('[data-page]')) {
+            e.preventDefault();
+            const page = parseInt(e.target.getAttribute('data-page'));
+            goToPage(page);
+        }
+        
+        if (e.target.matches('[data-page-size]')) {
+            e.preventDefault();
+            const pageSize = parseInt(e.target.getAttribute('data-page-size'));
+            changePageSize(pageSize);
+        }
+    });
+    
+    applyPagination();
+}
+
+function applyPagination() {
+    const container = document.querySelector('[data-sortable-container]');
+    if (!container) return;
+    
+    const allItems = Array.from(container.querySelectorAll('[data-sortable]'));
+    const visibleItems = allItems.filter(item => item.style.display !== 'none');
+    
+    const totalItems = visibleItems.length;
+    const totalPages = Math.ceil(totalItems / DashboardState.itemsPerPage);
+    
+    // Ensure current page is valid
+    if (DashboardState.currentPage > totalPages) {
+        DashboardState.currentPage = Math.max(1, totalPages);
+    }
+    
+    const startIndex = (DashboardState.currentPage - 1) * DashboardState.itemsPerPage;
+    const endIndex = startIndex + DashboardState.itemsPerPage;
+    
+    // Hide all items first
+    allItems.forEach(item => {
+        if (item.style.display !== 'none') {
+            item.classList.add('pagination-hidden');
+        }
+    });
+    
+    // Show items for current page
+    visibleItems.slice(startIndex, endIndex).forEach(item => {
+        item.classList.remove('pagination-hidden');
+    });
+    
+    updatePaginationControls(totalPages, totalItems);
+}
+
+function goToPage(page) {
+    DashboardState.currentPage = page;
+    applyPagination();
+}
+
+function changePageSize(pageSize) {
+    DashboardState.itemsPerPage = pageSize;
+    DashboardState.currentPage = 1; // Reset to first page
+    applyPagination();
+}
+
+function updatePaginationControls(totalPages, totalItems) {
+    const paginationContainer = document.getElementById('paginationControls');
+    if (!paginationContainer) return;
+    
+    const currentPage = DashboardState.currentPage;
+    const itemsPerPage = DashboardState.itemsPerPage;
+    
+    const startItem = (currentPage - 1) * itemsPerPage + 1;
+    const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+    
+    paginationContainer.innerHTML = `
+        <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+            <!-- Results info -->
+            <div class="text-sm text-gray-700">
+                Showing <span class="font-medium">${startItem}</span> to <span class="font-medium">${endItem}</span> 
+                of <span class="font-medium">${totalItems}</span> results
+            </div>
+            
+            <!-- Page size selector -->
+            <div class="flex items-center space-x-2">
+                <label class="text-sm text-gray-700">Show:</label>
+                <select class="border border-gray-300 rounded px-2 py-1 text-sm" onchange="changePageSize(this.value)">
+                    <option value="10" ${itemsPerPage === 10 ? 'selected' : ''}>10</option>
+                    <option value="25" ${itemsPerPage === 25 ? 'selected' : ''}>25</option>
+                    <option value="50" ${itemsPerPage === 50 ? 'selected' : ''}>50</option>
+                    <option value="100" ${itemsPerPage === 100 ? 'selected' : ''}>100</option>
+                </select>
+            </div>
+            
+            <!-- Pagination buttons -->
+            <div class="flex items-center space-x-1">
+                ${generatePaginationButtons(currentPage, totalPages)}
+            </div>
+        </div>
+    `;
+}
+
+function generatePaginationButtons(currentPage, totalPages) {
+    if (totalPages <= 1) return '';
+    
+    let buttons = [];
+    
+    // Previous button
+    buttons.push(`
+        <button class="px-3 py-2 text-sm border border-gray-300 rounded-l-md hover:bg-gray-50 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}" 
+                data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>
+            <i class="fas fa-chevron-left"></i>
+        </button>
+    `);
+    
+    // Page numbers
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    // Adjust start page if we're near the end
+    if (endPage - startPage < maxVisiblePages - 1) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+    
+    // First page and ellipsis
+    if (startPage > 1) {
+        buttons.push(`
+            <button class="px-3 py-2 text-sm border-t border-b border-gray-300 hover:bg-gray-50" data-page="1">1</button>
+        `);
+        if (startPage > 2) {
+            buttons.push(`<span class="px-3 py-2 text-sm border-t border-b border-gray-300">...</span>`);
+        }
+    }
+    
+    // Page number buttons
+    for (let i = startPage; i <= endPage; i++) {
+        buttons.push(`
+            <button class="px-3 py-2 text-sm border-t border-b border-gray-300 hover:bg-gray-50 ${i === currentPage ? 'bg-blue-50 text-blue-600 border-blue-500' : ''}" 
+                    data-page="${i}">${i}</button>
+        `);
+    }
+    
+    // Last page and ellipsis
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            buttons.push(`<span class="px-3 py-2 text-sm border-t border-b border-gray-300">...</span>`);
+        }
+        buttons.push(`
+            <button class="px-3 py-2 text-sm border-t border-b border-gray-300 hover:bg-gray-50" data-page="${totalPages}">${totalPages}</button>
+        `);
+    }
+    
+    // Next button
+    buttons.push(`
+        <button class="px-3 py-2 text-sm border border-gray-300 rounded-r-md hover:bg-gray-50 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : ''}" 
+                data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    `);
+    
+    return buttons.join('');
 }
 
 /**
@@ -911,5 +1097,9 @@ window.DashboardInteractivity = {
     showNotification,
     toggleSection,
     performSearch,
-    validateForm
+    validateForm,
+    goToPage,
+    changePageSize,
+    applyPagination,
+    initializePagination
 };

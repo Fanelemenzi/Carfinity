@@ -1,159 +1,250 @@
-{% extends "base/base.html" %}
+{% extends 'base/base.html' %}
 {% load static %}
 
+{% block title %}Assessment Notes & Completion - Carfinity{% endblock %}
+
 {% block content %}
-<div class="min-h-screen bg-gray-50 py-8">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Progress Indicator -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between">
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Notes & Completion</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
-                    <div class="flex items-center justify-center w-6 h-6 bg-green-600 text-white rounded-full text-xs font-medium">
-                        ✓
-                    </div>
-                    <span class="ml-2 text-xs font-medium text-gray-900">Financial</span>
-                </div>
-                <div class="flex-1 mx-2">
-                    <div class="h-1 bg-gray-200 rounded-full">
-                        <div class="h-1 bg-green-600 rounded-full" style="width: 93%"></div>
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-clipboard-check text-danger mr-2"></i>
+                            Assessment Notes & Completion
+                        </h1>
                     </div>
                 </div>
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-6 h-6 bg-danger text-white rounded-full text-xs font-medium">
-                        14
-                    </div>
-                    <span class="ml-2 text-xs font-medium text-gray-900">Notes</span>
-                </div>
-                <div class="flex-1 mx-2">
-                    <div class="h-1 bg-gray-200 rounded-full">
-                        <div class="h-1 bg-danger rounded-full" style="width: 100%"></div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
                     </div>
                 </div>
-                <span class="text-xs text-gray-500">Step {{ step }} of {{ total_steps }}</span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-13. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-danger">14. Notes & Completion</div>
+            <div class="text-sm font-medium text-success">Assessment Complete!</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Assessment Notes and Completion
+                    </h2>
+                    <p class="text-gray-600">Final notes, recommendations, and assessment completion</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
             </div>
         </div>
 
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Assessment Notes & Completion</h1>
-            <p class="mt-2 text-gray-600">Final notes and recommendations for {{ assessment.assessment_id }}</p>
-        </div>
-
         <!-- Assessment Info -->
-        <div class="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
             <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                    <svg class="h-5 w-5 text-blue-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                    </svg>
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
                     <div>
-                        <h3 class="text-sm font-medium text-blue-800">Assessment: {{ assessment.assessment_id }}</h3>
-                        <p class="text-sm text-blue-700">Vehicle: {{ assessment.vehicle }} | Status: {{ assessment.get_status_display }}</p>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-sm text-blue-700">Progress: <span class="font-medium">93% Complete</span></p>
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
                 </div>
             </div>
         </div>
 
         <!-- Form -->
-        <div class="bg-white shadow rounded-lg">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Final Assessment Notes</h3>
-            </div>
-            <form method="post" class="px-6 py-6">
-                {% csrf_token %}
-                
-                <div class="space-y-6">
-                    <!-- Overall Notes -->
-                    <div>
-                        <label for="{{ form.overall_notes.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            Overall Assessment Summary
-                        </label>
-                        {{ form.overall_notes }}
-                        {% if form.overall_notes.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.overall_notes.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">Provide a comprehensive summary of the assessment findings, key observations, and overall vehicle condition.</p>
-                    </div>
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Assessment Notes -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Final Assessment Notes</h3>
+                    <p class="text-sm text-gray-500">Comprehensive summary and professional recommendations</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="space-y-6">
+                        <!-- Overall Notes -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-file-alt mr-1"></i>Overall Assessment Summary
+                            </label>
+                            {{ form.overall_notes }}
+                            {% if form.overall_notes.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.overall_notes.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">Provide a comprehensive summary of the assessment findings, key observations, and overall vehicle condition.</p>
+                        </div>
 
-                    <!-- Recommendations -->
-                    <div>
-                        <label for="{{ form.recommendations.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
-                            Professional Recommendations
-                        </label>
-                        {{ form.recommendations }}
-                        {% if form.recommendations.errors %}
-                        <p class="mt-1 text-sm text-red-600">{{ form.recommendations.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">Include recommended actions, repair priorities, safety concerns, and next steps.</p>
+                        <!-- Recommendations -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lightbulb mr-1"></i>Professional Recommendations
+                            </label>
+                            {{ form.recommendations }}
+                            {% if form.recommendations.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.recommendations.errors.0 }}</p>
+                            {% endif %}
+                            <p class="mt-1 text-sm text-gray-500">Include recommended actions, repair priorities, safety concerns, and next steps.</p>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Completion Options -->
-                <div class="mt-8 p-6 bg-gray-50 rounded-lg">
-                    <h4 class="text-lg font-medium text-gray-900 mb-4">Assessment Completion</h4>
+            <!-- Completion Options -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-check-circle mr-2"></i>Assessment Completion
+                    </h3>
+                    <p class="text-sm text-gray-500">Finalize and complete the assessment</p>
+                </div>
+                <div class="px-6 py-6">
                     <div class="space-y-4">
-                        <div class="flex items-center">
-                            <input type="checkbox" id="complete_assessment" name="complete_assessment" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <label for="complete_assessment" class="ml-3 text-sm font-medium text-gray-700">
-                                Mark assessment as completed
+                        <div class="flex items-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <input type="checkbox" id="complete_assessment" name="complete_assessment" 
+                                   class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded">
+                            <label for="complete_assessment" class="ml-3 text-sm font-medium text-green-800">
+                                <i class="fas fa-flag-checkered mr-1"></i>Mark assessment as completed
                             </label>
                         </div>
-                        <p class="text-sm text-gray-600">
-                            Checking this box will mark the assessment as completed and trigger any automated workflows. 
-                            Make sure all required information has been entered before completing.
-                        </p>
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <div class="flex">
+                                <i class="fas fa-exclamation-triangle text-yellow-600 mr-2 mt-0.5"></i>
+                                <div>
+                                    <h4 class="text-sm font-medium text-yellow-800">Important Notice</h4>
+                                    <p class="text-sm text-yellow-700 mt-1">
+                                        Checking this box will mark the assessment as completed and trigger any automated workflows. 
+                                        Make sure all required information has been entered before completing.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Form Actions -->
-                <div class="mt-8 flex justify-between">
-                    <a href="{% url 'assessments:financial_information' assessment.id %}" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                        ← Back to Financial Information
-                    </a>
-                    <div class="flex space-x-4">
-                        <button type="submit" name="save_draft" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                            Save as Draft
-                        </button>
-                        <button type="submit" name="complete_assessment" class="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                            Complete Assessment
-                        </button>
-                    </div>
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:financial_information' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Financial Information
+                </a>
+                <div class="flex space-x-4">
+                    <button type="submit" name="save_draft" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-save mr-2"></i>Save as Draft
+                    </button>
+                    <button type="submit" name="complete_assessment" class="bg-success hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-check-circle mr-2"></i>Complete Assessment
+                    </button>
                 </div>
-            </form>
-        </div>
+            </div>
+        </form>
 
         <!-- Assessment Summary -->
-        <div class="mt-8 bg-white shadow rounded-lg">
+        <div class="mt-8 bg-white rounded-lg shadow border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Assessment Summary</h3>
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-chart-line mr-2"></i>Assessment Summary
+                </h3>
+                <p class="text-sm text-gray-500">Overview of assessment details and findings</p>
             </div>
             <div class="px-6 py-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">Assessment Details</h4>
-                        <ul class="text-sm text-gray-600 space-y-1">
-                            <li><strong>ID:</strong> {{ assessment.assessment_id }}</li>
-                            <li><strong>Type:</strong> {{ assessment.get_assessment_type_display }}</li>
-                            <li><strong>Vehicle:</strong> {{ assessment.vehicle }}</li>
-                            <li><strong>Assessor:</strong> {{ assessment.assessor_name }}</li>
-                            <li><strong>Started:</strong> {{ assessment.assessment_date|date:"M d, Y H:i" }}</li>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-info-circle mr-2"></i>Assessment Details
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li class="flex justify-between">
+                                <span>ID:</span>
+                                <span class="font-mono">{{ assessment.assessment_id }}</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Type:</span>
+                                <span>{{ assessment.get_assessment_type_display }}</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Vehicle:</span>
+                                <span>{{ assessment.vehicle }}</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Assessor:</span>
+                                <span>{{ assessment.assessor_name }}</span>
+                            </li>
+                            <li class="flex justify-between">
+                                <span>Started:</span>
+                                <span>{{ assessment.assessment_date|date:"M d, Y H:i" }}</span>
+                            </li>
                         </ul>
                     </div>
-                    <div>
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">Current Status</h4>
-                        <ul class="text-sm text-gray-600 space-y-1">
-                            <li><strong>Status:</strong> {{ assessment.get_status_display }}</li>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-clipboard-check mr-2"></i>Current Status
+                        </h4>
+                        <ul class="text-sm text-gray-600 space-y-2">
+                            <li class="flex justify-between">
+                                <span>Status:</span>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">{{ assessment.get_status_display }}</span>
+                            </li>
                             {% if assessment.overall_severity %}
-                            <li><strong>Severity:</strong> {{ assessment.get_overall_severity_display }}</li>
+                            <li class="flex justify-between">
+                                <span>Severity:</span>
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">{{ assessment.get_overall_severity_display }}</span>
+                            </li>
                             {% endif %}
                             {% if assessment.estimated_repair_cost %}
-                            <li><strong>Repair Cost:</strong> ${{ assessment.estimated_repair_cost|floatformat:2 }}</li>
+                            <li class="flex justify-between">
+                                <span>Repair Cost:</span>
+                                <span class="font-semibold">${{ assessment.estimated_repair_cost|floatformat:2 }}</span>
+                            </li>
                             {% endif %}
                             {% if assessment.vehicle_market_value %}
-                            <li><strong>Market Value:</strong> ${{ assessment.vehicle_market_value|floatformat:2 }}</li>
+                            <li class="flex justify-between">
+                                <span>Market Value:</span>
+                                <span class="font-semibold">${{ assessment.vehicle_market_value|floatformat:2 }}</span>
+                            </li>
                             {% endif %}
                         </ul>
                     </div>
@@ -161,27 +252,61 @@
             </div>
         </div>
 
-        <!-- Help Text -->
-        <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-md p-4">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
+        <!-- Completion Guidelines -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Completion Guidelines
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3">Before Completing</h4>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span>Ensure all required fields are filled</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span>Review all assessment data for accuracy</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span>Upload photos if not already done</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mr-2 mt-0.5"></i>
+                            <span>Verify financial calculations</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Important Notes</h3>
-                    <div class="mt-2 text-sm text-yellow-700">
-                        <ul class="list-disc list-inside space-y-1">
-                            <li>Once completed, the assessment will be locked and cannot be edited</li>
-                            <li>Ensure all required fields are filled before completing</li>
-                            <li>Review all assessment data for accuracy</li>
-                            <li>Consider uploading photos if not already done</li>
-                        </ul>
-                    </div>
+                <div>
+                    <h4 class="text-md font-medium text-gray-900 mb-3">After Completion</h4>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start">
+                            <i class="fas fa-lock text-yellow-500 mr-2 mt-0.5"></i>
+                            <span>Assessment will be locked and cannot be edited</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-bell text-blue-500 mr-2 mt-0.5"></i>
+                            <span>Automated workflows will be triggered</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-file-pdf text-red-500 mr-2 mt-0.5"></i>
+                            <span>Reports can be generated</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-archive text-gray-500 mr-2 mt-0.5"></i>
+                            <span>Assessment will be archived</span>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
 {% endblock %}

@@ -15,6 +15,7 @@ from .models import (
     AssessmentPhoto,
     AssessmentReport
 )
+from organizations.models import Organization
 
 
 class VehicleDetailsForm(forms.ModelForm):
@@ -23,10 +24,14 @@ class VehicleDetailsForm(forms.ModelForm):
     class Meta:
         model = VehicleAssessment
         fields = [
-            'assessment_type', 'vehicle', 'assessor_name', 'assessor_certification'
+            'assessment_type', 'organization', 'vehicle', 'assessor_name', 'assessor_certification'
         ]
         widgets = {
             'assessment_type': forms.Select(attrs={
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+                'required': True
+            }),
+            'organization': forms.Select(attrs={
                 'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'required': True
             }),
@@ -44,6 +49,26 @@ class VehicleDetailsForm(forms.ModelForm):
                 'placeholder': 'Certification number or credentials'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        if user:
+            # Filter organizations based on user's organization memberships
+            user_organizations = Organization.objects.filter(
+                organization_members__user=user,
+                organization_members__is_active=True
+            ).distinct()
+            
+            self.fields['organization'].queryset = user_organizations
+            
+            # If user belongs to only one organization, pre-select it
+            if user_organizations.count() == 1:
+                self.fields['organization'].initial = user_organizations.first()
+        else:
+            # If no user provided, show all organizations
+            self.fields['organization'].queryset = Organization.objects.all()
 
 
 class IncidentLocationForm(forms.ModelForm):
@@ -330,12 +355,14 @@ class FluidSystemsAssessmentForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if 'notes' in field_name:
                 field.widget.attrs.update({
-                    'class': 'form-control',
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                     'rows': 2,
                     'placeholder': 'Fluid condition details...'
                 })
             else:
-                field.widget.attrs.update({'class': 'form-control'})
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
 
 
 class DocumentationAssessmentForm(forms.ModelForm):
@@ -355,12 +382,14 @@ class DocumentationAssessmentForm(forms.ModelForm):
         for field_name, field in self.fields.items():
             if 'notes' in field_name:
                 field.widget.attrs.update({
-                    'class': 'form-control',
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                     'rows': 2,
                     'placeholder': 'Documentation status...'
                 })
             else:
-                field.widget.attrs.update({'class': 'form-control'})
+                field.widget.attrs.update({
+                    'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                })
 
 
 class AssessmentCategorizationForm(forms.ModelForm):
@@ -376,17 +405,17 @@ class AssessmentCategorizationForm(forms.ModelForm):
         ]
         widgets = {
             'overall_severity': forms.Select(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'required': True
             }),
             'uk_write_off_category': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             }),
             'south_africa_70_percent_rule': forms.CheckboxInput(attrs={
-                'class': 'form-check-input'
+                'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'
             }),
             'status': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             })
         }
 
@@ -403,19 +432,19 @@ class FinancialInformationForm(forms.ModelForm):
         ]
         widgets = {
             'estimated_repair_cost': forms.NumberInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'step': '0.01',
                 'min': '0',
                 'placeholder': '0.00'
             }),
             'vehicle_market_value': forms.NumberInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'step': '0.01',
                 'min': '0',
                 'placeholder': '0.00'
             }),
             'salvage_value': forms.NumberInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'step': '0.01',
                 'min': '0',
                 'placeholder': '0.00'
@@ -447,12 +476,12 @@ class AssessmentNotesForm(forms.ModelForm):
         ]
         widgets = {
             'overall_notes': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                 'rows': 6,
                 'placeholder': 'Comprehensive assessment summary, key findings, and observations...'
             }),
             'recommendations': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                 'rows': 4,
                 'placeholder': 'Recommended actions, repair priorities, safety concerns...'
             })
@@ -467,14 +496,14 @@ class AssessmentPhotoUploadForm(forms.ModelForm):
         fields = ['category', 'image', 'description']
         widgets = {
             'category': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             }),
             'image': forms.FileInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'accept': 'image/*'
             }),
             'description': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': 'Brief description of the photo...'
             })
         }
@@ -494,24 +523,24 @@ class AssessmentReportForm(forms.ModelForm):
         ]
         widgets = {
             'report_type': forms.Select(attrs={
-                'class': 'form-control'
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
             }),
             'title': forms.TextInput(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
                 'placeholder': 'Report title...'
             }),
             'executive_summary': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                 'rows': 4,
                 'placeholder': 'Executive summary of assessment findings...'
             }),
             'detailed_findings': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                 'rows': 8,
                 'placeholder': 'Detailed technical findings and analysis...'
             }),
             'recommendations': forms.Textarea(attrs={
-                'class': 'form-control',
+                'class': 'w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none',
                 'rows': 4,
                 'placeholder': 'Professional recommendations and next steps...'
             })

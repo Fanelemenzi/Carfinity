@@ -1,0 +1,231 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Structural Assessment - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Structural Assessment</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-building text-danger mr-2"></i>
+                            Structural Assessment
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Step Progress -->
+        <div class="flex justify-between items-center mb-6 pb-4 border-b-2 border-danger">
+            <div class="text-sm font-medium text-success">01-08. Previous Steps ✓</div>
+            <div class="text-sm font-medium text-danger">09. Structural Assessment</div>
+            <div class="text-sm font-medium text-gray-400">10. Continue Assessment...</div>
+        </div>
+
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Frame and Structural Assessment
+                    </h2>
+                    <p class="text-gray-600">Evaluate structural integrity and frame components</p>
+                </div>
+                <div class="flex items-center text-sm text-gray-500">
+                    <i class="fas fa-clock mr-1"></i>
+                    <span>Step {{ step }} of {{ total_steps }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-red-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-red-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-red-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form method="post" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Frame Components -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Frame Components</h3>
+                    <p class="text-sm text-gray-500">Main structural frame elements</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Frame Rails -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Frame Rails</label>
+                            <div class="space-y-2">
+                                {{ form.frame_rails }}
+                                {{ form.frame_rails_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Cross Members -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cross Members</label>
+                            <div class="space-y-2">
+                                {{ form.cross_members }}
+                                {{ form.cross_members_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Firewall -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Firewall</label>
+                            <div class="space-y-2">
+                                {{ form.firewall }}
+                                {{ form.firewall_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floor and Body Structure -->
+            <div class="bg-white rounded-lg shadow border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">Floor and Body Structure</h3>
+                    <p class="text-sm text-gray-500">Floor pans and body structural elements</p>
+                </div>
+                <div class="px-6 py-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Floor Pans -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Floor Pans</label>
+                            <div class="space-y-2">
+                                {{ form.floor_pans }}
+                                {{ form.floor_pans_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Door Jambs -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Door Jambs</label>
+                            <div class="space-y-2">
+                                {{ form.door_jambs }}
+                                {{ form.door_jambs_notes }}
+                            </div>
+                        </div>
+
+                        <!-- Trunk Floor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Trunk Floor</label>
+                            <div class="space-y-2">
+                                {{ form.trunk_floor }}
+                                {{ form.trunk_floor_notes }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-between items-center space-x-4">
+                <a href="{% url 'assessments:safety_systems' assessment.id %}" class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Safety Systems
+                </a>
+                <button type="submit" class="bg-danger hover:bg-red-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                    Continue to Fluid Systems<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </form>
+
+        <!-- Structural Integrity Guide -->
+        <div class="mt-8 bg-red-50 border border-red-200 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">
+                <i class="fas fa-info-circle text-red-600 mr-2"></i>Structural Integrity Guide
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-green-600 font-bold">I</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Intact</h4>
+                    <p class="text-xs text-gray-600">No structural damage</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-yellow-600 font-bold">M</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Minor Damage</h4>
+                    <p class="text-xs text-gray-600">Cosmetic structural issues</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-orange-600 font-bold">C</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Compromised</h4>
+                    <p class="text-xs text-gray-600">Structural integrity affected</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <span class="text-red-600 font-bold">S</span>
+                    </div>
+                    <h4 class="text-sm font-medium text-gray-900">Severely Damaged</h4>
+                    <p class="text-xs text-gray-600">Major structural damage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+{% else %}
+  {% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

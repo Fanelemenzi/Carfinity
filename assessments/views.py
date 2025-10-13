@@ -26,12 +26,19 @@ from datetime import datetime
 @login_required
 def assessment_dashboard(request):
     """Dashboard showing all assessments for the current user"""
-    assessments = VehicleAssessment.objects.filter(user=request.user).order_by('-assessment_date')
+    assessments = VehicleAssessment.objects.filter(user=request.user).select_related(
+        'organization', 'vehicle', 'assigned_agent'
+    ).order_by('-assessment_date')
     
     # Filter by status if provided
     status_filter = request.GET.get('status')
     if status_filter:
         assessments = assessments.filter(status=status_filter)
+    
+    # Filter by organization if provided
+    org_filter = request.GET.get('organization')
+    if org_filter:
+        assessments = assessments.filter(organization_id=org_filter)
     
     # Pagination
     paginator = Paginator(assessments, 10)
@@ -46,10 +53,19 @@ def assessment_dashboard(request):
         'total': VehicleAssessment.objects.filter(user=request.user).count(),
     }
     
+    # Get user's organizations for filtering
+    from organizations.models import Organization
+    user_organizations = Organization.objects.filter(
+        organization_members__user=request.user,
+        organization_members__is_active=True
+    ).distinct()
+    
     context = {
         'page_obj': page_obj,
         'status_counts': status_counts,
         'current_status': status_filter,
+        'current_organization': org_filter,
+        'user_organizations': user_organizations,
         'status_choices': VehicleAssessment.STATUS_CHOICES,
     }
     return render(request, 'assessments/dashboard.html', context)
@@ -59,25 +75,45 @@ def assessment_dashboard(request):
 def start_assessment(request):
     """Start a new assessment - Step 1: Vehicle Details"""
     if request.method == 'POST':
-        form = VehicleDetailsForm(request.POST)
+        form = VehicleDetailsForm(request.POST, user=request.user)
         if form.is_valid():
             assessment = form.save(commit=False)
             assessment.user = request.user
             assessment.assessment_id = f"ASS-{uuid.uuid4().hex[:8].upper()}"
             assessment.status = 'in_progress'
+            
+            # Auto-assign organization if not set
+            if not assessment.organization:
+                from organizations.models import Organization
+                user_org = Organization.objects.filter(
+                    organization_members__user=request.user,
+                    organization_members__is_active=True
+                ).first()
+                if user_org:
+                    assessment.organization = user_org
+            
+            # Auto-assign user as agent if not set
+            if not assessment.assigned_agent:
+                assessment.assigned_agent = request.user
+            
             assessment.save()
             
             messages.success(request, f'Assessment {assessment.assessment_id} started successfully!')
             return redirect('assessments:incident_location', assessment_id=assessment.id)
     else:
-        form = VehicleDetailsForm()
+        form = VehicleDetailsForm(user=request.user)
     
-    return render(request, 'assessments/start_assessment.html', {'form': form})
+    context = {
+        'form': form,
+        'step': 1,
+        'total_steps': 16
+    }
+    return render(request, 'assessments/start_assessment.html', context)
 
 
 @login_required
 def incident_location(request, assessment_id):
-    """Step 2: Incident Location and Context"""
+    """Step 3: Incident Location and Context"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     if request.method == 'POST':
@@ -92,15 +128,15 @@ def incident_location(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 2,
-        'total_steps': 14
+        'step': 3,
+        'total_steps': 16
     }
     return render(request, 'assessments/incident_location.html', context)
 
 
 @login_required
 def exterior_damage_assessment(request, assessment_id):
-    """Step 3a: Exterior Damage Assessment"""
+    """Step 4: Exterior Damage Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -122,15 +158,15 @@ def exterior_damage_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 3,
-        'total_steps': 14
+        'step': 4,
+        'total_steps': 16
     }
     return render(request, 'assessments/exterior_damage.html', context)
 
 
 @login_required
 def wheels_tires_assessment(request, assessment_id):
-    """Step 3b: Wheels and Tires Assessment"""
+    """Step 5: Wheels and Tires Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -152,15 +188,15 @@ def wheels_tires_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 4,
-        'total_steps': 14
+        'step': 5,
+        'total_steps': 16
     }
     return render(request, 'assessments/wheels_tires.html', context)
 
 
 @login_required
 def interior_damage_assessment(request, assessment_id):
-    """Step 3c: Interior Damage Assessment"""
+    """Step 6: Interior Damage Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -182,15 +218,15 @@ def interior_damage_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 5,
-        'total_steps': 14
+        'step': 6,
+        'total_steps': 16
     }
     return render(request, 'assessments/interior_damage.html', context)
 
 
 @login_required
 def mechanical_systems_assessment(request, assessment_id):
-    """Step 3d: Mechanical Systems Assessment"""
+    """Step 7: Mechanical Systems Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -212,15 +248,15 @@ def mechanical_systems_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 6,
-        'total_steps': 14
+        'step': 7,
+        'total_steps': 16
     }
     return render(request, 'assessments/mechanical_systems.html', context)
 
 
 @login_required
 def electrical_systems_assessment(request, assessment_id):
-    """Step 3e: Electrical Systems Assessment"""
+    """Step 8: Electrical Systems Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -242,15 +278,15 @@ def electrical_systems_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 7,
-        'total_steps': 14
+        'step': 8,
+        'total_steps': 16
     }
     return render(request, 'assessments/electrical_systems.html', context)
 
 
 @login_required
 def safety_systems_assessment(request, assessment_id):
-    """Step 3f: Safety Systems Assessment"""
+    """Step 9: Safety Systems Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -272,15 +308,15 @@ def safety_systems_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 8,
-        'total_steps': 14
+        'step': 9,
+        'total_steps': 16
     }
     return render(request, 'assessments/safety_systems.html', context)
 
 
 @login_required
 def structural_assessment(request, assessment_id):
-    """Step 3g: Structural Assessment"""
+    """Step 10: Structural Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -302,15 +338,15 @@ def structural_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 9,
-        'total_steps': 14
+        'step': 10,
+        'total_steps': 16
     }
     return render(request, 'assessments/structural_assessment.html', context)
 
 
 @login_required
 def fluid_systems_assessment(request, assessment_id):
-    """Step 3h: Fluid Systems Assessment"""
+    """Step 11: Fluid Systems Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -332,15 +368,15 @@ def fluid_systems_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 10,
-        'total_steps': 14
+        'step': 11,
+        'total_steps': 16
     }
     return render(request, 'assessments/fluid_systems.html', context)
 
 
 @login_required
 def documentation_assessment(request, assessment_id):
-    """Step 3i: Documentation Assessment"""
+    """Step 12: Documentation Assessment"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     try:
@@ -362,15 +398,15 @@ def documentation_assessment(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 11,
-        'total_steps': 14
+        'step': 12,
+        'total_steps': 16
     }
     return render(request, 'assessments/documentation_assessment.html', context)
 
 
 @login_required
 def assessment_categorization(request, assessment_id):
-    """Step 4: Assessment Categorization"""
+    """Step 13: Assessment Categorization"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     if request.method == 'POST':
@@ -385,15 +421,15 @@ def assessment_categorization(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 12,
-        'total_steps': 14
+        'step': 13,
+        'total_steps': 16
     }
     return render(request, 'assessments/categorization.html', context)
 
 
 @login_required
 def financial_information(request, assessment_id):
-    """Step 5: Financial Information"""
+    """Step 14: Financial Information"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     if request.method == 'POST':
@@ -401,22 +437,75 @@ def financial_information(request, assessment_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Financial information saved!')
-            return redirect('assessments:assessment_notes', assessment_id=assessment.id)
+            return redirect('assessments:photo_upload', assessment_id=assessment.id)
     else:
         form = FinancialInformationForm(instance=assessment)
     
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 13,
-        'total_steps': 14
+        'step': 14,
+        'total_steps': 16
     }
     return render(request, 'assessments/financial_information.html', context)
 
 
 @login_required
+def assessment_photo_upload(request, assessment_id):
+    """Step 15: Photo Upload Documentation"""
+    assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = AssessmentPhotoUploadForm(request.POST, request.FILES)
+        if form.is_valid():
+            photo = form.save(commit=False)
+            photo.assessment = assessment
+            
+            # Upload to Cloudinary
+            if photo.image:
+                import cloudinary.uploader
+                try:
+                    result = cloudinary.uploader.upload(
+                        photo.image,
+                        folder="assessment_photos",
+                        public_id=f"{assessment.assessment_id}_{photo.category}_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                        transformation=[
+                            {'width': 1200, 'height': 800, 'crop': 'limit'},
+                            {'quality': 'auto'}
+                        ]
+                    )
+                    # Store the Cloudinary URL
+                    photo.image = result['secure_url']
+                    photo.save()
+                    messages.success(request, 'Photo uploaded successfully!')
+                except Exception as e:
+                    messages.error(request, f'Error uploading photo: {str(e)}')
+                    return redirect('assessments:photo_upload', assessment_id=assessment.id)
+            
+            # Check if user wants to continue to next step
+            if 'continue_to_notes' in request.POST:
+                return redirect('assessments:assessment_notes', assessment_id=assessment.id)
+            else:
+                return redirect('assessments:photo_upload', assessment_id=assessment.id)
+    else:
+        form = AssessmentPhotoUploadForm()
+    
+    # Get existing photos
+    photos = assessment.photos.all().order_by('-taken_at')
+    
+    context = {
+        'form': form,
+        'assessment': assessment,
+        'photos': photos,
+        'step': 15,
+        'total_steps': 16
+    }
+    return render(request, 'assessments/upload_photos.html', context)
+
+
+@login_required
 def assessment_notes(request, assessment_id):
-    """Step 6: Assessment Notes and Completion"""
+    """Step 16: Assessment Notes and Completion"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
     
     if request.method == 'POST':
@@ -435,8 +524,8 @@ def assessment_notes(request, assessment_id):
     context = {
         'form': form,
         'assessment': assessment,
-        'step': 14,
-        'total_steps': 14
+        'step': 16,
+        'total_steps': 16
     }
     return render(request, 'assessments/assessment_notes.html', context)
 
@@ -506,6 +595,26 @@ def upload_photos(request, assessment_id):
 
 
 @login_required
+def delete_photo(request, assessment_id):
+    """Delete a photo from assessment"""
+    assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
+    
+    if request.method == 'POST':
+        photo_id = request.POST.get('photo_id')
+        if photo_id:
+            try:
+                photo = assessment.photos.get(id=photo_id)
+                photo.delete()
+                messages.success(request, 'Photo deleted successfully!')
+            except AssessmentPhoto.DoesNotExist:
+                messages.error(request, 'Photo not found.')
+        else:
+            messages.error(request, 'Invalid photo ID.')
+    
+    return redirect('assessments:upload_photos', assessment_id=assessment.id)
+
+
+@login_required
 def generate_report(request, assessment_id):
     """Generate assessment report"""
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
@@ -568,7 +677,7 @@ def continue_assessment(request, assessment_id):
     
     # Calculate progress
     completed_steps = 0
-    total_steps = 14
+    total_steps = 16
     
     # Check which steps are completed
     step_progress = {
@@ -676,6 +785,14 @@ def continue_assessment(request, assessment_id):
             'available': True,
             'url': 'assessments:financial_information'
         },
+        'photo_upload': {
+            'title': 'Photo Documentation',
+            'description': 'Upload assessment photos',
+            'completed': bool(assessment.photos.exists()),
+            'current': False,
+            'available': True,
+            'url': 'assessments:photo_upload'
+        },
         'notes': {
             'title': 'Notes & Completion',
             'description': 'Final notes and assessment completion',
@@ -697,9 +814,27 @@ def continue_assessment(request, assessment_id):
             break
     
     # Update URLs with assessment ID
+    url_mapping = {
+        'incident_location': f"/assessments/{assessment_id}/location/",
+        'exterior_damage': f"/assessments/{assessment_id}/exterior-damage/",
+        'wheels_tires': f"/assessments/{assessment_id}/wheels-tires/",
+        'interior_damage': f"/assessments/{assessment_id}/interior-damage/",
+        'mechanical_systems': f"/assessments/{assessment_id}/mechanical/",
+        'electrical_systems': f"/assessments/{assessment_id}/electrical/",
+        'safety_systems': f"/assessments/{assessment_id}/safety/",
+        'structural_assessment': f"/assessments/{assessment_id}/structural/",
+        'fluid_systems': f"/assessments/{assessment_id}/fluids/",
+        'documentation_assessment': f"/assessments/{assessment_id}/documentation/",
+        'categorization': f"/assessments/{assessment_id}/categorization/",
+        'financial_information': f"/assessments/{assessment_id}/financial/",
+        'photo_upload': f"/assessments/{assessment_id}/upload-photos/",
+        'assessment_notes': f"/assessments/{assessment_id}/notes/"
+    }
+    
     for step_name, step_data in step_progress.items():
         if step_data['url'] != '#':
-            step_data['url'] = f"/assessments/{assessment_id}/{step_data['url'].split(':')[-1]}/"
+            url_name = step_data['url'].split(':')[-1]
+            step_data['url'] = url_mapping.get(url_name, '#')
     
     progress_percentage = int((completed_steps / total_steps) * 100)
     

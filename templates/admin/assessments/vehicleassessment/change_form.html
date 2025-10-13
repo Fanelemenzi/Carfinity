@@ -1,0 +1,264 @@
+{% extends "admin/change_form.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Enhanced styling for organization selection */
+    .field-organization {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        margin-bottom: 20px;
+    }
+    
+    .field-organization label {
+        font-weight: bold;
+        color: #495057;
+        font-size: 14px;
+    }
+    
+    .field-organization select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        background-color: white;
+    }
+    
+    .field-organization .help {
+        color: #6c757d;
+        font-size: 12px;
+        margin-top: 5px;
+        font-style: italic;
+    }
+    
+    /* Organization info display */
+    .organization-info {
+        background-color: #e3f2fd;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 10px;
+        border-left: 4px solid #2196f3;
+    }
+    
+    .organization-info h4 {
+        margin: 0 0 5px 0;
+        color: #1976d2;
+        font-size: 14px;
+    }
+    
+    .organization-info p {
+        margin: 0;
+        font-size: 12px;
+        color: #424242;
+    }
+    
+    /* Assessment type compatibility indicator */
+    .compatibility-indicator {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: bold;
+        margin-left: 10px;
+    }
+    
+    .compatible {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .incompatible {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    /* Enhanced fieldset styling */
+    .module h2 {
+        background-color: #f8f9fa;
+        padding: 10px 15px;
+        margin: 0;
+        border-bottom: 1px solid #dee2e6;
+        color: #495057;
+    }
+    
+    .module .form-row {
+        padding: 15px;
+    }
+    
+    /* Status indicators */
+    .status-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        margin-right: 8px;
+    }
+    
+    .status-pending { background-color: #ffc107; }
+    .status-in-progress { background-color: #17a2b8; }
+    .status-completed { background-color: #28a745; }
+    .status-cancelled { background-color: #dc3545; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced organization selection functionality
+    const organizationField = document.getElementById('id_organization');
+    const assessmentTypeField = document.getElementById('id_assessment_type');
+    
+    if (organizationField && assessmentTypeField) {
+        // Create organization info display
+        const orgInfoDiv = document.createElement('div');
+        orgInfoDiv.className = 'organization-info';
+        orgInfoDiv.style.display = 'none';
+        organizationField.parentNode.appendChild(orgInfoDiv);
+        
+        // Organization data (would be populated from backend)
+        const organizationData = {
+            {% for org in organizations %}
+            '{{ org.id }}': {
+                'name': '{{ org.name|escapejs }}',
+                'type': '{{ org.organization_type|escapejs }}',
+                'is_insurance': {{ org.is_insurance_provider|yesno:"true,false" }},
+                'contact_email': '{{ org.contact_email|default:""|escapejs }}',
+                'contact_phone': '{{ org.contact_phone|default:""|escapejs }}'
+            },
+            {% endfor %}
+        };
+        
+        function updateOrganizationInfo() {
+            const selectedOrgId = organizationField.value;
+            const selectedAssessmentType = assessmentTypeField.value;
+            
+            if (selectedOrgId && organizationData[selectedOrgId]) {
+                const orgData = organizationData[selectedOrgId];
+                
+                // Check compatibility
+                let compatible = true;
+                let compatibilityMessage = '';
+                
+                if (selectedAssessmentType === 'insurance_claim' && !orgData.is_insurance) {
+                    compatible = false;
+                    compatibilityMessage = 'Insurance claims require an insurance provider organization';
+                }
+                
+                // Update info display
+                orgInfoDiv.innerHTML = `
+                    <h4>${orgData.name} 
+                        <span class="compatibility-indicator ${compatible ? 'compatible' : 'incompatible'}">
+                            ${compatible ? '✓ Compatible' : '⚠ Incompatible'}
+                        </span>
+                    </h4>
+                    <p><strong>Type:</strong> ${orgData.type}</p>
+                    ${orgData.contact_email ? `<p><strong>Email:</strong> ${orgData.contact_email}</p>` : ''}
+                    ${orgData.contact_phone ? `<p><strong>Phone:</strong> ${orgData.contact_phone}</p>` : ''}
+                    ${!compatible ? `<p style="color: #721c24; font-weight: bold;">${compatibilityMessage}</p>` : ''}
+                `;
+                orgInfoDiv.style.display = 'block';
+            } else {
+                orgInfoDiv.style.display = 'none';
+            }
+        }
+        
+        // Event listeners
+        organizationField.addEventListener('change', updateOrganizationInfo);
+        assessmentTypeField.addEventListener('change', updateOrganizationInfo);
+        
+        // Initial update
+        updateOrganizationInfo();
+    }
+    
+    // Add status indicators to status fields
+    const statusField = document.getElementById('id_status');
+    const agentStatusField = document.getElementById('id_agent_status');
+    
+    function addStatusIndicator(field) {
+        if (field && field.value) {
+            const indicator = document.createElement('span');
+            indicator.className = `status-indicator status-${field.value.replace('_', '-')}`;
+            
+            // Insert before the field
+            field.parentNode.insertBefore(indicator, field);
+        }
+    }
+    
+    if (statusField) {
+        addStatusIndicator(statusField);
+        statusField.addEventListener('change', function() {
+            // Remove existing indicator
+            const existingIndicator = this.parentNode.querySelector('.status-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            addStatusIndicator(this);
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block field_sets %}
+    {% for fieldset in adminform %}
+        {% include "admin/includes/fieldset.html" %}
+        
+        {% if fieldset.name == "Basic Information" %}
+            <!-- Add organization selection help -->
+            <div class="module aligned">
+                <h2>Organization Selection Guide</h2>
+                <div class="form-row">
+                    <div>
+                        <h4>Assessment Type Compatibility:</h4>
+                        <ul>
+                            <li><strong>Insurance Claim:</strong> Requires an insurance provider organization</li>
+                            <li><strong>Pre-Purchase:</strong> Compatible with any organization type</li>
+                            <li><strong>Periodic:</strong> Compatible with fleet or service organizations</li>
+                            <li><strong>Crash Assessment:</strong> Compatible with insurance or service organizations</li>
+                            <li><strong>Total Loss:</strong> Requires an insurance provider organization</li>
+                        </ul>
+                        
+                        <h4>Organization Types:</h4>
+                        <ul>
+                            <li><strong>Insurance Company:</strong> Can handle all insurance-related assessments</li>
+                            <li><strong>Fleet Management:</strong> Specialized in fleet vehicle assessments</li>
+                            <li><strong>Dealership:</strong> Pre-purchase and trade-in assessments</li>
+                            <li><strong>Service Provider:</strong> General assessment services</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}
+    
+    <!-- Add quick action buttons -->
+    <div class="submit-row" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+        <h3>Quick Actions:</h3>
+        <div style="margin-top: 10px;">
+            {% if original.pk %}
+                <a href="{% url 'admin:assessments_vehicleassessment_change' original.pk %}" 
+                   class="default" style="margin-right: 10px;">
+                    📋 View Assessment Details
+                </a>
+                {% if original.organization %}
+                    <a href="{% url 'admin:organizations_organization_change' original.organization.pk %}" 
+                       class="default" style="margin-right: 10px;">
+                        🏢 View Organization
+                    </a>
+                {% endif %}
+                {% if original.vehicle %}
+                    <a href="{% url 'admin:vehicles_vehicle_change' original.vehicle.pk %}" 
+                       class="default" style="margin-right: 10px;">
+                        🚗 View Vehicle
+                    </a>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
