@@ -412,47 +412,39 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
     def get_object(self):
         # Import VehicleAssessment from assessments app
         from assessments.models import VehicleAssessment
+        from organizations.models import Organization
         
         assessment_id = self.kwargs.get('claim_id')
+        
+        # Get user's organizations for permission checking
+        user_organizations = Organization.objects.filter(
+            organization_members__user=self.request.user,
+            organization_members__is_active=True
+        ).distinct()
+        
+        # Build the base queryset with proper permissions
+        base_queryset = VehicleAssessment.objects.select_related(
+            'vehicle', 'user', 'assigned_agent', 'organization'
+        ).prefetch_related(
+            'exterior_damage', 'wheels_tires', 'interior_damage',
+            'mechanical_systems', 'electrical_systems', 'safety_systems',
+            'frame_structural', 'fluid_systems', 'documentation', 'photos'
+        ).filter(
+            models.Q(organization__in=user_organizations) |
+            models.Q(assigned_agent=self.request.user) |
+            models.Q(user=self.request.user)
+        ).distinct()
         
         # Try to get by assessment_id first, then by pk if it's numeric
         try:
             if assessment_id.isdigit():
-                assessment = get_object_or_404(
-                    VehicleAssessment.objects.select_related(
-                        'vehicle', 'user', 'assigned_agent'
-                    ).prefetch_related(
-                        'exterior_damage', 'wheels_tires', 'interior_damage',
-                        'mechanical_systems', 'electrical_systems', 'safety_systems',
-                        'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                    ),
-                    pk=assessment_id,
-                    assigned_agent=self.request.user
-                )
+                assessment = get_object_or_404(base_queryset, pk=assessment_id)
             else:
-                assessment = get_object_or_404(
-                    VehicleAssessment.objects.select_related(
-                        'vehicle', 'user', 'assigned_agent'
-                    ).prefetch_related(
-                        'exterior_damage', 'wheels_tires', 'interior_damage',
-                        'mechanical_systems', 'electrical_systems', 'safety_systems',
-                        'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                    ),
-                    assessment_id=assessment_id,
-                    assigned_agent=self.request.user
-                )
+                assessment = get_object_or_404(base_queryset, assessment_id=assessment_id)
         except VehicleAssessment.DoesNotExist:
-            # Fallback to any assessment for the agent if specific one not found
-            assessment = get_object_or_404(
-                VehicleAssessment.objects.select_related(
-                    'vehicle', 'user', 'assigned_agent'
-                ).prefetch_related(
-                    'exterior_damage', 'wheels_tires', 'interior_damage',
-                    'mechanical_systems', 'electrical_systems', 'safety_systems',
-                    'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                ),
-                assigned_agent=self.request.user
-            )
+            # If not found, raise 404 with helpful message
+            from django.http import Http404
+            raise Http404(f"Assessment '{assessment_id}' not found or you don't have permission to view it.")
         
         return assessment
     
@@ -2973,6 +2965,7 @@ def insurance_dashboard_view(request):
     return render(request, 'dashboard/insurance_dashboard.html', context)
 
 
+@method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
 class AssessmentSectionDetailView(LoginRequiredMixin, TemplateView):
     """
     View for detailed assessment section breakdown
@@ -3002,44 +2995,37 @@ class AssessmentSectionDetailView(LoginRequiredMixin, TemplateView):
     def get_assessment(self, claim_id):
         """Get the VehicleAssessment object"""
         from assessments.models import VehicleAssessment
+        from organizations.models import Organization
         
+        # Get user's organizations for permission checking
+        user_organizations = Organization.objects.filter(
+            organization_members__user=self.request.user,
+            organization_members__is_active=True
+        ).distinct()
+        
+        # Build the base queryset with proper permissions
+        base_queryset = VehicleAssessment.objects.select_related(
+            'vehicle', 'user', 'assigned_agent', 'organization'
+        ).prefetch_related(
+            'exterior_damage', 'wheels_tires', 'interior_damage',
+            'mechanical_systems', 'electrical_systems', 'safety_systems',
+            'frame_structural', 'fluid_systems', 'documentation', 'photos'
+        ).filter(
+            models.Q(organization__in=user_organizations) |
+            models.Q(assigned_agent=self.request.user) |
+            models.Q(user=self.request.user)
+        ).distinct()
+        
+        # Try to get by assessment_id first, then by pk if it's numeric
         try:
             if claim_id.isdigit():
-                assessment = get_object_or_404(
-                    VehicleAssessment.objects.select_related(
-                        'vehicle', 'user', 'assigned_agent'
-                    ).prefetch_related(
-                        'exterior_damage', 'wheels_tires', 'interior_damage',
-                        'mechanical_systems', 'electrical_systems', 'safety_systems',
-                        'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                    ),
-                    pk=claim_id,
-                    assigned_agent=self.request.user
-                )
+                assessment = get_object_or_404(base_queryset, pk=claim_id)
             else:
-                assessment = get_object_or_404(
-                    VehicleAssessment.objects.select_related(
-                        'vehicle', 'user', 'assigned_agent'
-                    ).prefetch_related(
-                        'exterior_damage', 'wheels_tires', 'interior_damage',
-                        'mechanical_systems', 'electrical_systems', 'safety_systems',
-                        'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                    ),
-                    assessment_id=claim_id,
-                    assigned_agent=self.request.user
-                )
+                assessment = get_object_or_404(base_queryset, assessment_id=claim_id)
         except VehicleAssessment.DoesNotExist:
-            # Fallback to any assessment for the agent if specific one not found
-            assessment = get_object_or_404(
-                VehicleAssessment.objects.select_related(
-                    'vehicle', 'user', 'assigned_agent'
-                ).prefetch_related(
-                    'exterior_damage', 'wheels_tires', 'interior_damage',
-                    'mechanical_systems', 'electrical_systems', 'safety_systems',
-                    'frame_structural', 'fluid_systems', 'documentation', 'photos'
-                ),
-                assigned_agent=self.request.user
-            )
+            # If not found, raise 404 with helpful message
+            from django.http import Http404
+            raise Http404(f"Assessment '{claim_id}' not found or you don't have permission to view it.")
         
         return assessment
     
