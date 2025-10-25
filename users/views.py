@@ -639,3 +639,118 @@ def dashboard_switch_api(request):
         'success': False, 
         'error': 'Method not allowed'
     }, status=405)
+
+
+@login_required
+@require_autocare
+def switch_vehicle(request):
+    """
+    API endpoint for switching vehicles in the dashboard.
+    Handles AJAX requests to update dashboard data for selected vehicle.
+    """
+    if request.method == 'POST':
+        try:
+            import json
+            
+            # Parse JSON data
+            data = json.loads(request.body)
+            vehicle_id = data.get('vehicle_id')
+            
+            if not vehicle_id:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Vehicle ID is required'
+                }, status=400)
+            
+            # Get the vehicle and verify ownership
+            try:
+                vehicle_ownership = VehicleOwnership.objects.get(
+                    vehicle_id=vehicle_id,
+                    user=request.user
+                )
+                vehicle = vehicle_ownership.vehicle
+            except VehicleOwnership.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Vehicle not found or access denied'
+                }, status=404)
+            
+            # Get vehicle data for dashboard update
+            vehicle_data = {
+                'id': vehicle.id,
+                'make': vehicle.make,
+                'model': vehicle.model,
+                'manufacture_year': vehicle.manufacture_year,
+                'vin': vehicle.vin,
+                'current_mileage': vehicle.current_mileage,
+                'color': vehicle.color,
+                'transmission': vehicle.transmission,
+                'fuel_type': vehicle.fuel_type,
+                'engine_size': vehicle.engine_size,
+            }
+            
+            # Add image URL if available
+            vehicle_image = VehicleImage.objects.filter(vehicle=vehicle).first()
+            if vehicle_image and vehicle_image.image:
+                vehicle_data['image_url'] = vehicle_image.image.url
+            
+            # Get health status (mock data for now)
+            vehicle_data['health_status'] = {
+                'score': 85,
+                'status': 'Excellent'
+            }
+            
+            # Get next service information (mock data for now)
+            vehicle_data['next_service'] = {
+                'type': 'Oil Change & Inspection',
+                'due_date': 'March 15, 2025',
+                'due_mileage': 45000
+            }
+            
+            # Get estimated value (mock data for now)
+            vehicle_data['estimated_value'] = {
+                'amount': 24500,
+                'change_percent': 2.3
+            }
+            
+            # Try to get real maintenance data
+            try:
+                latest_maintenance = MaintenanceRecord.objects.filter(
+                    vehicle=vehicle
+                ).order_by('-date_performed').first()
+                
+                if latest_maintenance:
+                    vehicle_data['last_service'] = {
+                        'type': latest_maintenance.service_type,
+                        'date': latest_maintenance.date_performed.strftime('%B %d, %Y'),
+                        'provider': latest_maintenance.service_provider,
+                        'cost': float(latest_maintenance.cost) if latest_maintenance.cost else 0
+                    }
+            except Exception as e:
+                # If maintenance data fails, continue without it
+                pass
+            
+            # Store selected vehicle in session for future requests
+            request.session['selected_vehicle_id'] = vehicle_id
+            
+            return JsonResponse({
+                'success': True,
+                'vehicle_data': vehicle_data,
+                'message': 'Vehicle switched successfully'
+            })
+            
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid JSON data'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f'An error occurred: {str(e)}'
+            }, status=500)
+    
+    return JsonResponse({
+        'success': False,
+        'error': 'Method not allowed'
+    }, status=405)

@@ -437,7 +437,7 @@ def financial_information(request, assessment_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Financial information saved!')
-            return redirect('assessments:photo_upload', assessment_id=assessment.id)
+            return redirect('assessments:upload_photos', assessment_id=assessment.id)
     else:
         form = FinancialInformationForm(instance=assessment)
     
@@ -480,13 +480,13 @@ def assessment_photo_upload(request, assessment_id):
                     messages.success(request, 'Photo uploaded successfully!')
                 except Exception as e:
                     messages.error(request, f'Error uploading photo: {str(e)}')
-                    return redirect('assessments:photo_upload', assessment_id=assessment.id)
+                    return redirect('assessments:upload_photos', assessment_id=assessment.id)
             
             # Check if user wants to continue to next step
             if 'continue_to_notes' in request.POST:
                 return redirect('assessments:assessment_notes', assessment_id=assessment.id)
             else:
-                return redirect('assessments:photo_upload', assessment_id=assessment.id)
+                return redirect('assessments:upload_photos', assessment_id=assessment.id)
     else:
         form = AssessmentPhotoUploadForm()
     
@@ -571,45 +571,133 @@ def assessment_detail(request, assessment_id):
 @login_required
 def upload_photos(request, assessment_id):
     """Upload photos for assessment"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
+    logger.info(f"Photo upload page accessed for assessment {assessment.assessment_id} by user {request.user.username}")
     
     if request.method == 'POST':
+        logger.info(f"POST request received for photo upload. Files: {list(request.FILES.keys())}")
+        logger.info(f"POST data: {dict(request.POST)}")
+        
         form = AssessmentPhotoUploadForm(request.POST, request.FILES)
+        logger.info(f"Form created with data. Form is valid: {form.is_valid()}")
+        
         if form.is_valid():
-            photo = form.save(commit=False)
-            photo.assessment = assessment
-            photo.save()
-            messages.success(request, 'Photo uploaded successfully!')
-            return redirect('assessments:upload_photos', assessment_id=assessment.id)
+            logger.info("Form validation passed")
+            
+            # Check if image was provided
+            if 'image' in request.FILES and request.FILES['image']:
+                logger.info(f"Image file found: {request.FILES['image'].name}, size: {request.FILES['image'].size} bytes")
+                
+                photo = form.save(commit=False)
+                photo.assessment = assessment
+                photo.save()
+                
+                logger.info(f"Photo saved successfully with ID: {photo.id}")
+                messages.success(request, 'Photo uploaded successfully!')
+                
+                # Handle AJAX requests
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    logger.info("Returning AJAX success response")
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Photo uploaded successfully!',
+                        'photo_id': photo.id,
+                        'photo_count': assessment.photos.count()
+                    })
+                
+                return redirect('assessments:upload_photos', assessment_id=assessment.id)
+            else:
+                logger.warning("No image file provided in the upload")
+                messages.warning(request, 'Please select an image file to upload.')
+                
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Please select an image file to upload.'
+                    })
+        else:
+            logger.error(f"Form validation failed. Errors: {form.errors}")
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Form validation failed.',
+                    'errors': form.errors
+                })
     else:
+        logger.info("GET request - displaying upload form")
         form = AssessmentPhotoUploadForm()
     
     photos = assessment.photos.all().order_by('-taken_at')
+    logger.info(f"Found {photos.count()} existing photos for assessment")
     
     context = {
         'form': form,
         'assessment': assessment,
         'photos': photos,
     }
+    
+    # Handle AJAX requests for refreshing photos section
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        logger.info("Returning AJAX template response")
+        return render(request, 'assessments/upload_photos.html', context)
+    
     return render(request, 'assessments/upload_photos.html', context)
 
 
 @login_required
 def delete_photo(request, assessment_id):
     """Delete a photo from assessment"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
     assessment = get_object_or_404(VehicleAssessment, id=assessment_id, user=request.user)
+    logger.info(f"Photo delete request for assessment {assessment.assessment_id} by user {request.user.username}")
     
     if request.method == 'POST':
         photo_id = request.POST.get('photo_id')
+        logger.info(f"Attempting to delete photo ID: {photo_id}")
+        
         if photo_id:
             try:
                 photo = assessment.photos.get(id=photo_id)
+                photo_name = photo.image.name if photo.image else 'No image'
                 photo.delete()
+                logger.info(f"Photo deleted successfully: {photo_name}")
                 messages.success(request, 'Photo deleted successfully!')
+                
+                # Handle AJAX requests
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({
+                        'success': True,
+                        'message': 'Photo deleted successfully!',
+                        'photo_count': assessment.photos.count()
+                    })
+                    
             except AssessmentPhoto.DoesNotExist:
+                logger.error(f"Photo with ID {photo_id} not found for assessment {assessment.assessment_id}")
                 messages.error(request, 'Photo not found.')
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    from django.http import JsonResponse
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'Photo not found.'
+                    })
         else:
+            logger.error("No photo ID provided in delete request")
             messages.error(request, 'Invalid photo ID.')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid photo ID.'
+                })
     
     return redirect('assessments:upload_photos', assessment_id=assessment.id)
 
@@ -791,7 +879,7 @@ def continue_assessment(request, assessment_id):
             'completed': bool(assessment.photos.exists()),
             'current': False,
             'available': True,
-            'url': 'assessments:photo_upload'
+            'url': 'assessments:upload_photos'
         },
         'notes': {
             'title': 'Notes & Completion',

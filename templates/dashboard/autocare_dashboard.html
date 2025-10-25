@@ -1,8 +1,4 @@
-{% extends 'base/base.html' %}
 {% load static %}
-{% load dashboard_extras %}
-{% load dashboard_filters %}
-
 {% block title %}AutoCare Dashboard - Carfinity{% endblock %}
 
 {% block content %}
@@ -10,540 +6,1176 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Autocare Dashboard — Responsive (Tailwind)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    /* small helper for chart placeholder shimmer */
-    .chart-placeholder {
-      background: linear-gradient(90deg, rgba(0, 0, 0, 0.03) 25%, rgba(0, 0, 0, 0.06) 50%, rgba(0, 0, 0, 0.03) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.6s linear infinite;
-    }
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Autocare Dashboard — Responsive (Tailwind)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        'accent': {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Light grey theme backgrounds */
+        .gradient-primary {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+        }
 
-    @keyframes shimmer {
-      to {
-        background-position: -200% 0;
-      }
-    }
-  </style>
+        .gradient-light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .gradient-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+        }
+
+        /* Enhanced chart placeholder with grey shimmer */
+        .chart-placeholder {
+            background: linear-gradient(90deg, rgba(108, 117, 125, 0.1) 25%, rgba(108, 117, 125, 0.2) 50%, rgba(108, 117, 125, 0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.6s linear infinite;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+        }
+
+        @keyframes shimmer {
+            to {
+                background-position: -200% 0;
+            }
+        }
+
+        /* Light grey card effect */
+        .light-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .grey-card {
+            background: #f5f5f5;
+            border: 1px solid #dee2e6;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6c757d;
+            border-radius: 3px;
+        }
+
+        /* Enhanced Vehicle Selector Styling */
+        #vehicle-selector {
+            background-image: none;
+        }
+
+        #vehicle-selector:hover {
+            border-color: #6c757d;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        #vehicle-selector:focus {
+            box-shadow: 0 0 0 3px rgba(108, 117, 125, 0.1);
+        }
+
+        /* Vehicle selector option styling */
+        #vehicle-selector option {
+            padding: 8px 12px;
+            background: white;
+            color: #374151;
+        }
+
+        #vehicle-selector option:hover {
+            background: #f3f4f6;
+        }
+
+        #vehicle-selector option:checked {
+            background: #e5e7eb;
+            font-weight: 600;
+        }
+
+        /* Hover effects */
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .mobile-padding {
+                padding: 0.75rem !important;
+            }
+
+            .mobile-text-sm {
+                font-size: 0.875rem !important;
+            }
+
+            .mobile-grid-1 {
+                grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+            }
+
+            .mobile-gap-2 {
+                gap: 0.5rem !important;
+            }
+
+            .mobile-hidden {
+                display: none !important;
+            }
+
+            .mobile-full-width {
+                width: 100% !important;
+            }
+
+            .mobile-stack {
+                flex-direction: column !important;
+            }
+
+            .mobile-center {
+                text-align: center !important;
+            }
+
+            .mobile-compact {
+                padding: 0.5rem !important;
+                margin: 0.25rem 0 !important;
+            }
+
+            .mobile-spacing {
+                margin-bottom: 1rem !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mobile-xs-text {
+                font-size: 0.75rem !important;
+            }
+
+            .mobile-xs-padding {
+                padding: 0.5rem !important;
+            }
+
+            .mobile-xs-margin {
+                margin: 0.5rem 0 !important;
+            }
+
+            .mobile-xs-gap {
+                gap: 0.25rem !important;
+            }
+        }
+    </style>
 </head>
 
-<body class="bg-gray-50 font-sans text-gray-800">
-  <div class="max-w-7xl mx-auto p-6">
+<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+    <div class="max-w-7xl mx-auto p-2 md:p-4 mobile-padding">
 
-    {% if error_message %}
-    <!-- Error Message -->
-    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-      <div class="flex">
-        <div class="flex-shrink-0">
-          <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clip-rule="evenodd" />
-          </svg>
-        </div>
-        <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">Error Loading Dashboard</h3>
-          <div class="mt-2 text-sm text-red-700">
-            <p>{{ error_message }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endif %}
-
-    <!-- Header -->
-    <header class="flex items-center justify-between mb-6">
-      <div>
-        <h1 class="text-2xl font-extrabold">Good morning, {{ user_first_name|default:"User" }}</h1>
-        <p class="text-sm text-gray-500">Overview of your vehicle health & maintenance</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <!-- Vehicle Selector Dropdown -->
-        {% if user_vehicles and user_vehicles|length > 1 %}
-        <div class="relative">
-          <select id="vehicle-selector"
-            class="px-4 py-2 bg-white rounded-lg shadow-md border border-gray-200 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-            {% for v in user_vehicles %}
-            <option value="{{ v.id }}">
-              {{ v.manufacture_year }} {{ v.make }} {{ v.model }}
-            </option>
-            {% endfor %}
-          </select>
-          <!-- Loading indicator -->
-          <div id="vehicle-loading" class="absolute right-2 top-1/2 transform -translate-y-1/2 hidden">
-            <svg class="animate-spin h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-              </path>
-            </svg>
-          </div>
+        {% if error_message %}
+        <!-- Error Message -->
+        <div class="light-card rounded-xl p-3 md:p-4 mb-4 md:mb-6 border-red-200 mobile-spacing">
+            <div class="flex mobile-stack">
+                <div class="flex-shrink-0 mobile-center">
+                    <svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3 mobile-center">
+                    <h3 class="text-sm font-medium text-red-800 mobile-text-sm">Error Loading Dashboard</h3>
+                    <div class="mt-2 text-sm text-red-700 mobile-text-sm">
+                        <p>{{ error_message }}</p>
+                    </div>
+                </div>
+            </div>
         </div>
         {% endif %}
-        <button class="p-3 bg-white rounded-full shadow-md">
-          <!-- Bell -->
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 6.165 8 7.388 8 8.75V14l-1.405 1.405C6.21 15.79 6 16.368 6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
-          </svg>
-        </button>
-        <button class="p-3 bg-white rounded-full shadow-md">
-          <!-- Settings -->
-          <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9.75 3a.75.75 0 01.75.75V5.5h3V3.75A.75.75 0 0114.25 3h1.5A1.5 1.5 0 0117.25 4.5v1.25h1.5a.75.75 0 01.75.75V9.75h-1.5v3h1.5v1.5a.75.75 0 01-.75.75h-1.5V17.5a1.5 1.5 0 01-1.5 1.5h-1.5V20.25a.75.75 0 01-.75.75h-3a.75.75 0 01-.75-.75V19h-3v1.25A.75.75 0 014.25 20.25h-1.5A.75.75 0 012 19.5v-1.5h1.5V16.5H2v-1.5h1.5V12H2V9.75a.75.75 0 01.75-.75H4.5V7.5H3A1.5 1.5 0 011.5 6V4.5A1.5 1.5 0 013 3h6.75z" />
-          </svg>
-        </button>
-      </div>
-    </header>
 
-    <!-- Grid layout: mobile 1 column, md 2 columns, lg 3 columns. We'll make the main area span 2 columns on large screens -->
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-
-      <!-- Main column (vehicle overview + upcoming maintenance + alerts + history) -->
-      <main class="lg:col-span-2 space-y-6">
-
-        <!-- Vehicle Overview Card -->
-        <section class="bg-white rounded-2xl p-6 shadow">
-          {% if vehicle %}
-          <div class="flex items-center gap-6">
-            <div
-              class="w-28 h-16 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center">
-              <!-- simple car SVG / image placeholder -->
-              <svg class="w-14 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M3 13s1.5-4 6-4 6 4 6 4 1.5 0 3 0 1 2 1 2H2s.5-2 1-2 1-0 3-0z" />
-              </svg>
-            </div>
-            <div class="flex-1">
-              <h2 class="text-xl font-semibold">{{ vehicle_overview.make|default:"Unknown" }} {{
-                vehicle_overview.model|default:"Vehicle" }} — {{ vehicle_overview.year|default:"N/A" }}</h2>
-              <p class="text-sm text-gray-500">
-                VIN: <span class="font-medium">{{ vehicle_overview.vin|truncate_vin|default:"N/A" }}</span> •
-                Mileage: <span class="font-medium">{{ vehicle_overview.mileage|mileage_format }}</span>
-              </p>
-              <div class="mt-4 flex gap-4">
-                {% get_next_service_summary upcoming_maintenance as next_service %}
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Next Service</div>
-                  <div class="font-semibold {{ next_service.days_until|service_urgency_class }}">
-                    {{ next_service.days_until|service_urgency_text }}
-                  </div>
+        <!-- Enhanced Header with Navbar -->
+        <header class="flex items-center justify-between mb-4 md:mb-8 mobile-spacing">
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- User Avatar -->
+                <div
+                    class="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                    <span class="text-white font-bold text-sm md:text-lg">{{ user_first_name|default:"U"|first }}</span>
                 </div>
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Next Service Mileage</div>
-                  <div class="font-semibold">{{ vehicle_overview.next_service_mileage|mileage_format }}</div>
+                <div class="mobile-center">
+                    <h1 class="text-lg md:text-2xl font-bold text-gray-800 mobile-text-sm">Good Day, {{
+                        user_first_name|default:"Michael" }}</h1>
+                    <p class="text-xs md:text-sm text-gray-600 mobile-hidden">Driving License ID: 554859399</p>
                 </div>
-                <div class="rounded-lg bg-gray-50 px-3 py-2 text-sm">
-                  <div class="text-xs text-gray-500">Status</div>
-                  <div class="font-semibold {{ vehicle_overview.health_status|health_status_color }}">{{
-                    vehicle_overview.health_status|default:"Unknown" }}</div>
-                </div>
-              </div>
             </div>
 
-            <div class="text-right">
-              <div class="text-sm text-gray-500">Estimated Value</div>
-              <div class="text-2xl font-bold text-green-600">{{ vehicle_overview.estimated_value|currency_format }}
-              </div>
-              <button
-                class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-white border rounded-full text-sm shadow-sm">View
-                VIN</button>
-            </div>
-          </div>
-          {% else %}
-          <div class="text-center py-8">
-            <div class="text-gray-500 mb-4">
-              <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">No Vehicle Found</h3>
-            <p class="text-gray-500 mb-4">{{ no_vehicles_message|default:"Please add a vehicle to view your dashboard."
-              }}</p>
-            <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Vehicle</button>
-          </div>
-          {% endif %}
-        </section>
-
-        <!-- Upcoming Maintenance & Alerts (side-by-side on md+) -->
-        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-
-          <!-- Upcoming maintenance -->
-          <section class="bg-white rounded-2xl p-4 shadow">
-            <h3 class="font-semibold mb-2">Upcoming Maintenance</h3>
-            {% if upcoming_maintenance %}
-            {% for maintenance in upcoming_maintenance|slice:":1" %}
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <div>
-                  <div class="text-sm text-gray-500">{{ maintenance.service_type|default:"Scheduled Maintenance" }}
-                  </div>
-                  <div class="font-medium">
-                    Scheduled • {{ maintenance.scheduled_date|format_date_friendly }}
-                    {% if maintenance.service_provider %}
-                    <br><span class="text-xs text-gray-400">{{ maintenance.service_provider }}</span>
-                    {% endif %}
-                  </div>
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- Search Bar -->
+                <div class="relative mobile-hidden">
+                    <input type="text" placeholder="Search something..."
+                        class="w-60 md:w-80 px-3 md:px-4 py-2 md:py-3 pl-8 md:pl-10 light-card rounded-xl text-sm text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-400 border-0">
+                    <svg class="w-4 h-4 text-gray-500 absolute left-2 md:left-3 top-1/2 transform -translate-y-1/2"
+                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
                 </div>
-                <div class="text-right">
-                  <div class="text-sm text-gray-500">
-                    {% if maintenance.is_overdue %}Overdue{% else %}In{% endif %}
-                  </div>
-                  <div class="text-xl font-bold {{ maintenance.days_until|service_urgency_class }}">
-                    {% if maintenance.is_overdue %}
-                    {{ maintenance.days_until }} days
+
+                <!-- Notification Icon -->
+                <button class="p-2 md:p-3 light-card rounded-xl hover-lift mobile-compact">
+                    <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V4a2 2 0 10-4 0v1.341C8.67 6.165 8 7.388 8 8.75V14l-1.405 1.405C6.21 15.79 6 16.368 6 17h5m4 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                </button>
+
+                <!-- User Profile Dropdown -->
+                <div class="relative">
+                    <button id="user-menu-button"
+                        class="flex items-center gap-2 p-2 md:p-3 light-card rounded-xl hover-lift mobile-compact">
+                        <div
+                            class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                            <span class="text-white font-bold text-xs md:text-sm">{{ user_first_name|default:"U"|first
+                                }}</span>
+                        </div>
+                        <div class="mobile-hidden">
+                            <div class="text-sm font-medium text-gray-800">{{ user.first_name|default:"User" }}</div>
+                            <div class="text-xs text-gray-600">{{ user.email|default:"user@example.com" }}</div>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-600 mobile-hidden" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="user-dropdown"
+                        class="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-200 z-50 hidden">
+                        <div class="p-4 border-b border-gray-200">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                                    <span class="text-white font-bold text-lg">{{ user_first_name|default:"U"|first
+                                        }}</span>
+                                </div>
+                                <div>
+                                    <div class="font-semibold text-gray-800">{{ user.first_name|default:"User" }} {{
+                                        user.last_name|default:"Name" }}</div>
+                                    <div class="text-sm text-gray-600">{{ user.email|default:"user@example.com" }}</div>
+                                    <div class="text-xs text-gray-500">Member since {{ user.date_joined|date:"M
+                                        Y"|default:"Jan 2024" }}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="p-2">
+                            <button
+                                class="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span class="text-gray-700">View Profile</span>
+                            </button>
+                            <button
+                                class="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span class="text-gray-700">Settings</span>
+                            </button>
+                            <button
+                                class="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-gray-100 rounded-lg transition-colors">
+                                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span class="text-gray-700">Help & Support</span>
+                            </button>
+                        </div>
+
+                        <div class="border-t border-gray-200 p-2">
+                            <button
+                                class="w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-red-50 rounded-lg transition-colors text-red-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span>Sign Out</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Modular Grid Layout inspired by car dashboard -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 lg:gap-6 mobile-grid-1 mobile-gap-2">
+
+            <!-- Left Column - Main Vehicle Info -->
+            <div class="col-span-1 lg:col-span-8 space-y-3 md:space-y-4 lg:space-y-6 mobile-spacing">
+
+                <!-- Vehicle Overview Card -->
+                <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                    <!-- Header Section -->
+                    <div class="mb-4 md:mb-6">
+                        <div class="flex items-start justify-between mb-3 md:mb-4 mobile-stack">
+                            <div class="mobile-center">
+                                <p class="text-xs md:text-sm text-gray-600 mb-1 mobile-text-sm">Vehicle Overview</p>
+                                <h2 class="text-xl md:text-3xl font-bold text-gray-800 mobile-text-sm">
+                                    {{ vehicle.make|default:"Unknown" }} {{ vehicle.model|default:"Vehicle" }} {{
+                                    vehicle.manufacture_year|default:"" }}
+                                </h2>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Selector - Integrated Design -->
+                        {% if user_vehicles and user_vehicles|length > 1 %}
+                        <div class="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200 mobile-compact">
+                            <div class="flex items-center gap-3 mobile-stack mobile-gap-2">
+                                <div class="flex items-center gap-2 text-gray-600 mobile-center">
+                                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                    </svg>
+                                    <span class="text-xs md:text-sm font-medium mobile-xs-text">Switch Vehicle:</span>
+                                </div>
+                                <div class="relative flex-1 mobile-full-width">
+                                    <select id="vehicle-selector"
+                                        class="w-full px-3 md:px-4 py-2 md:py-3 bg-white border border-gray-300 rounded-lg md:rounded-xl text-sm md:text-base font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500 transition-all duration-200 mobile-text-sm appearance-none cursor-pointer">
+                                        {% for v in user_vehicles %}
+                                        <option value="{{ v.id }}" class="bg-white text-gray-800 py-2" 
+                                        {% if vehicle and v.id == vehicle.id %}selected{% endif %}>
+                                            {{ v.manufacture_year }} {{ v.make }} {{ v.model }}
+                                            {% if v.vin %} • {{ v.vin|slice:"-4" }}{% endif %}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                    <!-- Custom dropdown arrow -->
+                                    <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-500" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Vehicle Count Indicator -->
+                            <div
+                                class="mt-2 flex items-center justify-between text-xs text-gray-500 mobile-center mobile-xs-text">
+                                <span>{{ user_vehicles|length }} vehicle{{ user_vehicles|length|pluralize }}
+                                    available</span>
+                                <span class="flex items-center gap-1">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    Active
+                                </span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <!-- Single Vehicle Indicator -->
+                        <div class="bg-gray-50 rounded-xl p-3 md:p-4 border border-gray-200 mobile-compact">
+                            <div class="flex items-center gap-3 mobile-center">
+                                <div class="flex items-center gap-2 text-gray-600">
+                                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-xs md:text-sm font-medium mobile-xs-text">Primary Vehicle</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-xs text-gray-500 mobile-xs-text">
+                                    <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    Active
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Vehicle Details Grid -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mobile-grid-1 mobile-gap-2">
+
+                        <!-- Vehicle Image -->
+                        <div class="lg:col-span-1 mobile-center">
+                            <div class="relative bg-gray-100 rounded-xl overflow-hidden aspect-video md:aspect-square">
+                                {% if vehicle.images.all %}
+                                {% with vehicle.images.all|first as primary_image %}
+                                <img src="{{ primary_image.image.url }}" alt="{{ vehicle.make }} {{ vehicle.model }}"
+                                    class="w-full h-full object-cover">
+                                {% endwith %}
+                                {% else %}
+                                <!-- Placeholder for no image -->
+                                <div class="w-full h-full flex items-center justify-center text-gray-500">
+                                    <div class="text-center">
+                                        <svg class="w-12 h-12 md:w-16 md:h-16 mx-auto mb-2" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                        </svg>
+                                        <p class="text-xs md:text-sm mobile-xs-text">No Image Available</p>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Health Status Badge -->
+                                {% if vehicle.health_status %}
+                                <div class="absolute top-2 right-2">
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full
+                                        {% if vehicle.health_status == 'Healthy' %}bg-green-100 text-green-800
+                                        {% elif vehicle.health_status == 'Needs Attention' %}bg-yellow-100 text-yellow-800
+                                        {% elif vehicle.health_status == 'Critical' %}bg-red-100 text-red-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ vehicle.health_status }}
+                                    </span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Specifications -->
+                        <div class="lg:col-span-2 space-y-4 md:space-y-6">
+
+                            <!-- Primary Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 mobile-grid-1 mobile-gap-2">
+
+                                <!-- VIN -->
+                                <div class="mobile-center">
+                                    <label
+                                        class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">VIN</label>
+                                    <p
+                                        class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm break-all">
+                                        {{ vehicle.vin|default:"Not Available" }}
+                                    </p>
+                                </div>
+
+                                <!-- Make & Model -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Make &
+                                        Model</label>
+                                    <p class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm">
+                                        {{ vehicle.make|default:"Unknown" }} {{ vehicle.model|default:"Unknown" }}
+                                    </p>
+                                </div>
+
+                                <!-- Manufacture Year -->
+                                <div class="mobile-center">
+                                    <label
+                                        class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Year</label>
+                                    <p class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm">
+                                        {{ vehicle.manufacture_year|default:"Unknown" }}
+                                    </p>
+                                </div>
+
+                                <!-- Engine Code -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Engine
+                                        Code</label>
+                                    <p class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm">
+                                        {{ vehicle.engine_code|default:"Not Available" }}
+                                    </p>
+                                </div>
+
+                                <!-- Powertrain Displacement -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Engine
+                                        Displacement</label>
+                                    <p class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm">
+                                        {{ vehicle.powertrain_displacement|default:"Not Available" }}
+                                    </p>
+                                </div>
+
+                                <!-- Current Mileage -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Current
+                                        Mileage</label>
+                                    <p class="text-sm md:text-base font-semibold text-gray-800 mobile-text-sm">
+                                        {% if vehicle.current_mileage %}
+                                        {{ vehicle.current_mileage|floatformat:0 }} km
+                                        {% else %}
+                                        Not Available
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Additional Details -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mobile-grid-1 mobile-gap-2">
+
+                                <!-- Fuel Type -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Fuel
+                                        Type</label>
+                                    <p class="text-sm md:text-base text-gray-700 mobile-text-sm">
+                                        {{ vehicle.fuel_type|default:"Unknown" }}
+                                    </p>
+                                </div>
+
+                                <!-- Transmission -->
+                                <div class="mobile-center">
+                                    <label
+                                        class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Transmission</label>
+                                    <p class="text-sm md:text-base text-gray-700 mobile-text-sm">
+                                        {{ vehicle.transmission_type|default:"Unknown" }}
+                                    </p>
+                                </div>
+
+                                <!-- Body Type -->
+                                <div class="mobile-center">
+                                    <label class="text-xs md:text-sm font-medium text-gray-600 mobile-xs-text">Body
+                                        Type</label>
+                                    <p class="text-sm md:text-base text-gray-700 mobile-text-sm">
+                                        {{ vehicle.body_type|default:"Unknown" }}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Status Indicators -->
+                            <div class="flex flex-wrap gap-2 md:gap-3 mobile-center">
+                                <!-- Health Score -->
+                                {% if vehicle.health_score %}
+                                <div class="flex items-center gap-1 px-2 md:px-3 py-1 bg-gray-100 rounded-full">
+                                    <svg class="w-3 h-3 md:w-4 md:h-4 text-green-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-xs md:text-sm font-medium text-gray-700 mobile-xs-text">Health: {{
+                                        vehicle.health_score }}/100</span>
+                                </div>
+                                {% endif %}
+
+                                <!-- Last Inspection -->
+                                {% if vehicle.last_inspection_date %}
+                                <div class="flex items-center gap-1 px-2 md:px-3 py-1 bg-gray-100 rounded-full">
+                                    <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <span class="text-xs md:text-sm font-medium text-gray-700 mobile-xs-text">Last
+                                        Inspection: {{ vehicle.last_inspection_date|date:"M d, Y" }}</span>
+                                </div>
+                                {% endif %}
+
+                                <!-- Estimated Value -->
+                                {% if vehicle.valuation %}
+                                <div class="flex items-center gap-1 px-2 md:px-3 py-1 bg-gray-100 rounded-full">
+                                    <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                    </svg>
+                                    <span class="text-xs md:text-sm font-medium text-gray-700 mobile-xs-text">Value: E{{
+                                        vehicle.valuation.estimated_value|floatformat:0 }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+                <!-- Large Map/Visual Card -->
+                <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                    <div class="flex items-center justify-between mb-4 md:mb-6 mobile-stack">
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800 mobile-text-sm mobile-center">Service
+                            History</h3>
+                        <button
+                            class="text-xs md:text-sm text-gray-600 hover:text-gray-800 font-medium mobile-center">See
+                            all</button>
+                    </div>
+
+                    {% if service_history %}
+                    <div class="space-y-3 md:space-y-4">
+                        {% for record in service_history|slice:":3" %}
+                        <div
+                            class="flex items-center justify-between p-3 md:p-4 rounded-xl md:rounded-2xl grey-card mobile-stack mobile-compact">
+                            <div class="flex items-center gap-3 md:gap-4 mobile-center">
+                                <div
+                                    class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                                    <svg class="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="mobile-center">
+                                    <div class="font-medium text-gray-800 text-sm md:text-base mobile-text-sm">{{
+                                        record.work_done|default:"Service" }}</div>
+                                    <div class="text-xs md:text-sm text-gray-600 mobile-xs-text">{{
+                                        record.date_performed|date:"M d, Y" }} • {{
+                                        record.service_provider|default:"Service Center" }}</div>
+                                </div>
+                            </div>
+                            <div class="text-right mobile-center">
+                                <div class="font-bold text-gray-700 text-sm md:text-base mobile-text-sm">E{{
+                                    record.cost|default:"0" }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                     {% else %}
-                    {{ maintenance.days_until|default:"N/A" }} days
+                    <div class="text-center py-8 md:py-12">
+                        <div class="text-gray-500 mb-4">
+                            <svg class="w-12 h-12 md:w-16 md:h-16 mx-auto" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <p class="text-xs md:text-sm text-gray-600 mobile-text-sm">No service history available</p>
+                    </div>
                     {% endif %}
-                  </div>
                 </div>
-              </div>
 
-              <div class="flex gap-2">
-                <button
-                  class="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium">Reschedule</button>
-                <button class="flex-1 py-2 rounded-lg border border-gray-200">Details</button>
-              </div>
-            </div>
-            {% endfor %}
-            {% else %}
-            <div class="text-center py-4">
-              <div class="text-gray-500 mb-2">
-                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p class="text-sm text-gray-500">No upcoming maintenance scheduled</p>
-            </div>
-            {% endif %}
-          </section>
+                <!-- Bottom Row - Maintenance & Alerts -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4 mobile-grid-1 mobile-gap-2">
+                    <!-- Upcoming Maintenance -->
+                    <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                        <div class="flex items-center justify-between mb-4 md:mb-6 mobile-stack">
+                            <h3 class="text-base md:text-lg font-bold text-gray-800 mobile-text-sm mobile-center">Next
+                                Maintenance</h3>
+                            <div
+                                class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                        </div>
 
-          <!-- Alerts -->
-          <section class="bg-white rounded-2xl p-4 shadow">
-            <h3 class="font-semibold mb-3">Alerts & Notifications</h3>
-            {% if alerts %}
-            <ul class="space-y-3">
-              {% for alert in alerts|slice:":3" %}
-              <li class="flex items-start gap-3">
-                <span class="flex-none mt-1">{{ alert.priority|alert_priority_emoji }}</span>
-                <div class="flex-1 text-sm">
-                  <div class="font-medium">{{ alert.title }}</div>
-                  <div class="text-gray-500">
-                    {{ alert.created_at|timesince }} ago • {{ alert.description|truncatewords:10 }}
-                  </div>
+                        {% if upcoming_maintenance %}
+                        {% for maintenance in upcoming_maintenance|slice:":1" %}
+                        <div class="space-y-3 md:space-y-4">
+                            <div class="text-center">
+                                <div class="text-2xl md:text-4xl font-bold text-gray-800 mb-2 mobile-text-sm">
+                                    {% if maintenance.is_overdue %}
+                                    -{{ maintenance.days_until|default:"0" }}
+                                    {% else %}
+                                    {{ maintenance.days_until|default:"30" }}
+                                    {% endif %}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-600 mb-3 md:mb-4 mobile-xs-text">
+                                    {% if maintenance.is_overdue %}days overdue{% else %}days remaining{% endif %}
+                                </div>
+                                <div class="text-xs md:text-sm text-gray-700 mobile-xs-text">{{
+                                    maintenance.service_type|default:"Oil Change"
+                                    }}</div>
+                            </div>
+                            <button
+                                class="w-full py-2 md:py-3 rounded-xl md:rounded-2xl bg-gray-600 hover:bg-gray-700 text-white font-medium hover-lift text-sm mobile-text-sm">
+                                Schedule Service
+                            </button>
+                        </div>
+                        {% endfor %}
+                        {% else %}
+                        <div class="text-center">
+                            <div class="text-2xl md:text-4xl font-bold text-gray-600 mb-2 mobile-text-sm">✓</div>
+                            <div class="text-xs md:text-sm text-gray-600 mobile-xs-text">All up to date</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Alerts/Notifications -->
+                    <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                        <div class="flex items-center justify-between mb-4 md:mb-6 mobile-stack">
+                            <h3 class="text-base md:text-lg font-bold text-gray-800 mobile-text-sm mobile-center">Alerts
+                            </h3>
+                            <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-red-100 flex items-center justify-center">
+                                <svg class="w-3 h-3 md:w-4 md:h-4 text-red-500" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                            </div>
+                        </div>
+
+                        {% if alerts %}
+                        <div class="space-y-2 md:space-y-3">
+                            {% for alert in alerts|slice:":2" %}
+                            <div
+                                class="flex items-center gap-2 md:gap-3 p-2 md:p-3 rounded-xl md:rounded-2xl bg-red-50 border border-red-200 mobile-stack mobile-compact">
+                                <div
+                                    class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mobile-center">
+                                    <span class="text-xs md:text-sm">🚨</span>
+                                </div>
+                                <div class="flex-1 min-w-0 mobile-center">
+                                    <div class="font-medium text-gray-800 text-xs md:text-sm truncate mobile-text-sm">{{
+                                        alert.title }}</div>
+                                    <div class="text-xs text-gray-600 mobile-xs-text">{{ alert.created_at|timesince }}
+                                        ago</div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="text-center">
+                            <div class="text-2xl md:text-4xl font-bold text-gray-600 mb-2 mobile-text-sm">✓</div>
+                            <div class="text-xs md:text-sm text-gray-600 mobile-xs-text">No active alerts</div>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="text-xs text-gray-400">{{ alert.priority_display }}</div>
-              </li>
-              {% endfor %}
-            </ul>
-            {% if alerts|length > 3 %}
-            <div class="mt-3 text-center">
-              <button class="text-sm text-indigo-600 hover:text-indigo-800">View all {{ alerts|length }} alerts</button>
+
+                <!-- Service History Table -->
+                <section class="light-card rounded-2xl p-4 md:p-6 hover-lift mobile-compact">
+                    <div class="flex items-center justify-between mb-4 md:mb-6 mobile-stack">
+                        <h3 class="font-bold text-gray-800 flex items-center gap-2 mobile-text-sm mobile-center">
+                            <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                            Service History
+                        </h3>
+                        <button
+                            class="text-xs md:text-sm text-gray-600 hover:text-gray-800 font-medium mobile-center">See
+                            all</button>
+                    </div>
+
+                    {% if service_history %}
+                    <div class="overflow-x-auto custom-scrollbar">
+                        <table class="min-w-full text-sm">
+                            <thead class="text-left text-gray-700">
+                                <tr class="border-b border-gray-300">
+                                    <th class="pb-3 font-semibold">Date</th>
+                                    <th class="pb-3 font-semibold">Service</th>
+                                    <th class="pb-3 font-semibold">Provider</th>
+                                    <th class="pb-3 font-semibold">Cost</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                {% for record in service_history %}
+                                <tr class="border-t border-gray-200 hover:bg-gray-100 transition-colors">
+                                    <td class="py-4">{{ record.date_performed|date:"Y-m-d" }}</td>
+                                    <td class="py-4 font-medium text-gray-800">{{ record.work_done|default:"Service" }}
+                                    </td>
+                                    <td class="py-4">{{ record.service_provider|default:"N/A" }}</td>
+                                    <td class="py-4 font-semibold text-gray-700">E{{ record.cost|default:"0" }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-12">
+                        <div class="text-gray-500 mb-4">
+                            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                            </svg>
+                        </div>
+                        <p class="text-sm text-gray-600">No service history available</p>
+                    </div>
+                    {% endif %}
+                </section>
+
             </div>
-            {% endif %}
-            {% else %}
-            <div class="text-center py-4">
-              <div class="text-gray-500 mb-2">
-                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p class="text-sm text-gray-500">No active alerts</p>
+
+            <!-- Right Column - Widget Sidebar -->
+            <div class="col-span-1 lg:col-span-4 space-y-3 md:space-y-4 lg:space-y-6 mobile-spacing">
+
+                <!-- Vehicle Value Widget -->
+                <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                    <div class="text-center">
+                        <div class="text-xs md:text-sm text-gray-600 mb-2 mobile-xs-text">Estimated Value</div>
+                        <div class="text-2xl md:text-3xl font-bold text-gray-700 mb-3 md:mb-4 mobile-text-sm">E{{
+                            valuation.estimated_value|default:"45,000" }}</div>
+                        <div class="w-full h-2 bg-gray-300 rounded-full mb-3 md:mb-4">
+                            <div class="h-2 bg-gradient-to-r from-gray-500 to-gray-600 rounded-full" style="width: 75%">
+                            </div>
+                        </div>
+                        <div class="text-xs text-gray-600 mobile-xs-text">Condition: {{
+                            valuation.condition_rating|default:"Good" }}</div>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Widget -->
+                <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                    <h3 class="text-base md:text-lg font-bold text-gray-800 mb-3 md:mb-4 mobile-text-sm mobile-center">
+                        Quick Stats</h3>
+                    <div class="space-y-3 md:space-y-4">
+                        <div class="flex justify-between items-center mobile-stack mobile-center">
+                            <span class="text-gray-600 text-xs md:text-sm mobile-xs-text">Monthly Spend</span>
+                            <span class="font-bold text-gray-700 text-sm md:text-base mobile-text-sm">E{{
+                                cost_analytics.monthly_average|default:"1,200" }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mobile-stack mobile-center">
+                            <span class="text-gray-600 text-xs md:text-sm mobile-xs-text">Fuel Efficiency</span>
+                            <span class="font-bold text-gray-700 text-sm md:text-base mobile-text-sm">7.2L/100km</span>
+                        </div>
+                        <div class="flex justify-between items-center mobile-stack mobile-center">
+                            <span class="text-gray-600 text-xs md:text-sm mobile-xs-text">Health Score</span>
+                            <span class="font-bold text-green-600 text-sm md:text-base mobile-text-sm">{{
+                                cost_analytics.health_score|default:"85"
+                                }}/100</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Widget -->
+                <div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift mobile-compact">
+                    <div class="flex items-center justify-between mb-3 md:mb-4 mobile-stack">
+                        <h3 class="text-base md:text-lg font-bold text-gray-800 mobile-text-sm mobile-center">Vehicle
+                            Controls</h3>
+                        <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                            <svg class="w-3 h-3 md:w-4 md:h-4 text-gray-600" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 md:space-y-3">
+                        <button
+                            class="w-full py-2 md:py-3 rounded-xl md:rounded-2xl bg-gray-600 hover:bg-gray-700 text-white font-medium hover-lift text-sm mobile-text-sm">
+                            Schedule Service
+                        </button>
+                        <button
+                            class="w-full py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-400 text-gray-700 hover:bg-gray-100 hover-lift text-sm mobile-text-sm">
+                            Find Service Center
+                        </button>
+                        <button
+                            class="w-full py-2 md:py-3 rounded-xl md:rounded-2xl border border-gray-300 text-gray-600 hover:bg-gray-50 hover-lift text-sm mobile-text-sm">
+                            Export Report
+                        </button>
+                    </div>
+                </div>
+
             </div>
-            {% endif %}
-          </section>
 
         </div>
 
-        <!-- Service History Table -->
-        <section class="bg-white rounded-2xl p-4 shadow">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="font-semibold">Service History</h3>
-            <button class="text-sm text-indigo-600">See all</button>
-          </div>
+        <!-- Additional Features Row -->
+        <div class="grid grid-cols-1 gap-3 md:gap-4 lg:gap-6 mt-4 md:mt-6 mobile-grid-1 mobile-gap-2">
 
-          {% if service_history %}
-          <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead class="text-left text-gray-500">
-                <tr>
-                  <th class="pb-2">Date</th>
-                  <th class="pb-2">Service</th>
-                  <th class="pb-2">Provider</th>
-                  <th class="pb-2">Cost</th>
-                </tr>
-              </thead>
-              <tbody class="text-gray-700">
-                {% for record in service_history %}
-                <tr class="border-t">
-                  <td class="py-3">{{ record.date_performed|date:"Y-m-d" }}</td>
-                  <td class="py-3">{{ record.work_done|default:"Service" }}</td>
-                  <td class="py-3">{{ record.service_provider|default:"N/A" }}</td>
-                  <td class="py-3">{{ record.cost|currency_format }}</td>
-                </tr>
-                {% endfor %}
-              </tbody>
-            </table>
-          </div>
-          {% else %}
-          <div class="text-center py-8">
-            <div class="text-gray-500 mb-2">
-              <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
+            <!-- Cost Analysis Chart - Full Width -->
+            <div class="col-span-1">
+                {% include 'dashboard/cost_analysis_chart.html' %}
             </div>
-            <p class="text-sm text-gray-500">No service history available</p>
-          </div>
-          {% endif %}
-        </section>
 
-      </main>
-
-      <!-- Right column / Sidebar (valuation, costs, stats, VIN decoder) -->
-      <aside class="space-y-6">
-
-        <!-- Valuation Card -->
-        <section class="bg-white rounded-2xl p-4 shadow">
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-xs text-gray-500">Estimated Market Value</div>
-              <div class="text-xl font-bold text-green-600">{{ valuation.estimated_value|currency_format }}</div>
+            <!-- Mechanic Services and Bookings -->
+            <div class="col-span-1 lg:col-span-6 mobile-spacing">
+                {% include 'dashboard/mechanic_services.html' %}
             </div>
-            <div class="text-sm text-gray-500 text-right">
-              <div>Condition: <span class="font-medium">{{ valuation.condition_rating|condition_rating_display }}</span>
-              </div>
-              <div>Last updated: <span class="font-medium">{{ valuation.last_updated|timesince|default:"N/A" }}
-                  ago</span></div>
+
+            <div class="col-span-1 lg:col-span-6 mobile-spacing">
+                {% include 'dashboard/bookings_appointments.html' %}
             </div>
-          </div>
-        </section>
 
-        <!-- Costs Card -->
-        <section class="bg-white rounded-2xl p-4 shadow">
-          <h4 class="font-semibold mb-2">Costs</h4>
-          {% if cost_analytics.monthly_data %}
-          <div class="flex items-center justify-between text-sm mb-2">
-            <div>This month</div>
-            <div class="font-bold">{{ cost_analytics.monthly_data.0.total_cost|currency_format }}</div>
-          </div>
-          {% else %}
-          <div class="flex items-center justify-between text-sm mb-2">
-            <div>This month</div>
-            <div class="font-bold">E0</div>
-          </div>
-          {% endif %}
-          <div class="flex items-center justify-between text-sm mb-2">
-            <div>Lifetime</div>
-            <div class="font-bold">{{ cost_analytics.lifetime_total|currency_format }}</div>
-          </div>
-          <div class="h-28 mt-3 rounded-lg chart-placeholder"></div>
-        </section>
-
-        <!-- Statistics / Insights -->
-        <section class="bg-white rounded-2xl p-4 shadow">
-          <h4 class="font-semibold mb-2">Statistics & Insights</h4>
-          <ul class="text-sm space-y-2">
-            <li class="flex justify-between">
-              <span>Avg monthly spend</span>
-              <span class="font-medium">{{ cost_analytics.monthly_average|currency_format }}</span>
-            </li>
-            <li class="flex justify-between">
-              <span>Days until next service</span>
-              <span class="font-medium">{{ cost_analytics.next_service_days|default:"N/A" }}</span>
-            </li>
-            <li class="flex justify-between">
-              <span>Vehicle health score</span>
-              <span class="font-medium {% get_health_score_color cost_analytics.health_score %}">
-                {{ cost_analytics.health_score|default:"N/A" }}{% if cost_analytics.health_score %} / 100{% endif %}
-              </span>
-            </li>
-          </ul>
-          <p class="text-xs text-gray-500 mt-3">Tip: Follow the recommended service plan to keep resale value high.</p>
-        </section>
-
-        <!-- VIN Decoder Card -->
-        <section class="bg-white rounded-2xl p-4 shadow">
-          <h4 class="font-semibold mb-2">VIN Decoder</h4>
-          <form class="space-y-3">
-            <input type="text" placeholder="Enter VIN" class="w-full px-3 py-2 border rounded-lg text-sm" />
-            <div class="flex gap-2">
-              <button class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-medium">Decode VIN</button>
-              <button class="flex-1 py-2 rounded-lg border">Scan VIN</button>
+            <!-- Deals and Promotions - Full Width -->
+            <div class="col-span-1 mobile-spacing">
+                {% include 'dashboard/deals_promotions.html' %}
             </div>
-          </form>
-        </section>
 
-      </aside>
+
+
+
+        </div>
 
     </div>
 
-  </div>
+    </div>
 
-  <!-- Vehicle Switching JavaScript -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const vehicleSelector = document.getElementById('vehicle-selector');
-      const loadingIndicator = document.getElementById('vehicle-loading');
+    </div>
 
-      if (!vehicleSelector) return;
+    <!-- User Profile Settings Modal -->
+    <div id="profile-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-white border-b border-gray-200 p-4 rounded-t-2xl">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-800">Profile & Settings</h2>
+                    <button id="close-profile-modal" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                        <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                {% include 'dashboard/user_profile_settings.html' %}
+            </div>
+        </div>
+    </div>
 
-      // Set the selected option based on current vehicle
-      {% if vehicle %}
-      const currentVehicleId = "{{ vehicle.id }}";
-      const options = vehicleSelector.querySelectorAll('option');
-      options.forEach(option => {
-        if (option.value === currentVehicleId) {
-          option.selected = true;
-        }
-      });
-      {% endif %}
+    <!-- Vehicle Switching JavaScript -->""
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // User dropdown functionality
+            const userMenuButton = document.getElementById('user-menu-button');
+            const userDropdown = document.getElementById('user-dropdown');
+            const profileModal = document.getElementById('profile-modal');
+            const closeProfileModal = document.getElementById('close-profile-modal');
 
-      vehicleSelector.addEventListener('change', function () {
-        const selectedVehicleId = this.value;
-        if (selectedVehicleId) {
-          handleVehicleChange(selectedVehicleId);
-        }
-      });
+            // Toggle user dropdown
+            if (userMenuButton && userDropdown) {
+                userMenuButton.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    userDropdown.classList.toggle('hidden');
+                });
 
-      function handleVehicleChange(vehicleId) {
-        showLoadingState();
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function (e) {
+                    if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                        userDropdown.classList.add('hidden');
+                    }
+                });
 
-        fetchDashboardData(vehicleId)
-          .then(data => {
-            updateDashboardUI(data);
-            updateBrowserURL(vehicleId);
-            hideLoadingState();
-          })
-          .catch(error => {
-            console.error('Error switching vehicle:', error);
-            showErrorMessage('Failed to load vehicle data. Please try again.');
-            hideLoadingState();
-          });
-      }
+                // Handle dropdown menu items
+                userDropdown.addEventListener('click', function (e) {
+                    const button = e.target.closest('button');
+                    if (!button) return;
 
-      function fetchDashboardData(vehicleId) {
-        return fetch(`/notifications/api/dashboard/${vehicleId}/`, {
-          method: 'GET',
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-          },
-          credentials: 'same-origin'
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const text = button.textContent.trim();
+
+                    if (text === 'View Profile' || text === 'Settings') {
+                        if (profileModal) {
+                            profileModal.classList.remove('hidden');
+                            userDropdown.classList.add('hidden');
+                        }
+                    } else if (text === 'Sign Out') {
+                        // Handle logout
+                        if (confirm('Are you sure you want to sign out?')) {
+                            window.location.href = '/logout/';
+                        }
+                    } else if (text === 'Help & Support') {
+                        // Handle help
+                        window.open('/help/', '_blank');
+                    }
+                });
             }
-            return response.json();
-          });
-      }
 
-      function updateDashboardUI(data) {
-        if (data.error) {
-          throw new Error(data.error.message || 'Unknown error occurred');
-        }
+            // Close profile modal
+            if (closeProfileModal && profileModal) {
+                closeProfileModal.addEventListener('click', function () {
+                    profileModal.classList.add('hidden');
+                });
 
-        // Update vehicle overview section
-        updateVehicleOverview(data.vehicle_overview);
-
-        // Update upcoming maintenance
-        updateUpcomingMaintenance(data.upcoming_maintenance);
-
-        // Update alerts
-        updateAlerts(data.alerts);
-
-        // Update service history
-        updateServiceHistory(data.service_history);
-
-        // Update valuation
-        updateValuation(data.valuation);
-
-        // Update cost analytics
-        updateCostAnalytics(data.cost_analytics);
-      }
-
-      function updateVehicleOverview(vehicle) {
-        if (!vehicle) return;
-
-        const overviewSection = document.querySelector('section .flex.items-center.gap-6');
-        if (!overviewSection) return;
-
-        // Update vehicle title
-        const titleElement = overviewSection.querySelector('h2');
-        if (titleElement) {
-          titleElement.textContent = `${vehicle.make || 'Unknown'} ${vehicle.model || 'Vehicle'} — ${vehicle.year || 'N/A'}`;
-        }
-
-        // Update VIN and mileage
-        const vinMileageElement = overviewSection.querySelector('p.text-sm.text-gray-500');
-        if (vinMileageElement) {
-          const vinDisplay = vehicle.vin ? vehicle.vin.substring(0, 8) + '...' : 'N/A';
-          const mileageDisplay = vehicle.mileage ? vehicle.mileage.toLocaleString() + ' km' : 'N/A';
-          vinMileageElement.innerHTML = `VIN: <span class="font-medium">${vinDisplay}</span> • Mileage: <span class="font-medium">${mileageDisplay}</span>`;
-        }
-
-        // Update next service info
-        const serviceInfoDivs = overviewSection.querySelectorAll('.rounded-lg.bg-gray-50');
-        if (serviceInfoDivs.length >= 2) {
-          // Next service timing - calculate days from next_service_date
-          const nextServiceDiv = serviceInfoDivs[0].querySelector('.font-semibold');
-          if (nextServiceDiv && vehicle.next_service_date) {
-            const nextDate = new Date(vehicle.next_service_date);
-            const today = new Date();
-            const diffTime = nextDate - today;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
-            if (diffDays < 0) {
-              nextServiceDiv.textContent = `${Math.abs(diffDays)} days overdue`;
-            } else if (diffDays === 0) {
-              nextServiceDiv.textContent = 'Due today';
-            } else {
-              nextServiceDiv.textContent = `In ${diffDays} days`;
+                // Close modal when clicking outside
+                profileModal.addEventListener('click', function (e) {
+                    if (e.target === profileModal) {
+                        profileModal.classList.add('hidden');
+                    }
+                });
             }
-            nextServiceDiv.className = `font-semibold ${getServiceUrgencyClass(diffDays)}`;
-          } else if (nextServiceDiv) {
-            nextServiceDiv.textContent = 'Not scheduled';
-            nextServiceDiv.className = 'font-semibold text-gray-500';
-          }
 
-          // Next service mileage
-          const nextMileageDiv = serviceInfoDivs[1].querySelector('.font-semibold');
-          if (nextMileageDiv) {
-            const mileageDisplay = vehicle.next_service_mileage ? vehicle.next_service_mileage.toLocaleString() + ' km' : 'N/A';
-            nextMileageDiv.textContent = mileageDisplay;
-          }
-        }
+            // Escape key to close modal and dropdown
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (profileModal) profileModal.classList.add('hidden');
+                    if (userDropdown) userDropdown.classList.add('hidden');
+                }
+            });
 
-        // Update health status
-        if (serviceInfoDivs.length >= 3) {
-          const statusDiv = serviceInfoDivs[2].querySelector('.font-semibold');
-          if (statusDiv) {
-            statusDiv.textContent = vehicle.health_status || 'Unknown';
-            statusDiv.className = `font-semibold ${getHealthStatusColor(vehicle.health_status)}`;
-          }
-        }
+            const vehicleSelector = document.getElementById('vehicle-selector');
+            const loadingIndicator = document.getElementById('vehicle-loading');
 
-        // Update estimated value
-        const valueElement = overviewSection.querySelector('.text-2xl.font-bold.text-green-600');
-        if (valueElement && vehicle.estimated_value) {
-          valueElement.textContent = formatCurrency(vehicle.estimated_value);
-        }
-      }
+            if (!vehicleSelector) return;
 
-      function updateUpcomingMaintenance(maintenance) {
-        const maintenanceSection = document.querySelector('section h3').parentElement;
-        const contentDiv = maintenanceSection.querySelector('.space-y-3') || maintenanceSection.querySelector('.text-center');
+            // Set the selected option based on current vehicle
+            {% if vehicle %}
+            const currentVehicleId = "{{ vehicle.id }}";
+            const options = vehicleSelector.querySelectorAll('option');
+            options.forEach(option => {
+                if (option.value === currentVehicleId) {
+                    option.selected = true;
+                }
+            });
+            {% endif %}
 
-        if (!maintenance || maintenance.length === 0) {
-          contentDiv.innerHTML = `
+            vehicleSelector.addEventListener('change', function () {
+                const selectedVehicleId = this.value;
+                if (selectedVehicleId) {
+                    handleVehicleChange(selectedVehicleId);
+                }
+            });
+
+            function handleVehicleChange(vehicleId) {
+                showLoadingState();
+
+                fetchDashboardData(vehicleId)
+                    .then(data => {
+                        updateDashboardUI(data);
+                        updateBrowserURL(vehicleId);
+                        hideLoadingState();
+                    })
+                    .catch(error => {
+                        console.error('Error switching vehicle:', error);
+                        showErrorMessage('Failed to load vehicle data. Please try again.');
+                        hideLoadingState();
+                    });
+            }
+
+            function fetchDashboardData(vehicleId) {
+                return fetch(`/notifications/api/dashboard/${vehicleId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    credentials: 'same-origin'
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+                        return response.json();
+                    });
+            }
+
+            function updateDashboardUI(data) {
+                if (data.error) {
+                    throw new Error(data.error.message || 'Unknown error occurred');
+                }
+
+                // Update vehicle overview section
+                updateVehicleOverview(data.vehicle_overview);
+
+                // Update upcoming maintenance
+                updateUpcomingMaintenance(data.upcoming_maintenance);
+
+                // Update alerts
+                updateAlerts(data.alerts);
+
+                // Update service history
+                updateServiceHistory(data.service_history);
+
+                // Update valuation
+                updateValuation(data.valuation);
+
+                // Update cost analytics
+                updateCostAnalytics(data.cost_analytics);
+            }
+
+            function updateVehicleOverview(vehicle) {
+                if (!vehicle) return;
+
+                const overviewSection = document.querySelector('section .flex.items-center.gap-6');
+                if (!overviewSection) return;
+
+                // Update vehicle title
+                const titleElement = overviewSection.querySelector('h2');
+                if (titleElement) {
+                    titleElement.textContent = `${vehicle.make || 'Unknown'} ${vehicle.model || 'Vehicle'} — ${vehicle.year || 'N/A'}`;
+                }
+
+                // Update VIN and mileage
+                const vinMileageElement = overviewSection.querySelector('p.text-sm.text-gray-500');
+                if (vinMileageElement) {
+                    const vinDisplay = vehicle.vin ? vehicle.vin.substring(0, 8) + '...' : 'N/A';
+                    const mileageDisplay = vehicle.mileage ? vehicle.mileage.toLocaleString() + ' km' : 'N/A';
+                    vinMileageElement.innerHTML = `VIN: <span class="font-medium">${vinDisplay}</span> • Mileage: <span class="font-medium">${mileageDisplay}</span>`;
+                }
+
+                // Update next service info
+                const serviceInfoDivs = overviewSection.querySelectorAll('.rounded-lg.bg-gray-50');
+                if (serviceInfoDivs.length >= 2) {
+                    // Next service timing - calculate days from next_service_date
+                    const nextServiceDiv = serviceInfoDivs[0].querySelector('.font-semibold');
+                    if (nextServiceDiv && vehicle.next_service_date) {
+                        const nextDate = new Date(vehicle.next_service_date);
+                        const today = new Date();
+                        const diffTime = nextDate - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        if (diffDays < 0) {
+                            nextServiceDiv.textContent = `${Math.abs(diffDays)} days overdue`;
+                        } else if (diffDays === 0) {
+                            nextServiceDiv.textContent = 'Due today';
+                        } else {
+                            nextServiceDiv.textContent = `In ${diffDays} days`;
+                        }
+                        nextServiceDiv.className = `font-semibold ${getServiceUrgencyClass(diffDays)}`;
+                    } else if (nextServiceDiv) {
+                        nextServiceDiv.textContent = 'Not scheduled';
+                        nextServiceDiv.className = 'font-semibold text-gray-500';
+                    }
+
+                    // Next service mileage
+                    const nextMileageDiv = serviceInfoDivs[1].querySelector('.font-semibold');
+                    if (nextMileageDiv) {
+                        const mileageDisplay = vehicle.next_service_mileage ? vehicle.next_service_mileage.toLocaleString() + ' km' : 'N/A';
+                        nextMileageDiv.textContent = mileageDisplay;
+                    }
+                }
+
+                // Update health status
+                if (serviceInfoDivs.length >= 3) {
+                    const statusDiv = serviceInfoDivs[2].querySelector('.font-semibold');
+                    if (statusDiv) {
+                        statusDiv.textContent = vehicle.health_status || 'Unknown';
+                        statusDiv.className = `font-semibold ${getHealthStatusColor(vehicle.health_status)}`;
+                    }
+                }
+
+                // Update estimated value
+                const valueElement = overviewSection.querySelector('.text-2xl.font-bold.text-green-600');
+                if (valueElement && vehicle.estimated_value) {
+                    valueElement.textContent = formatCurrency(vehicle.estimated_value);
+                }
+            }
+
+            function updateUpcomingMaintenance(maintenance) {
+                const maintenanceSection = document.querySelector('section h3').parentElement;
+                const contentDiv = maintenanceSection.querySelector('.space-y-3') || maintenanceSection.querySelector('.text-center');
+
+                if (!maintenance || maintenance.length === 0) {
+                    contentDiv.innerHTML = `
             <div class="text-center py-4">
               <div class="text-gray-500 mb-2">
                 <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,112 +1185,112 @@
               <p class="text-sm text-gray-500">No upcoming maintenance scheduled</p>
             </div>
           `;
-          return;
-        }
+                    return;
+                }
 
-        const firstMaintenance = maintenance[0];
-        const isOverdue = firstMaintenance.days_until < 0;
+                const firstMaintenance = maintenance[0];
+                const isOverdue = firstMaintenance.days_until < 0;
 
-        contentDiv.innerHTML = `
-          <div class="space-y-3">
+                contentDiv.innerHTML = `
+          <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
-                <div class="text-sm text-gray-500">${firstMaintenance.service_type || 'Scheduled Maintenance'}</div>
-                <div class="font-medium">
+                <div class="text-sm text-gray-600 mb-1">${firstMaintenance.service_type || 'Scheduled Maintenance'}</div>
+                <div class="font-medium text-gray-800">
                   Scheduled • ${formatDateFriendly(firstMaintenance.scheduled_date)}
-                  ${firstMaintenance.service_provider ? `<br><span class="text-xs text-gray-400">${firstMaintenance.service_provider}</span>` : ''}
+                  ${firstMaintenance.service_provider ? `<br><span class="text-xs text-gray-600">${firstMaintenance.service_provider}</span>` : ''}
                 </div>
               </div>
               <div class="text-right">
-                <div class="text-sm text-gray-500">${isOverdue ? 'Overdue' : 'In'}</div>
-                <div class="text-xl font-bold ${getServiceUrgencyClass(firstMaintenance.days_until)}">
+                <div class="text-sm text-gray-600 mb-1">${isOverdue ? 'Overdue' : 'In'}</div>
+                <div class="text-2xl font-bold ${getServiceUrgencyClass(firstMaintenance.days_until)}">
                   ${Math.abs(firstMaintenance.days_until)} days
                 </div>
               </div>
             </div>
-            <div class="flex gap-2">
-              <button class="flex-1 py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-medium">Reschedule</button>
-              <button class="flex-1 py-2 rounded-lg border border-gray-200">Details</button>
+            <div class="flex gap-3">
+              <button class="flex-1 py-3 rounded-xl bg-gray-600 hover:bg-gray-700 text-white font-medium hover-lift">Reschedule</button>
+              <button class="flex-1 py-3 rounded-xl border border-gray-400 text-gray-700 hover-lift">Details</button>
             </div>
           </div>
         `;
-      }
+            }
 
-      function updateAlerts(alerts) {
-        const alertsSection = document.querySelectorAll('section h3')[1].parentElement;
-        const contentDiv = alertsSection.querySelector('ul') || alertsSection.querySelector('.text-center');
+            function updateAlerts(alerts) {
+                const alertsSection = document.querySelectorAll('section h3')[1].parentElement;
+                const contentDiv = alertsSection.querySelector('ul') || alertsSection.querySelector('.text-center');
 
-        if (!alerts || alerts.length === 0) {
-          contentDiv.innerHTML = `
-            <div class="text-center py-4">
-              <div class="text-gray-500 mb-2">
-                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                if (!alerts || alerts.length === 0) {
+                    contentDiv.innerHTML = `
+            <div class="text-center py-8">
+              <div class="text-gray-500 mb-4">
+                <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
               </div>
-              <p class="text-sm text-gray-500">No active alerts</p>
+              <p class="text-sm text-gray-600">No active alerts</p>
             </div>
           `;
-          return;
-        }
+                    return;
+                }
 
-        const alertsHTML = alerts.slice(0, 3).map(alert => `
-          <li class="flex items-start gap-3">
-            <span class="flex-none mt-1">${getAlertPriorityEmoji(alert.priority)}</span>
+                const alertsHTML = alerts.slice(0, 3).map(alert => `
+          <li class="flex items-start gap-3 p-3 rounded-xl bg-red-900/20 border border-red-500/30">
+            <span class="flex-none mt-1 text-lg">${getAlertPriorityEmoji(alert.priority)}</span>
             <div class="flex-1 text-sm">
-              <div class="font-medium">${alert.title}</div>
-              <div class="text-gray-500">
+              <div class="font-medium text-gray-800">${alert.title}</div>
+              <div class="text-gray-600">
                 ${formatTimeSince(alert.created_at)} ago • ${truncateWords(alert.description, 10)}
               </div>
             </div>
-            <div class="text-xs text-gray-400">${alert.priority_display || alert.priority}</div>
+            <div class="text-xs text-red-300 font-medium">${alert.priority_display || alert.priority}</div>
           </li>
         `).join('');
 
-        contentDiv.innerHTML = `
+                contentDiv.innerHTML = `
           <ul class="space-y-3">
             ${alertsHTML}
           </ul>
-          ${alerts.length > 3 ? `<div class="mt-3 text-center"><button class="text-sm text-indigo-600 hover:text-indigo-800">View all ${alerts.length} alerts</button></div>` : ''}
+          ${alerts.length > 3 ? `<div class="mt-4 text-center"><button class="text-sm text-gray-600 hover:text-gray-800 font-medium">View all ${alerts.length} alerts</button></div>` : ''}
         `;
-      }
+            }
 
-      function updateServiceHistory(history) {
-        const historySection = document.querySelector('section h3').parentElement;
-        const tableContainer = historySection.querySelector('.overflow-x-auto') || historySection.querySelector('.text-center');
+            function updateServiceHistory(history) {
+                const historySection = document.querySelector('section h3').parentElement;
+                const tableContainer = historySection.querySelector('.overflow-x-auto') || historySection.querySelector('.text-center');
 
-        if (!history || history.length === 0) {
-          tableContainer.innerHTML = `
-            <div class="text-center py-8">
-              <div class="text-gray-500 mb-2">
-                <svg class="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                if (!history || history.length === 0) {
+                    tableContainer.innerHTML = `
+            <div class="text-center py-12">
+              <div class="text-gray-500 mb-4">
+                <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
               </div>
-              <p class="text-sm text-gray-500">No service history available</p>
+              <p class="text-sm text-gray-600">No service history available</p>
             </div>
           `;
-          return;
-        }
+                    return;
+                }
 
-        const historyRows = history.map(record => `
-          <tr class="border-t">
-            <td class="py-3">${formatDate(record.date_performed)}</td>
-            <td class="py-3">${record.work_done || 'Service'}</td>
-            <td class="py-3">${record.service_provider || 'N/A'}</td>
-            <td class="py-3">${formatCurrency(record.cost)}</td>
+                const historyRows = history.map(record => `
+          <tr class="border-t border-gray-200 hover:bg-gray-100 transition-colors">
+            <td class="py-4">${formatDate(record.date_performed)}</td>
+            <td class="py-4 font-medium text-gray-800">${record.work_done || 'Service'}</td>
+            <td class="py-4">${record.service_provider || 'N/A'}</td>
+            <td class="py-4 font-semibold text-gray-700">${formatCurrency(record.cost)}</td>
           </tr>
         `).join('');
 
-        tableContainer.innerHTML = `
-          <div class="overflow-x-auto">
+                tableContainer.innerHTML = `
+          <div class="overflow-x-auto custom-scrollbar">
             <table class="min-w-full text-sm">
-              <thead class="text-left text-gray-500">
-                <tr>
-                  <th class="pb-2">Date</th>
-                  <th class="pb-2">Service</th>
-                  <th class="pb-2">Provider</th>
-                  <th class="pb-2">Cost</th>
+              <thead class="text-left text-gray-700">
+                <tr class="border-b border-gray-300">
+                  <th class="pb-3 font-semibold">Date</th>
+                  <th class="pb-3 font-semibold">Service</th>
+                  <th class="pb-3 font-semibold">Provider</th>
+                  <th class="pb-3 font-semibold">Cost</th>
                 </tr>
               </thead>
               <tbody class="text-gray-700">
@@ -667,91 +1299,95 @@
             </table>
           </div>
         `;
-      }
-
-      function updateValuation(valuation) {
-        const valuationSection = document.querySelector('aside section');
-        if (!valuationSection) return;
-
-        const valueElement = valuationSection.querySelector('.text-xl.font-bold.text-green-600');
-        const conditionElement = valuationSection.querySelector('.text-sm.text-gray-500.text-right');
-
-        if (valueElement && valuation.estimated_value) {
-          valueElement.textContent = formatCurrency(valuation.estimated_value);
-        }
-
-        if (conditionElement && valuation.condition_rating) {
-          conditionElement.innerHTML = `
-            <div>Condition: <span class="font-medium">${valuation.condition_rating}</span></div>
-            <div>Last updated: <span class="font-medium">${formatTimeSince(valuation.last_updated) || 'N/A'} ago</span></div>
-          `;
-        }
-      }
-
-      function updateCostAnalytics(costData) {
-        const costSection = document.querySelectorAll('aside section')[1];
-        if (!costSection) return;
-
-        const monthlyElement = costSection.querySelector('.flex.items-center.justify-between .font-bold');
-        const lifetimeElement = costSection.querySelectorAll('.flex.items-center.justify-between')[1]?.querySelector('.font-bold');
-
-        if (monthlyElement) {
-          const monthlyAmount = costData.monthly_data && costData.monthly_data[0] ? costData.monthly_data[0].total_cost : 0;
-          monthlyElement.textContent = formatCurrency(monthlyAmount);
-        }
-
-        if (lifetimeElement) {
-          lifetimeElement.textContent = formatCurrency(costData.lifetime_total || 0);
-        }
-
-        // Update statistics
-        const statsSection = document.querySelectorAll('aside section')[2];
-        if (statsSection) {
-          const statItems = statsSection.querySelectorAll('li .font-medium');
-          if (statItems.length >= 3) {
-            statItems[0].textContent = formatCurrency(costData.monthly_average || 0);
-            statItems[1].textContent = costData.next_service_days || 'N/A';
-            if (costData.health_score !== undefined) {
-              statItems[2].textContent = `${costData.health_score} / 100`;
-              statItems[2].className = `font-medium ${getHealthScoreColor(costData.health_score)}`;
             }
-          }
-        }
-      }
 
-      function showLoadingState() {
-        if (loadingIndicator) {
-          loadingIndicator.classList.remove('hidden');
-        }
-        if (vehicleSelector) {
-          vehicleSelector.disabled = true;
-        }
-      }
+            function updateValuation(valuation) {
+                const valuationSection = document.querySelector('aside section');
+                if (!valuationSection) return;
 
-      function hideLoadingState() {
-        if (loadingIndicator) {
-          loadingIndicator.classList.add('hidden');
-        }
-        if (vehicleSelector) {
-          vehicleSelector.disabled = false;
-        }
-      }
+                const valueElement = valuationSection.querySelector('.text-xl.font-bold.text-green-600');
+                const conditionElement = valuationSection.querySelector('.text-sm.text-gray-500.text-right');
 
-      function updateBrowserURL(vehicleId) {
-        const newURL = `/notifications/dashboard/${vehicleId}/`;
-        history.pushState({ vehicleId: vehicleId }, '', newURL);
-      }
+                if (valueElement && valuation.estimated_value) {
+                    valueElement.textContent = formatCurrency(valuation.estimated_value);
+                }
 
-      function showErrorMessage(message) {
-        // Create or update error message
-        let errorDiv = document.querySelector('.vehicle-switch-error');
-        if (!errorDiv) {
-          errorDiv = document.createElement('div');
-          errorDiv.className = 'vehicle-switch-error bg-red-50 border border-red-200 rounded-lg p-4 mb-6';
-          document.querySelector('.max-w-7xl').insertBefore(errorDiv, document.querySelector('header'));
-        }
+                if (conditionElement && valuation.condition_rating) {
+                    conditionElement.innerHTML = `
+            <div class="mb-1">Condition: <span class="font-medium text-gray-800">${valuation.condition_rating}</span></div>
+            <div>Last updated: <span class="font-medium text-gray-600">${formatTimeSince(valuation.last_updated) || 'N/A'} ago</span></div>
+          `;
+                }
+            }
 
-        errorDiv.innerHTML = `
+            function updateCostAnalytics(costData) {
+                const costSection = document.querySelectorAll('aside section')[1];
+                if (!costSection) return;
+
+                const monthlyElement = costSection.querySelector('.flex.items-center.justify-between .font-bold');
+                const lifetimeElement = costSection.querySelectorAll('.flex.items-center.justify-between')[1]?.querySelector('.font-bold');
+
+                if (monthlyElement) {
+                    const monthlyAmount = costData.monthly_data && costData.monthly_data[0] ? costData.monthly_data[0].total_cost : 0;
+                    monthlyElement.textContent = formatCurrency(monthlyAmount);
+                    monthlyElement.className = 'font-bold text-gray-700';
+                }
+
+                if (lifetimeElement) {
+                    lifetimeElement.textContent = formatCurrency(costData.lifetime_total || 0);
+                    lifetimeElement.className = 'font-bold text-gray-700';
+                }
+
+                // Update statistics
+                const statsSection = document.querySelectorAll('aside section')[2];
+                if (statsSection) {
+                    const statItems = statsSection.querySelectorAll('li .font-bold');
+                    if (statItems.length >= 3) {
+                        statItems[0].textContent = formatCurrency(costData.monthly_average || 0);
+                        statItems[0].className = 'font-bold text-gray-700';
+                        statItems[1].textContent = costData.next_service_days || 'N/A';
+                        statItems[1].className = 'font-bold text-gray-700';
+                        if (costData.health_score !== undefined) {
+                            statItems[2].textContent = `${costData.health_score} / 100`;
+                            statItems[2].className = `font-bold ${getHealthScoreColor(costData.health_score)}`;
+                        }
+                    }
+                }
+            }
+
+            function showLoadingState() {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.remove('hidden');
+                }
+                if (vehicleSelector) {
+                    vehicleSelector.disabled = true;
+                }
+            }
+
+            function hideLoadingState() {
+                if (loadingIndicator) {
+                    loadingIndicator.classList.add('hidden');
+                }
+                if (vehicleSelector) {
+                    vehicleSelector.disabled = false;
+                }
+            }
+
+            function updateBrowserURL(vehicleId) {
+                const newURL = `/notifications/dashboard/${vehicleId}/`;
+                history.pushState({ vehicleId: vehicleId }, '', newURL);
+            }
+
+            function showErrorMessage(message) {
+                // Create or update error message
+                let errorDiv = document.querySelector('.vehicle-switch-error');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.className = 'vehicle-switch-error light-card rounded-xl p-3 md:p-4 mb-4 md:mb-6 border-red-200';
+                    document.querySelector('.max-w-7xl').insertBefore(errorDiv, document.querySelector('header'));
+                }
+
+                errorDiv.innerHTML = `
           <div class="flex">
             <div class="flex-shrink-0">
               <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -767,105 +1403,105 @@
           </div>
         `;
 
-        // Auto-hide after 5 seconds
-        setTimeout(() => {
-          if (errorDiv.parentNode) {
-            errorDiv.parentNode.removeChild(errorDiv);
-          }
-        }, 5000);
-      }
-
-      // Utility functions
-      function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-              break;
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    if (errorDiv.parentNode) {
+                        errorDiv.parentNode.removeChild(errorDiv);
+                    }
+                }, 5000);
             }
-          }
-        }
-        return cookieValue;
-      }
 
-      function formatCurrency(amount) {
-        if (!amount && amount !== 0) return 'E0';
-        return 'E' + Math.round(amount).toLocaleString();
-      }
+            // Utility functions
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
 
-      function formatDate(dateString) {
-        if (!dateString) return 'N/A';
-        return new Date(dateString).toLocaleDateString('en-US');
-      }
+            function formatCurrency(amount) {
+                if (!amount && amount !== 0) return 'E0';
+                return 'E' + Math.round(amount).toLocaleString();
+            }
 
-      function formatDateFriendly(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = date - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            function formatDate(dateString) {
+                if (!dateString) return 'N/A';
+                return new Date(dateString).toLocaleDateString('en-US');
+            }
 
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return 'Tomorrow';
-        if (diffDays === -1) return 'Yesterday';
-        if (diffDays > 1) return `In ${diffDays} days`;
-        return `${Math.abs(diffDays)} days ago`;
-      }
+            function formatDateFriendly(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = date - now;
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      function formatTimeSince(dateString) {
-        if (!dateString) return 'N/A';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = now - date;
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return 'Tomorrow';
+                if (diffDays === -1) return 'Yesterday';
+                if (diffDays > 1) return `In ${diffDays} days`;
+                return `${Math.abs(diffDays)} days ago`;
+            }
 
-        if (diffDays === 0) return 'Today';
-        if (diffDays === 1) return '1 day';
-        return `${diffDays} days`;
-      }
+            function formatTimeSince(dateString) {
+                if (!dateString) return 'N/A';
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffTime = now - date;
+                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-      function truncateWords(text, wordLimit) {
-        if (!text) return '';
-        const words = text.split(' ');
-        if (words.length <= wordLimit) return text;
-        return words.slice(0, wordLimit).join(' ') + '...';
-      }
+                if (diffDays === 0) return 'Today';
+                if (diffDays === 1) return '1 day';
+                return `${diffDays} days`;
+            }
 
-      function getServiceUrgencyClass(daysUntil) {
-        if (daysUntil < 0) return 'text-red-600';
-        if (daysUntil <= 7) return 'text-orange-600';
-        if (daysUntil <= 30) return 'text-yellow-600';
-        return 'text-green-600';
-      }
+            function truncateWords(text, wordLimit) {
+                if (!text) return '';
+                const words = text.split(' ');
+                if (words.length <= wordLimit) return text;
+                return words.slice(0, wordLimit).join(' ') + '...';
+            }
 
-      function getHealthStatusColor(status) {
-        if (!status) return 'text-gray-600';
-        const statusLower = status.toLowerCase();
-        if (statusLower.includes('excellent') || statusLower.includes('good')) return 'text-green-600';
-        if (statusLower.includes('fair') || statusLower.includes('average')) return 'text-yellow-600';
-        if (statusLower.includes('poor') || statusLower.includes('critical')) return 'text-red-600';
-        return 'text-gray-600';
-      }
+            function getServiceUrgencyClass(daysUntil) {
+                if (daysUntil < 0) return 'text-red-600';
+                if (daysUntil <= 7) return 'text-orange-600';
+                if (daysUntil <= 30) return 'text-yellow-600';
+                return 'text-green-600';
+            }
 
-      function getHealthScoreColor(score) {
-        if (score >= 80) return 'text-green-600';
-        if (score >= 60) return 'text-yellow-600';
-        if (score >= 40) return 'text-orange-600';
-        return 'text-red-600';
-      }
+            function getHealthStatusColor(status) {
+                if (!status) return 'text-gray-600';
+                const statusLower = status.toLowerCase();
+                if (statusLower.includes('excellent') || statusLower.includes('good')) return 'text-green-600';
+                if (statusLower.includes('fair') || statusLower.includes('average')) return 'text-yellow-600';
+                if (statusLower.includes('poor') || statusLower.includes('critical')) return 'text-red-600';
+                return 'text-gray-600';
+            }
 
-      function getAlertPriorityEmoji(priority) {
-        if (!priority) return '📋';
-        const priorityLower = priority.toLowerCase();
-        if (priorityLower.includes('critical') || priorityLower.includes('high')) return '🚨';
-        if (priorityLower.includes('medium') || priorityLower.includes('warning')) return '⚠️';
-        return '📋';
-      }
-    });
-  </script>
+            function getHealthScoreColor(score) {
+                if (score >= 80) return 'text-green-600';
+                if (score >= 60) return 'text-yellow-600';
+                if (score >= 40) return 'text-orange-600';
+                return 'text-red-600';
+            }
+
+            function getAlertPriorityEmoji(priority) {
+                if (!priority) return '📋';
+                const priorityLower = priority.toLowerCase();
+                if (priorityLower.includes('critical') || priorityLower.includes('high')) return '🚨';
+                if (priorityLower.includes('medium') || priorityLower.includes('warning')) return '⚠️';
+                return '📋';
+            }
+        });
+    </script>
 </body>
 
 </html>

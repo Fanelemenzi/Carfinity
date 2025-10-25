@@ -1,0 +1,225 @@
+<!-- Cost Analysis Chart Component -->
+<div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift">
+  <div class="flex items-center justify-between mb-4 md:mb-6">
+    <h3 class="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
+      <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+      </svg>
+      Cost Analysis
+    </h3>
+    <div class="flex items-center gap-2">
+      <select id="chart-period" class="px-3 py-2 bg-white border border-gray-300 rounded-lg md:rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+        <option value="6months">Last 6 Months</option>
+        <option value="12months">Last 12 Months</option>
+        <option value="24months">Last 24 Months</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Chart Filters -->
+  <div class="flex flex-wrap gap-2 mb-4 md:mb-6">
+    <button class="chart-filter active px-3 py-2 rounded-lg md:rounded-xl bg-gray-600 text-white text-sm font-medium" data-category="all">
+      All Services
+    </button>
+    <button class="chart-filter px-3 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-orange-100 hover:border-orange-300 hover:text-orange-700" data-category="engine">
+      Engine
+    </button>
+    <button class="chart-filter px-3 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-blue-100 hover:border-blue-300 hover:text-blue-700" data-category="tires">
+      Tires
+    </button>
+    <button class="chart-filter px-3 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-green-100 hover:border-green-300 hover:text-green-700" data-category="general">
+      General
+    </button>
+    <button class="chart-filter px-3 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-purple-100 hover:border-purple-300 hover:text-purple-700" data-category="bodywork">
+      Bodywork
+    </button>
+  </div>
+
+  <!-- Chart Container -->
+  <div class="relative">
+    <canvas id="costAnalysisChart" class="w-full h-64"></canvas>
+  </div>
+
+  <!-- Chart Summary Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-300">
+    <div class="text-center">
+      <div class="text-lg md:text-2xl font-bold text-gray-700" id="total-spent">E{{ cost_analytics.total_spent|default:"2,450" }}</div>
+      <div class="text-xs text-gray-600">Total Spent</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg md:text-2xl font-bold text-gray-700" id="avg-monthly">E{{ cost_analytics.monthly_average|default:"204" }}</div>
+      <div class="text-xs text-gray-600">Avg Monthly</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg md:text-2xl font-bold text-green-600" id="vs-average">-12%</div>
+      <div class="text-xs text-gray-600">vs Average</div>
+    </div>
+    <div class="text-center">
+      <div class="text-lg md:text-2xl font-bold text-gray-700" id="projected">E{{ cost_analytics.projected_annual|default:"2,850" }}</div>
+      <div class="text-xs text-gray-600">Projected Annual</div>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js Integration -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('costAnalysisChart').getContext('2d');
+  
+  // Sample data - replace with actual data from backend
+  const chartData = {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Total Costs',
+      data: [120, 89, 156, 203, 98, 145],
+      borderColor: '#14b8a6',
+      backgroundColor: 'rgba(20, 184, 166, 0.1)',
+      borderWidth: 2,
+      fill: true,
+      tension: 0.4
+    }, {
+      label: 'Engine',
+      data: [45, 32, 78, 89, 45, 67],
+      borderColor: '#f97316',
+      backgroundColor: 'rgba(249, 115, 22, 0.1)',
+      borderWidth: 2,
+      fill: false,
+      tension: 0.4,
+      hidden: true
+    }, {
+      label: 'Tires',
+      data: [25, 15, 35, 45, 20, 30],
+      borderColor: '#3b82f6',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderWidth: 2,
+      fill: false,
+      tension: 0.4,
+      hidden: true
+    }, {
+      label: 'General',
+      data: [35, 28, 32, 48, 23, 35],
+      borderColor: '#10b981',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      borderWidth: 2,
+      fill: false,
+      tension: 0.4,
+      hidden: true
+    }, {
+      label: 'Bodywork',
+      data: [15, 14, 11, 21, 10, 13],
+      borderColor: '#8b5cf6',
+      backgroundColor: 'rgba(139, 92, 246, 0.1)',
+      borderWidth: 2,
+      fill: false,
+      tension: 0.4,
+      hidden: true
+    }]
+  };
+
+  const chart = new Chart(ctx, {
+    type: 'line',
+    data: chartData,
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          backgroundColor: 'rgba(26, 31, 46, 0.9)',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          borderColor: '#14b8a6',
+          borderWidth: 1,
+          cornerRadius: 8,
+          displayColors: true,
+          callbacks: {
+            label: function(context) {
+              return context.dataset.label + ': E' + context.parsed.y;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: {
+            color: 'rgba(107, 114, 128, 0.2)',
+            borderColor: 'rgba(107, 114, 128, 0.2)'
+          },
+          ticks: {
+            color: '#9ca3af'
+          }
+        },
+        y: {
+          grid: {
+            color: 'rgba(107, 114, 128, 0.2)',
+            borderColor: 'rgba(107, 114, 128, 0.2)'
+          },
+          ticks: {
+            color: '#9ca3af',
+            callback: function(value) {
+              return 'E' + value;
+            }
+          }
+        }
+      },
+      interaction: {
+        intersect: false,
+        mode: 'index'
+      }
+    }
+  });
+
+  // Filter functionality
+  document.querySelectorAll('.chart-filter').forEach(button => {
+    button.addEventListener('click', function() {
+      // Update active state
+      document.querySelectorAll('.chart-filter').forEach(btn => {
+        btn.classList.remove('active', 'bg-gray-600', 'text-white');
+        btn.classList.add('bg-gray-100', 'border-gray-300', 'text-gray-600');
+      });
+      
+      this.classList.add('active', 'bg-gray-600', 'text-white');
+      this.classList.remove('bg-gray-100', 'border-gray-300', 'text-gray-600');
+
+      const category = this.dataset.category;
+      
+      // Show/hide datasets based on category
+      chart.data.datasets.forEach((dataset, index) => {
+        if (category === 'all') {
+          dataset.hidden = index !== 0; // Show only total costs
+        } else {
+          dataset.hidden = dataset.label.toLowerCase() !== category;
+        }
+      });
+      
+      chart.update();
+    });
+  });
+
+  // Period change functionality
+  document.getElementById('chart-period').addEventListener('change', function() {
+    const period = this.value;
+    // Here you would typically fetch new data based on the selected period
+    // For now, we'll just update the labels as an example
+    
+    let newLabels;
+    switch(period) {
+      case '6months':
+        newLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+        break;
+      case '12months':
+        newLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        break;
+      case '24months':
+        newLabels = ['2023 Q1', '2023 Q2', '2023 Q3', '2023 Q4', '2024 Q1', '2024 Q2', '2024 Q3', '2024 Q4'];
+        break;
+    }
+    
+    chart.data.labels = newLabels;
+    chart.update();
+  });
+});
+</script>

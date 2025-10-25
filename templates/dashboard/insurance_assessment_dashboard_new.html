@@ -572,7 +572,7 @@
                                         </span>
                                         {% if assessment.estimated_repair_cost %}
                                         <div class="text-xs text-gray-500 mt-1 text-right">
-                                            £{{ assessment.estimated_repair_cost|floatformat:0 }}
+                                            R{{ assessment.estimated_repair_cost|floatformat:0 }}
                                         </div>
                                         {% endif %}
                                     </div>
@@ -661,8 +661,8 @@
 
                                     <!-- Value Range Filter -->
                                     <div class="flex space-x-2">
-                                        <input type="number" id="valueFrom" placeholder="Min £" class="w-24 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                        <input type="number" id="valueTo" placeholder="Max £" class="w-24 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                        <input type="number" id="valueFrom" placeholder="Min R" class="w-24 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                        <input type="number" id="valueTo" placeholder="Max R" class="w-24 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
                                     </div>
 
                                     <!-- Clear Filters -->
@@ -757,14 +757,14 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-medium text-gray-900">
                                             {% if assessment.estimated_repair_cost %}
-                                            £{{ assessment.estimated_repair_cost|floatformat:0|add:"0"|stringformat:"s" }}
+                                            R{{ assessment.estimated_repair_cost|floatformat:0|add:"0"|stringformat:"s" }}
                                             {% else %}
                                             <span class="text-gray-400">Pending</span>
                                             {% endif %}
                                         </div>
                                         {% if assessment.vehicle_market_value %}
                                         <div class="text-xs text-gray-500">
-                                            Market: £{{ assessment.vehicle_market_value|floatformat:0 }}
+                                            Market: R{{ assessment.vehicle_market_value|floatformat:0 }}
                                         </div>
                                         {% endif %}
                                     </td>

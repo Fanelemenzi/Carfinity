@@ -1,0 +1,457 @@
+/**
+ * Dashboard Hover Effects and Transitions
+ * Enhanced interactive animations for the autocare dashboard
+ */
+
+/* Enhanced Card Hover Effects */
+.dashboard-card,
+.bg-white.rounded-xl.shadow-sm {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.dashboard-card:hover,
+.bg-white.rounded-xl.shadow-sm:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Vehicle Overview Card Enhanced Hover */
+.vehicle-overview-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+.vehicle-overview-card:hover .vehicle-image {
+    transform: scale(1.05);
+}
+
+.vehicle-image {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Promotion Carousel Card Hover Effects */
+.promotion-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.promotion-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+}
+
+.promotion-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.6s ease;
+    z-index: 1;
+}
+
+.promotion-card:hover::before {
+    left: 100%;
+}
+
+/* Quick Tools Grid Hover Effects */
+.quick-tool-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    cursor: pointer;
+}
+
+.quick-tool-card:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+.quick-tool-card:hover .tool-icon {
+    transform: scale(1.2) rotate(5deg);
+    color: #3b82f6;
+}
+
+.tool-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Service Management Section Hover Effects */
+.service-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.75rem;
+    position: relative;
+}
+
+.service-item:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+    transform: translateX(4px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.service-item:hover .service-icon {
+    transform: scale(1.1);
+    color: #3b82f6;
+}
+
+.service-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Alert Item Hover Effects */
+.alert-item {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0.75rem;
+    position: relative;
+}
+
+.alert-item:hover {
+    background-color: rgba(245, 158, 11, 0.05);
+    transform: translateX(4px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.alert-item:hover .alert-icon {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.alert-icon {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button Hover Effects */
+.btn-primary,
+.action-button,
+button[class*="bg-indigo"],
+button[class*="bg-blue"] {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:hover,
+.action-button:hover,
+button[class*="bg-indigo"]:hover,
+button[class*="bg-blue"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ripple Effect for Buttons */
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-ripple::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.btn-ripple:active::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* Navigation Item Hover Effects */
+.nav-item,
+a[class*="flex items-center space-x"] {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.nav-item:hover,
+a[class*="flex items-center space-x"]:hover {
+    transform: translateY(-1px);
+    background-color: rgba(59, 130, 246, 0.1);
+}
+
+.nav-item:hover i,
+a[class*="flex items-center space-x"]:hover i {
+    transform: scale(1.1);
+    color: #3b82f6;
+}
+
+/* Notification Badge Bounce Animation */
+.notification-badge {
+    animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+/* Loading Shimmer Effects */
+.shimmer-loading {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Skeleton Loading for Cards */
+.skeleton-card {
+    background: #f3f4f6;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    position: relative;
+}
+
+.skeleton-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: skeleton-wave 1.5s infinite;
+}
+
+@keyframes skeleton-wave {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: progress-shine 2s infinite;
+}
+
+@keyframes progress-shine {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Status Indicator Hover Effects */
+.status-indicator {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.status-indicator:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Vehicle Selector Dropdown Hover */
+select:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 1px #3b82f6;
+}
+
+/* Image Hover Effects */
+.hover-zoom {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.hover-zoom:hover img {
+    transform: scale(1.1);
+}
+
+/* Icon Bounce Animation */
+.icon-bounce:hover {
+    animation: icon-bounce 0.6s ease-in-out;
+}
+
+@keyframes icon-bounce {
+    0%, 20%, 53%, 80%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    40%, 43% {
+        transform: translate3d(0, -8px, 0);
+    }
+    70% {
+        transform: translate3d(0, -4px, 0);
+    }
+    90% {
+        transform: translate3d(0, -2px, 0);
+    }
+}
+
+/* Glow Effect for Important Elements */
+.glow-on-hover:hover {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Slide-in Animation for New Content */
+.slide-in-animation {
+    animation: slide-in 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Fade-in Animation for Loading Content */
+.fade-in-animation {
+    animation: fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Scale Animation for Interactive Elements */
+.scale-on-hover:hover {
+    transform: scale(1.05);
+}
+
+/* Rotate Animation for Icons */
+.rotate-on-hover:hover {
+    transform: rotate(180deg);
+}
+
+/* Pulse Animation for Loading States */
+.pulse-loading {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Smooth Transitions for All Interactive Elements */
+* {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* High Contrast Mode Adjustments */
+@media (prefers-contrast: high) {
+    .dashboard-card:hover,
+    .bg-white.rounded-xl.shadow-sm:hover {
+        border: 2px solid #000;
+    }
+    
+    .btn-primary:hover,
+    .action-button:hover {
+        border: 2px solid #fff;
+    }
+}
+
+/* Focus Visible for Accessibility */
+.focus-visible:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
+
+/* Loading State Overlay */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loading-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Staggered Animation for Lists */
+.stagger-animation > * {
+    animation: stagger-fade-in 0.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+
+@keyframes stagger-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

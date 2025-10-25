@@ -819,8 +819,8 @@ class AssessmentPhoto(models.Model):
     ]
     
     assessment = models.ForeignKey(VehicleAssessment, on_delete=models.CASCADE, related_name='photos')
-    category = models.CharField(max_length=20, choices=PHOTO_CATEGORIES)
-    image = models.ImageField(upload_to='assessment_photos/%Y/%m/%d/')
+    category = models.CharField(max_length=20, choices=PHOTO_CATEGORIES, blank=True)
+    image = models.ImageField(upload_to='assessment_photos/%Y/%m/%d/', blank=True, null=True)
     description = models.CharField(max_length=255, blank=True)
     
     # Section linking fields for enhanced photo organization

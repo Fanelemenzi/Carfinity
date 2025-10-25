@@ -507,6 +507,13 @@ class AssessmentPhotoUploadForm(forms.ModelForm):
                 'placeholder': 'Brief description of the photo...'
             })
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make image field optional
+        self.fields['image'].required = False
+        self.fields['category'].required = False
+        self.fields['description'].required = False
 
 
 class AssessmentReportForm(forms.ModelForm):

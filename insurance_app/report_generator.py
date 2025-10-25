@@ -154,12 +154,24 @@ class AssessmentReportGenerator:
         story.extend(self._add_assessment_details())
         story.append(Spacer(1, 20))
         
+        # Assessment summary statistics
+        story.extend(self._add_assessment_summary_stats())
+        story.append(Spacer(1, 20))
+        
         # Cost breakdown
         story.extend(self._add_cost_breakdown())
+        story.append(Spacer(1, 20))
+        
+        # Recommendations and next steps
+        story.extend(self._add_recommendations())
         story.append(PageBreak())
         
         # Section details
         story.extend(self._add_section_details())
+        
+        # Recommendations and next steps
+        story.append(PageBreak())
+        story.extend(self._add_recommendations())
         
         # Photos
         if hasattr(self.assessment, 'photos') and self.assessment.photos.exists():
@@ -217,10 +229,10 @@ class AssessmentReportGenerator:
         # Assessment info table
         assessment_data = [
             ['Assessment ID:', str(self.assessment.id)],
-            ['Vehicle:', f"{self.assessment.vehicle.year} {self.assessment.vehicle.make} {self.assessment.vehicle.model}"],
+            ['Vehicle:', f"{self.assessment.vehicle.manufacture_year} {self.assessment.vehicle.make} {self.assessment.vehicle.model}"],
             ['VIN:', self.assessment.vehicle.vin],
             ['Assessment Date:', self.assessment.assessment_date.strftime('%B %d, %Y')],
-            ['Assessor:', self.assessment.assessor.get_full_name() if self.assessment.assessor else 'N/A'],
+            ['Assessor:', self.assessment.assessor_name if self.assessment.assessor_name else (self.assessment.user.get_full_name() if self.assessment.user else 'N/A')],
             ['Report Generated:', datetime.now().strftime('%B %d, %Y at %I:%M %p')]
         ]
         
@@ -248,9 +260,9 @@ class AssessmentReportGenerator:
         
         summary_text = f"""
         This comprehensive vehicle assessment report details the condition and estimated repair costs 
-        for the {self.assessment.vehicle.year} {self.assessment.vehicle.make} {self.assessment.vehicle.model}.
+        for the {self.assessment.vehicle.manufacture_year} {self.assessment.vehicle.make} {self.assessment.vehicle.model}.
         
-        Total estimated repair cost: ${total_cost:,.2f}
+        Total estimated repair cost: R{total_cost:,.2f}
         
         Assessment status: {self.assessment.get_status_display() if hasattr(self.assessment, 'get_status_display') else 'Completed'}
         """
@@ -268,9 +280,9 @@ class AssessmentReportGenerator:
         vehicle_data = [
             ['Make:', self.assessment.vehicle.make],
             ['Model:', self.assessment.vehicle.model],
-            ['Year:', str(self.assessment.vehicle.year)],
+            ['Year:', str(self.assessment.vehicle.manufacture_year)],
             ['VIN:', self.assessment.vehicle.vin],
-            ['Mileage:', f"{self.assessment.vehicle.mileage:,} miles" if self.assessment.vehicle.mileage else 'N/A'],
+            ['Mileage:', f"{self.assessment.vehicle.current_mileage:,} miles" if self.assessment.vehicle.current_mileage else 'N/A'],
             ['Color:', getattr(self.assessment.vehicle, 'color', 'N/A')],
         ]
         
@@ -296,13 +308,13 @@ class AssessmentReportGenerator:
         
         assessment_data = [
             ['Assessment Date:', self.assessment.assessment_date.strftime('%B %d, %Y')],
-            ['Assessor:', self.assessment.assessor.get_full_name() if self.assessment.assessor else 'N/A'],
+            ['Assessor:', self.assessment.assessor_name if self.assessment.assessor_name else (self.assessment.user.get_full_name() if self.assessment.user else 'N/A')],
             ['Assessment Type:', getattr(self.assessment, 'assessment_type', 'Standard')],
-            ['Location:', getattr(self.assessment, 'location', 'N/A')],
+            ['Location:', getattr(self.assessment, 'incident_location', 'N/A')],
         ]
         
-        if hasattr(self.assessment, 'notes') and self.assessment.notes:
-            assessment_data.append(['Notes:', self.assessment.notes])
+        if hasattr(self.assessment, 'overall_notes') and self.assessment.overall_notes:
+            assessment_data.append(['Notes:', self.assessment.overall_notes])
         
         assessment_table = Table(assessment_data, colWidths=[1.5*inch, 4*inch])
         assessment_table.setStyle(TableStyle([
@@ -316,6 +328,159 @@ class AssessmentReportGenerator:
         ]))
         
         elements.append(assessment_table)
+        
+        return elements
+    
+    def _add_assessment_summary_stats(self):
+        """Add assessment summary statistics section"""
+        elements = []
+        
+        elements.append(Paragraph("Assessment Summary Statistics", self.styles['SectionHeader']))
+        
+        # Get comprehensive section data for statistics
+        sections = self._get_comprehensive_assessment_sections()
+        
+        # Calculate statistics
+        total_sections = len(sections)
+        sections_with_issues = len([s for s in sections if s['cost'] > 0])
+        sections_no_issues = total_sections - sections_with_issues
+        
+        # Severity breakdown
+        severity_counts = {}
+        for section in sections:
+            severity = section['severity']
+            severity_counts[severity] = severity_counts.get(severity, 0) + 1
+        
+        # Create statistics table
+        stats_data = [
+            ['Metric', 'Value', 'Details'],
+            ['Total Sections Assessed', str(total_sections), 'Complete vehicle assessment coverage'],
+            ['Sections with Issues', str(sections_with_issues), f'{(sections_with_issues/total_sections*100):.1f}% of total sections'],
+            ['Sections in Good Condition', str(sections_no_issues), f'{(sections_no_issues/total_sections*100):.1f}% of total sections'],
+        ]
+        
+        # Add severity breakdown
+        for severity, count in severity_counts.items():
+            if count > 0 and severity != 'none':
+                stats_data.append([
+                    f'{severity.title()} Severity Issues',
+                    str(count),
+                    f'{(count/total_sections*100):.1f}% of sections'
+                ])
+        
+        # Overall assessment status
+        if sections_with_issues == 0:
+            overall_status = "Excellent - No issues found"
+        elif sections_with_issues <= total_sections * 0.2:
+            overall_status = "Good - Minor issues only"
+        elif sections_with_issues <= total_sections * 0.5:
+            overall_status = "Fair - Moderate issues present"
+        else:
+            overall_status = "Poor - Multiple issues require attention"
+        
+        stats_data.append(['Overall Vehicle Condition', overall_status, 'Based on comprehensive assessment'])
+        
+        stats_table = Table(stats_data, colWidths=[2.2*inch, 1.3*inch, 2.5*inch])
+        stats_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('ALIGN', (1, 0), (1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+            ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+        ]))
+        
+        elements.append(stats_table)
+        
+        return elements
+    
+    def _add_recommendations(self):
+        """Add recommendations and next steps section"""
+        elements = []
+        
+        elements.append(Paragraph("Recommendations & Next Steps", self.styles['SectionHeader']))
+        
+        # Get comprehensive section data for recommendations
+        sections = self._get_comprehensive_assessment_sections()
+        
+        # Generate recommendations based on assessment findings
+        recommendations = []
+        
+        # Check for critical issues
+        critical_sections = [s for s in sections if s['severity'] in ['major', 'severe']]
+        if critical_sections:
+            recommendations.append({
+                'priority': 'CRITICAL',
+                'text': f"Immediate attention required for {len(critical_sections)} critical section(s): {', '.join([s['name'] for s in critical_sections])}. These issues may affect vehicle safety and should be addressed before driving.",
+                'color': colors.red
+            })
+        
+        # Check for moderate issues
+        moderate_sections = [s for s in sections if s['severity'] == 'moderate']
+        if moderate_sections:
+            recommendations.append({
+                'priority': 'HIGH',
+                'text': f"Schedule repairs for {len(moderate_sections)} section(s) with moderate damage within 30 days to prevent further deterioration.",
+                'color': colors.orange
+            })
+        
+        # Check for minor issues
+        minor_sections = [s for s in sections if s['severity'] == 'minor']
+        if minor_sections:
+            recommendations.append({
+                'priority': 'MEDIUM',
+                'text': f"Address {len(minor_sections)} minor issue(s) during next scheduled maintenance to maintain vehicle condition.",
+                'color': colors.blue
+            })
+        
+        # Cost-based recommendations
+        total_cost = sum(s['cost'] for s in sections)
+        if total_cost > 50000:  # High cost threshold
+            recommendations.append({
+                'priority': 'FINANCIAL',
+                'text': f"Total repair cost (R{total_cost:,.2f}) is significant. Consider obtaining multiple quotes and reviewing insurance coverage options.",
+                'color': colors.purple
+            })
+        
+        # Add general recommendations
+        if not critical_sections and not moderate_sections:
+            recommendations.append({
+                'priority': 'MAINTENANCE',
+                'text': "Vehicle is in good overall condition. Continue with regular maintenance schedule to preserve vehicle value and safety.",
+                'color': colors.green
+            })
+        
+        # Create recommendations list
+        for i, rec in enumerate(recommendations, 1):
+            priority_style = ParagraphStyle(
+                name=f'Priority{i}',
+                parent=self.styles['Normal'],
+                fontSize=11,
+                textColor=rec['color'],
+                fontName='Helvetica-Bold',
+                spaceBefore=8,
+                spaceAfter=4
+            )
+            
+            elements.append(Paragraph(f"{i}. [{rec['priority']}] {rec['text']}", priority_style))
+        
+        # Add next steps
+        elements.append(Spacer(1, 15))
+        elements.append(Paragraph("Recommended Next Steps:", self.styles['SubsectionHeader']))
+        
+        next_steps = [
+            "1. Review this assessment with a qualified mechanic or body shop",
+            "2. Obtain detailed repair quotes from certified service providers",
+            "3. Contact your insurance provider to discuss coverage options",
+            "4. Schedule repairs in order of priority (critical issues first)",
+            "5. Keep this report for insurance and maintenance records"
+        ]
+        
+        for step in next_steps:
+            elements.append(Paragraph(step, self.styles['Normal']))
         
         return elements
     
@@ -334,11 +499,11 @@ class AssessmentReportGenerator:
             total_cost = Decimal('0.00')
             
             for category, cost in cost_data.items():
-                table_data.append([category, f"${cost:,.2f}"])
+                table_data.append([category, f"R{cost:,.2f}"])
                 total_cost += cost
             
             # Add total row
-            table_data.append(['TOTAL', f"${total_cost:,.2f}"])
+            table_data.append(['TOTAL', f"R{total_cost:,.2f}"])
             
             cost_table = Table(table_data, colWidths=[3*inch, 2*inch])
             cost_table.setStyle(TableStyle([
@@ -366,22 +531,184 @@ class AssessmentReportGenerator:
         
         elements.append(Paragraph("Detailed Assessment Sections", self.styles['SectionHeader']))
         
-        # Get all assessment sections
-        sections = self._get_assessment_sections()
+        # Get all assessment sections with comprehensive details
+        sections = self._get_comprehensive_assessment_sections()
         
-        for section_name, section_data in sections.items():
-            elements.append(Paragraph(section_name, self.styles['SubsectionHeader']))
+        for section_info in sections:
+            section_name = section_info['name']
+            section_data = section_info['data']
+            section_cost = section_info['cost']
+            section_severity = section_info['severity']
+            section_icon = section_info.get('icon', '')
             
-            if section_data:
+            # Section header with cost and severity
+            header_text = f"{section_icon} {section_name}"
+            if section_cost > 0:
+                header_text += f" - Estimated Cost: R{section_cost:,.2f}"
+            if section_severity and section_severity != 'none':
+                header_text += f" (Severity: {section_severity.title()})"
+            
+            elements.append(Paragraph(header_text, self.styles['SubsectionHeader']))
+            
+            if section_data and len(section_data) > 0:
+                # Create detailed table for this section
+                table_data = [['Component', 'Condition', 'Notes', 'Estimated Cost']]
+                section_total = 0
+                
                 for item in section_data:
-                    item_text = f"• {item.get('description', 'N/A')}"
-                    if item.get('cost'):
-                        item_text += f" - ${item['cost']:,.2f}"
-                    elements.append(Paragraph(item_text, self.styles['Normal']))
+                    component = item.get('component', 'N/A')
+                    condition = item.get('condition', 'N/A')
+                    notes = item.get('notes', '-')
+                    cost = item.get('cost', 0)
+                    
+                    # Truncate long notes for table display
+                    if len(notes) > 50:
+                        notes = notes[:47] + "..."
+                    
+                    cost_str = f"R{cost:,.2f}" if cost > 0 else "-"
+                    table_data.append([component, condition.title(), notes, cost_str])
+                    section_total += cost
+                
+                # Add section total if there are costs
+                if section_total > 0:
+                    table_data.append(['', '', 'Section Total:', f"R{section_total:,.2f}"])
+                
+                # Create and style the table
+                section_table = Table(table_data, colWidths=[2*inch, 1.2*inch, 2.3*inch, 1*inch])
+                section_table.setStyle(TableStyle([
+                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                    ('ALIGN', (3, 0), (3, -1), 'RIGHT'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, -1), 9),
+                    ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+                    ('TOPPADDING', (0, 0), (-1, -1), 6),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ]))
+                
+                # Highlight total row if present
+                if section_total > 0:
+                    section_table.setStyle(TableStyle([
+                        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+                        ('BACKGROUND', (0, -1), (-1, -1), colors.lightyellow),
+                    ]))
+                
+                elements.append(section_table)
             else:
-                elements.append(Paragraph("No issues found in this section.", self.styles['InfoText']))
+                elements.append(Paragraph("✓ No issues found in this section - All components in good condition.", self.styles['InfoText']))
             
-            elements.append(Spacer(1, 12))
+            elements.append(Spacer(1, 15))
+            
+            # Add page break after every 2-3 sections to prevent overcrowding
+            if len([s for s in sections if sections.index(section_info) <= sections.index(section_info)]) % 3 == 0:
+                elements.append(PageBreak())
+        
+        return elements
+    
+    def _add_recommendations(self):
+        """Add recommendations and next steps section"""
+        elements = []
+        
+        elements.append(Paragraph("Recommendations & Next Steps", self.styles['SectionHeader']))
+        
+        # Get comprehensive section data for recommendations
+        sections = self._get_comprehensive_assessment_sections()
+        
+        # Generate recommendations based on findings
+        recommendations = []
+        
+        # Priority recommendations based on severity
+        critical_sections = [s for s in sections if s['severity'] in ['severe', 'major']]
+        moderate_sections = [s for s in sections if s['severity'] == 'moderate']
+        minor_sections = [s for s in sections if s['severity'] == 'minor']
+        
+        if critical_sections:
+            recommendations.append({
+                'priority': 'CRITICAL',
+                'title': 'Immediate Attention Required',
+                'items': [f"• {s['name']}: Requires immediate professional repair due to {s['severity']} damage" for s in critical_sections],
+                'timeline': 'Within 24-48 hours'
+            })
+        
+        if moderate_sections:
+            recommendations.append({
+                'priority': 'HIGH',
+                'title': 'Schedule Repairs Soon',
+                'items': [f"• {s['name']}: Schedule repair within 1-2 weeks" for s in moderate_sections],
+                'timeline': 'Within 1-2 weeks'
+            })
+        
+        if minor_sections:
+            recommendations.append({
+                'priority': 'MEDIUM',
+                'title': 'Plan for Future Maintenance',
+                'items': [f"• {s['name']}: Address during next scheduled maintenance" for s in minor_sections],
+                'timeline': 'Next maintenance cycle'
+            })
+        
+        # Safety recommendations
+        safety_issues = [s for s in sections if 'safety' in s['name'].lower() and s['cost'] > 0]
+        if safety_issues:
+            recommendations.insert(0, {
+                'priority': 'SAFETY',
+                'title': 'Safety System Concerns',
+                'items': [f"• {s['name']}: Safety system requires immediate inspection" for s in safety_issues],
+                'timeline': 'Before operating vehicle'
+            })
+        
+        # Add general recommendations if no specific issues
+        if not any(s['cost'] > 0 for s in sections):
+            recommendations.append({
+                'priority': 'MAINTENANCE',
+                'title': 'Preventive Maintenance',
+                'items': [
+                    '• Continue regular maintenance schedule',
+                    '• Monitor vehicle condition regularly',
+                    '• Keep maintenance records updated'
+                ],
+                'timeline': 'Ongoing'
+            })
+        
+        # Create recommendations content
+        for rec in recommendations:
+            # Priority header
+            priority_colors = {
+                'CRITICAL': colors.red,
+                'SAFETY': colors.red,
+                'HIGH': colors.orange,
+                'MEDIUM': colors.blue,
+                'MAINTENANCE': colors.green
+            }
+            
+            priority_text = f"<b>{rec['priority']} PRIORITY: {rec['title']}</b>"
+            elements.append(Paragraph(priority_text, self.styles['SubsectionHeader']))
+            
+            # Items
+            for item in rec['items']:
+                elements.append(Paragraph(item, self.styles['Normal']))
+            
+            # Timeline
+            timeline_text = f"<i>Recommended Timeline: {rec['timeline']}</i>"
+            elements.append(Paragraph(timeline_text, self.styles['InfoText']))
+            elements.append(Spacer(1, 10))
+        
+        # Add cost summary and insurance information
+        total_cost = sum(s['cost'] for s in sections)
+        if total_cost > 0:
+            elements.append(Paragraph("Financial Summary", self.styles['SubsectionHeader']))
+            
+            cost_summary = f"""
+            Total Estimated Repair Cost: R{total_cost:,.2f}
+            
+            Insurance Considerations:
+            • Obtain multiple repair quotes for comparison
+            • Check policy coverage and deductibles
+            • Consider authorized repair facilities
+            • Keep all documentation for claims processing
+            """
+            
+            elements.append(Paragraph(cost_summary, self.styles['Normal']))
         
         return elements
     
@@ -424,7 +751,11 @@ class AssessmentReportGenerator:
         """Calculate total estimated cost"""
         total = Decimal('0.00')
         
-        # Add costs from different assessment sections
+        # First try to use the assessment's total if available
+        if hasattr(self.assessment, 'estimated_repair_cost') and self.assessment.estimated_repair_cost:
+            return Decimal(str(self.assessment.estimated_repair_cost))
+        
+        # Otherwise, calculate from sections
         cost_data = self._get_cost_breakdown_data()
         for cost in cost_data.values():
             total += cost
@@ -435,71 +766,237 @@ class AssessmentReportGenerator:
         """Get cost breakdown data from assessment sections"""
         cost_data = {}
         
-        # Check for exterior damage costs
-        if hasattr(self.assessment, 'exterior_damage'):
-            exterior_cost = getattr(self.assessment.exterior_damage, 'estimated_cost', 0) or 0
-            if exterior_cost > 0:
-                cost_data['Exterior Body Damage'] = Decimal(str(exterior_cost))
+        # Get comprehensive section data
+        sections = self._get_comprehensive_assessment_sections()
         
-        # Check for mechanical costs
-        if hasattr(self.assessment, 'mechanical_systems'):
-            mechanical_cost = getattr(self.assessment.mechanical_systems, 'estimated_cost', 0) or 0
-            if mechanical_cost > 0:
-                cost_data['Mechanical Systems'] = Decimal(str(mechanical_cost))
+        for section in sections:
+            section_cost = section['cost']
+            if section_cost > 0:
+                cost_data[section['name']] = Decimal(str(section_cost))
         
-        # Check for interior costs
-        if hasattr(self.assessment, 'interior_condition'):
-            interior_cost = getattr(self.assessment.interior_condition, 'estimated_cost', 0) or 0
-            if interior_cost > 0:
-                cost_data['Interior Condition'] = Decimal(str(interior_cost))
-        
-        # Check for electrical costs
-        if hasattr(self.assessment, 'electrical_systems'):
-            electrical_cost = getattr(self.assessment.electrical_systems, 'estimated_cost', 0) or 0
-            if electrical_cost > 0:
-                cost_data['Electrical Systems'] = Decimal(str(electrical_cost))
-        
-        # Check for wheels/tires costs
-        if hasattr(self.assessment, 'wheels_tires'):
-            wheels_cost = getattr(self.assessment.wheels_tires, 'estimated_cost', 0) or 0
-            if wheels_cost > 0:
-                cost_data['Wheels & Tires'] = Decimal(str(wheels_cost))
+        # Add additional costs if available from the main assessment
+        if hasattr(self.assessment, 'estimated_repair_cost') and self.assessment.estimated_repair_cost:
+            # If we have a total from the assessment that's higher than our calculated total,
+            # add the difference as "Additional Costs"
+            calculated_total = sum(cost_data.values())
+            assessment_total = Decimal(str(self.assessment.estimated_repair_cost))
+            
+            if assessment_total > calculated_total:
+                difference = assessment_total - calculated_total
+                cost_data['Additional Costs'] = difference
         
         return cost_data
     
-    def _get_assessment_sections(self):
-        """Get detailed assessment section data"""
-        sections = {}
+    def _get_comprehensive_assessment_sections(self):
+        """Get comprehensive assessment section data with all details"""
+        sections = []
         
-        # Exterior damage
-        if hasattr(self.assessment, 'exterior_damage'):
-            exterior = self.assessment.exterior_damage
-            sections['Exterior Body Damage'] = self._format_section_data(exterior)
+        # Define all assessment sections with their details
+        section_definitions = [
+            {
+                'name': 'Exterior Body Damage',
+                'icon': '🚗',
+                'attribute': 'exterior_damage',
+                'cost_multiplier': 1500,  # Base cost multiplier for damage levels
+            },
+            {
+                'name': 'Wheels & Tires',
+                'icon': '🛞',
+                'attribute': 'wheels_tires',
+                'cost_multiplier': 800,
+            },
+            {
+                'name': 'Interior Damage',
+                'icon': '🪑',
+                'attribute': 'interior_damage',
+                'cost_multiplier': 1200,
+            },
+            {
+                'name': 'Mechanical Systems',
+                'icon': '⚙️',
+                'attribute': 'mechanical_systems',
+                'cost_multiplier': 2000,
+            },
+            {
+                'name': 'Electrical Systems',
+                'icon': '🔌',
+                'attribute': 'electrical_systems',
+                'cost_multiplier': 1000,
+            },
+            {
+                'name': 'Safety Systems',
+                'icon': '🛡️',
+                'attribute': 'safety_systems',
+                'cost_multiplier': 1800,
+            },
+            {
+                'name': 'Frame & Structural',
+                'icon': '🏗️',
+                'attribute': 'frame_structural',
+                'cost_multiplier': 3000,
+            },
+            {
+                'name': 'Fluid Systems',
+                'icon': '🛢️',
+                'attribute': 'fluid_systems',
+                'cost_multiplier': 600,
+            },
+            {
+                'name': 'Documentation & Identification',
+                'icon': '📋',
+                'attribute': 'documentation',
+                'cost_multiplier': 200,
+            }
+        ]
         
-        # Mechanical systems
-        if hasattr(self.assessment, 'mechanical_systems'):
-            mechanical = self.assessment.mechanical_systems
-            sections['Mechanical Systems'] = self._format_section_data(mechanical)
-        
-        # Interior condition
-        if hasattr(self.assessment, 'interior_condition'):
-            interior = self.assessment.interior_condition
-            sections['Interior Condition'] = self._format_section_data(interior)
-        
-        # Electrical systems
-        if hasattr(self.assessment, 'electrical_systems'):
-            electrical = self.assessment.electrical_systems
-            sections['Electrical Systems'] = self._format_section_data(electrical)
-        
-        # Wheels and tires
-        if hasattr(self.assessment, 'wheels_tires'):
-            wheels = self.assessment.wheels_tires
-            sections['Wheels & Tires'] = self._format_section_data(wheels)
+        for section_def in section_definitions:
+            try:
+                section_obj = getattr(self.assessment, section_def['attribute'], None)
+                
+                if section_obj:
+                    section_data = self._format_comprehensive_section_data(
+                        section_obj, 
+                        section_def['cost_multiplier']
+                    )
+                    section_cost = self._calculate_section_cost(section_data)
+                    section_severity = self._determine_section_severity(section_data)
+                    
+                    sections.append({
+                        'name': section_def['name'],
+                        'icon': section_def['icon'],
+                        'data': section_data,
+                        'cost': section_cost,
+                        'severity': section_severity,
+                    })
+                else:
+                    # Add placeholder for missing sections
+                    sections.append({
+                        'name': section_def['name'],
+                        'icon': section_def['icon'],
+                        'data': [],
+                        'cost': 0,
+                        'severity': 'none',
+                    })
+            except Exception as e:
+                logger.warning(f"Error processing section {section_def['name']}: {str(e)}")
+                # Add placeholder for error sections
+                sections.append({
+                    'name': section_def['name'],
+                    'icon': section_def['icon'],
+                    'data': [],
+                    'cost': 0,
+                    'severity': 'none',
+                })
         
         return sections
     
+    def _format_comprehensive_section_data(self, section, cost_multiplier):
+        """Format section data comprehensively for detailed reporting"""
+        data = []
+        
+        if not section:
+            return data
+        
+        # Define cost mapping for different damage/condition levels
+        cost_mapping = {
+            'none': 0,
+            'good': 0,
+            'excellent': 0,
+            'working': 0,
+            'intact': 0,
+            'light': cost_multiplier * 0.1,
+            'minor': cost_multiplier * 0.15,
+            'minor_damage': cost_multiplier * 0.2,
+            'fair': cost_multiplier * 0.25,
+            'moderate': cost_multiplier * 0.4,
+            'moderate_damage': cost_multiplier * 0.5,
+            'intermittent': cost_multiplier * 0.3,
+            'poor': cost_multiplier * 0.6,
+            'severe': cost_multiplier * 0.8,
+            'severe_damage': cost_multiplier * 0.9,
+            'major': cost_multiplier * 1.0,
+            'destroyed': cost_multiplier * 1.2,
+            'failed': cost_multiplier * 1.1,
+            'not_working': cost_multiplier * 0.8,
+            'compromised': cost_multiplier * 1.5,
+            'deployed': cost_multiplier * 2.0,  # Airbags deployed
+            'fault': cost_multiplier * 0.7,
+        }
+        
+        # Get all fields from the section model
+        for field in section._meta.fields:
+            field_name = field.name
+            
+            # Skip system fields and notes fields (we'll handle notes separately)
+            if field_name in ['id', 'assessment', 'created_at', 'updated_at'] or field_name.endswith('_notes'):
+                continue
+            
+            field_value = getattr(section, field_name, None)
+            notes_field_name = f"{field_name}_notes"
+            notes_value = getattr(section, notes_field_name, '') if hasattr(section, notes_field_name) else ''
+            
+            # Only include items that have issues or are not in perfect condition
+            if field_value and field_value not in ['good', 'none', 'excellent', 'working', 'intact']:
+                component_name = field.verbose_name or field_name.replace('_', ' ').title()
+                
+                # Calculate estimated cost based on condition
+                estimated_cost = cost_mapping.get(field_value, 0)
+                
+                # Adjust cost based on component importance
+                if any(keyword in field_name.lower() for keyword in ['engine', 'transmission', 'brake', 'airbag', 'frame']):
+                    estimated_cost *= 1.5  # Critical components cost more
+                elif any(keyword in field_name.lower() for keyword in ['trim', 'molding', 'handle', 'cap']):
+                    estimated_cost *= 0.5  # Cosmetic components cost less
+                
+                item = {
+                    'component': component_name,
+                    'condition': field_value,
+                    'notes': notes_value or f"Requires attention - {field_value} condition",
+                    'cost': round(estimated_cost, 2)
+                }
+                
+                data.append(item)
+        
+        return data
+    
+    def _calculate_section_cost(self, section_data):
+        """Calculate total cost for a section"""
+        return sum(item.get('cost', 0) for item in section_data)
+    
+    def _determine_section_severity(self, section_data):
+        """Determine overall severity for a section based on individual components"""
+        if not section_data:
+            return 'none'
+        
+        severity_levels = {
+            'none': 0, 'good': 0, 'excellent': 0, 'working': 0, 'intact': 0,
+            'light': 1, 'minor': 2, 'minor_damage': 2, 'fair': 3,
+            'moderate': 4, 'moderate_damage': 4, 'intermittent': 3,
+            'poor': 5, 'severe': 6, 'severe_damage': 6, 'major': 7,
+            'destroyed': 8, 'failed': 7, 'not_working': 6,
+            'compromised': 8, 'deployed': 9, 'fault': 5
+        }
+        
+        max_severity = 0
+        for item in section_data:
+            condition = item.get('condition', 'none')
+            severity_score = severity_levels.get(condition, 0)
+            max_severity = max(max_severity, severity_score)
+        
+        # Convert back to severity names
+        if max_severity == 0:
+            return 'none'
+        elif max_severity <= 2:
+            return 'minor'
+        elif max_severity <= 4:
+            return 'moderate'
+        elif max_severity <= 6:
+            return 'major'
+        else:
+            return 'severe'
+    
     def _format_section_data(self, section):
-        """Format section data for display"""
+        """Format section data for display (legacy method for compatibility)"""
         data = []
         
         if not section:

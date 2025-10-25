@@ -22,6 +22,7 @@ urlpatterns = [
     path('dashboard-selector/', views.dashboard_selector, name='dashboard_selector'),
     path('switch-dashboard/<str:dashboard_name>/', views.switch_dashboard, name='switch_dashboard'),
     path('api/dashboard-switch/', views.dashboard_switch_api, name='dashboard_switch_api'),
+    path('dashboard/switch-vehicle/', views.switch_vehicle, name='switch_vehicle'),
     #path('create-record/', views.create_record, name='create_record'),
    
 ]
