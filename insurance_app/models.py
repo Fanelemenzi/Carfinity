@@ -491,7 +491,7 @@ class AssessmentVersion(models.Model):
 
 
 # Import existing models from assessments app
-from assessments.models import AssessmentComment, AssessmentWorkflow
+from assessments.models import AssessmentComment, AssessmentWorkflow, VehicleAssessment, AssessmentPhoto
 
 
 class AssessmentNotification(models.Model):
@@ -547,3 +547,924 @@ class AssessmentNotification(models.Model):
             self.status = 'read'
             self.read_at = timezone.now()
             self.save()
+
+
+# Parts-Based Quote System Models
+
+class DamagedPart(models.Model):
+    """Model for tracking damaged parts identified from vehicle assessments"""
+    
+    PART_CATEGORIES = [
+        ('body', 'Body Panel'),
+        ('mechanical', 'Mechanical Component'),
+        ('electrical', 'Electrical Component'),
+        ('glass', 'Glass/Windows'),
+        ('interior', 'Interior Component'),
+        ('trim', 'Trim/Cosmetic'),
+        ('wheels', 'Wheels/Tires'),
+        ('safety', 'Safety System'),
+        ('structural', 'Structural Component'),
+        ('fluid', 'Fluid System'),
+    ]
+    
+    DAMAGE_SEVERITY = [
+        ('minor', 'Minor Damage'),
+        ('moderate', 'Moderate Damage'),
+        ('severe', 'Severe Damage'),
+        ('replace', 'Requires Replacement'),
+    ]
+    
+    SECTION_TYPES = [
+        ('exterior', 'Exterior'),
+        ('mechanical', 'Mechanical'),
+        ('interior', 'Interior'),
+        ('electrical', 'Electrical'),
+        ('wheels', 'Wheels'),
+        ('safety', 'Safety'),
+        ('structural', 'Structural'),
+        ('fluids', 'Fluids'),
+    ]
+    
+    assessment = models.ForeignKey(
+        VehicleAssessment, 
+        on_delete=models.CASCADE, 
+        related_name='damaged_parts'
+    )
+    section_type = models.CharField(max_length=20, choices=SECTION_TYPES)
+    part_name = models.CharField(max_length=200)
+    part_number = models.CharField(max_length=100, blank=True, null=True)
+    part_category = models.CharField(max_length=20, choices=PART_CATEGORIES)
+    damage_severity = models.CharField(max_length=20, choices=DAMAGE_SEVERITY)
+    damage_description = models.TextField()
+    requires_replacement = models.BooleanField(default=False)
+    estimated_labor_hours = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    damage_images = models.ManyToManyField(AssessmentPhoto, blank=True)
+    identified_date = models.DateTimeField(auto_now_add=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['section_type', 'part_category', 'part_name']
+        indexes = [
+            models.Index(fields=['assessment', 'section_type']),
+            models.Index(fields=['part_category', 'damage_severity']),
+            models.Index(fields=['identified_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.assessment.assessment_id} - {self.part_name} ({self.get_damage_severity_display()})"
+    
+    def get_estimated_cost_range(self):
+        """Get estimated cost range based on part category and damage severity"""
+        # Base cost multipliers by category
+        base_costs = {
+            'body': 500,
+            'mechanical': 800,
+            'electrical': 300,
+            'glass': 200,
+            'interior': 150,
+            'trim': 100,
+            'wheels': 400,
+            'safety': 600,
+            'structural': 1200,
+            'fluid': 250,
+        }
+        
+        # Severity multipliers
+        severity_multipliers = {
+            'minor': 0.3,
+            'moderate': 0.6,
+            'severe': 1.0,
+            'replace': 1.5,
+        }
+        
+        base_cost = base_costs.get(self.part_category, 300)
+        multiplier = severity_multipliers.get(self.damage_severity, 1.0)
+        
+        estimated_cost = base_cost * multiplier
+        labor_cost = float(self.estimated_labor_hours) * 45  # £45/hour
+        
+        return {
+            'min_cost': estimated_cost * 0.8 + labor_cost,
+            'max_cost': estimated_cost * 1.2 + labor_cost,
+            'estimated_cost': estimated_cost + labor_cost
+        }
+
+
+class PartQuoteRequest(models.Model):
+    """Model for managing quote requests sent to providers"""
+    
+    REQUEST_STATUS = [
+        ('draft', 'Draft'),
+        ('pending', 'Pending'),
+        ('sent', 'Sent to Provider'),
+        ('received', 'Quote Received'),
+        ('expired', 'Request Expired'),
+        ('cancelled', 'Cancelled'),
+    ]
+    
+    damaged_part = models.ForeignKey(
+        DamagedPart, 
+        on_delete=models.CASCADE, 
+        related_name='quote_requests'
+    )
+    assessment = models.ForeignKey(
+        VehicleAssessment, 
+        on_delete=models.CASCADE, 
+        related_name='part_quote_requests'
+    )
+    request_id = models.CharField(max_length=50, unique=True, db_index=True)
+    request_date = models.DateTimeField(auto_now_add=True)
+    expiry_date = models.DateTimeField()
+    status = models.CharField(max_length=20, choices=REQUEST_STATUS, default='draft')
+    
+    # Provider selection (manual by assessor)
+    include_assessor = models.BooleanField(default=False)
+    include_dealer = models.BooleanField(default=False)
+    include_independent = models.BooleanField(default=False)
+    include_network = models.BooleanField(default=False)
+    
+    # Vehicle context for providers
+    vehicle_make = models.CharField(max_length=100)
+    vehicle_model = models.CharField(max_length=100)
+    vehicle_year = models.IntegerField()
+    vehicle_vin = models.CharField(max_length=17, blank=True)
+    
+    # Dispatch tracking
+    dispatched_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    dispatched_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-request_date']
+        indexes = [
+            models.Index(fields=['request_id']),
+            models.Index(fields=['assessment', 'status']),
+            models.Index(fields=['expiry_date', 'status']),
+            models.Index(fields=['dispatched_by', 'request_date']),
+        ]
+    
+    def __str__(self):
+        return f"Quote Request {self.request_id} - {self.damaged_part.part_name}"
+    
+    def generate_request_id(self):
+        """Generate unique request ID"""
+        import uuid
+        from datetime import datetime
+        timestamp = datetime.now().strftime('%Y%m%d%H%M')
+        unique_id = str(uuid.uuid4())[:8]
+        return f"QR-{timestamp}-{unique_id}"
+    
+    def save(self, *args, **kwargs):
+        if not self.request_id:
+            self.request_id = self.generate_request_id()
+        
+        # Set vehicle context from assessment
+        if self.assessment and self.assessment.vehicle:
+            vehicle = self.assessment.vehicle
+            self.vehicle_make = vehicle.make
+            self.vehicle_model = vehicle.model
+            self.vehicle_year = vehicle.manufacture_year
+            if hasattr(vehicle, 'vin'):
+                self.vehicle_vin = vehicle.vin
+        
+        super().save(*args, **kwargs)
+    
+    def is_expired(self):
+        """Check if request has expired"""
+        return timezone.now() > self.expiry_date
+    
+    def days_until_expiry(self):
+        """Get number of days until expiry (negative if expired)"""
+        delta = self.expiry_date.date() - timezone.now().date()
+        return delta.days
+    
+    def get_selected_providers(self):
+        """Get list of selected provider types"""
+        providers = []
+        if self.include_assessor:
+            providers.append('assessor')
+        if self.include_dealer:
+            providers.append('dealer')
+        if self.include_independent:
+            providers.append('independent')
+        if self.include_network:
+            providers.append('network')
+        return providers
+
+
+class PartQuote(models.Model):
+    """Model for storing quotes received from providers"""
+    
+    PROVIDER_TYPES = [
+        ('assessor', 'Assessor Estimate'),
+        ('dealer', 'Authorized Dealer'),
+        ('independent', 'Independent Garage'),
+        ('network', 'Insurance Network'),
+    ]
+    
+    PART_TYPES = [
+        ('oem', 'OEM (Original Equipment)'),
+        ('oem_equivalent', 'OEM Equivalent'),
+        ('aftermarket', 'Aftermarket'),
+        ('used', 'Used/Reconditioned'),
+    ]
+    
+    QUOTE_STATUS = [
+        ('submitted', 'Submitted'),
+        ('validated', 'Validated'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    
+    quote_request = models.ForeignKey(
+        PartQuoteRequest, 
+        on_delete=models.CASCADE, 
+        related_name='quotes'
+    )
+    damaged_part = models.ForeignKey(
+        DamagedPart, 
+        on_delete=models.CASCADE, 
+        related_name='quotes'
+    )
+    provider_type = models.CharField(max_length=20, choices=PROVIDER_TYPES)
+    provider_name = models.CharField(max_length=200)
+    provider_contact = models.CharField(max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=QUOTE_STATUS, default='submitted')
+    
+    # Cost breakdown
+    part_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    labor_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    paint_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    additional_costs = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Part specifications
+    part_type = models.CharField(max_length=50, choices=PART_TYPES, default='oem')
+    part_manufacturer = models.CharField(max_length=100, blank=True)
+    part_number_quoted = models.CharField(max_length=100, blank=True)
+    
+    # Timeline and warranty
+    estimated_delivery_days = models.IntegerField()
+    estimated_completion_days = models.IntegerField()
+    part_warranty_months = models.IntegerField(default=12)
+    labor_warranty_months = models.IntegerField(default=12)
+    
+    # Quality metrics
+    confidence_score = models.IntegerField(
+        default=50,
+        validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    
+    # Metadata
+    quote_date = models.DateTimeField(auto_now_add=True)
+    valid_until = models.DateTimeField()
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['total_cost']
+        indexes = [
+            models.Index(fields=['quote_request', 'provider_type']),
+            models.Index(fields=['damaged_part', 'total_cost']),
+            models.Index(fields=['quote_date']),
+            models.Index(fields=['valid_until', 'status']),
+        ]
+    
+    def __str__(self):
+        return f"{self.provider_name} - {self.damaged_part.part_name} - £{self.total_cost}"
+    
+    def save(self, *args, **kwargs):
+        # Calculate total cost if not provided
+        if not self.total_cost:
+            self.total_cost = (
+                self.part_cost + 
+                self.labor_cost + 
+                self.paint_cost + 
+                self.additional_costs
+            )
+        super().save(*args, **kwargs)
+    
+    def is_valid(self):
+        """Check if quote is still valid"""
+        return timezone.now() <= self.valid_until and self.status != 'expired'
+    
+    def days_until_expiry(self):
+        """Get number of days until expiry (negative if expired)"""
+        delta = self.valid_until.date() - timezone.now().date()
+        return delta.days
+    
+    def get_cost_breakdown(self):
+        """Get detailed cost breakdown"""
+        return {
+            'part_cost': float(self.part_cost),
+            'labor_cost': float(self.labor_cost),
+            'paint_cost': float(self.paint_cost),
+            'additional_costs': float(self.additional_costs),
+            'total_cost': float(self.total_cost)
+        }
+    
+    def calculate_price_score(self, market_average):
+        """Calculate price competitiveness score (0-100)"""
+        if market_average <= 0:
+            return 50
+        
+        ratio = float(self.total_cost) / market_average
+        if ratio <= 0.8:
+            return 100  # Excellent price
+        elif ratio <= 0.9:
+            return 80   # Good price
+        elif ratio <= 1.1:
+            return 60   # Fair price
+        elif ratio <= 1.2:
+            return 40   # Above average
+        else:
+            return 20   # Expensive
+
+
+class PartMarketAverage(models.Model):
+    """Model for storing market average calculations and statistics"""
+    
+    damaged_part = models.OneToOneField(
+        DamagedPart, 
+        on_delete=models.CASCADE, 
+        related_name='market_average'
+    )
+    
+    # Statistical data
+    average_total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    average_part_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    average_labor_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Price range
+    min_total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    max_total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    # Statistical measures
+    standard_deviation = models.DecimalField(max_digits=10, decimal_places=2)
+    variance_percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    
+    # Data quality metrics
+    quote_count = models.IntegerField()
+    confidence_level = models.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(100)]
+    )
+    
+    # Outlier identification
+    outlier_quotes = models.JSONField(default=list, blank=True)
+    
+    # Metadata
+    calculated_date = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['damaged_part']),
+            models.Index(fields=['calculated_date']),
+            models.Index(fields=['confidence_level']),
+        ]
+    
+    def __str__(self):
+        return f"Market Average - {self.damaged_part.part_name} - £{self.average_total_cost}"
+    
+    def get_price_range_display(self):
+        """Get formatted price range"""
+        return f"£{self.min_total_cost} - £{self.max_total_cost}"
+    
+    def is_high_confidence(self):
+        """Check if market data has high confidence"""
+        return self.confidence_level >= 70 and self.quote_count >= 3
+    
+    def get_outlier_quotes(self):
+        """Get quotes that are statistical outliers"""
+        if not self.outlier_quotes:
+            return []
+        
+        # Return PartQuote objects for outlier quote IDs
+        from .models import PartQuote
+        outlier_ids = self.outlier_quotes
+        return PartQuote.objects.filter(id__in=outlier_ids)
+    
+    def get_variance_category(self):
+        """Categorize price variance"""
+        variance = float(self.variance_percentage)
+        if variance <= 10:
+            return 'low'
+        elif variance <= 25:
+            return 'moderate'
+        else:
+            return 'high'
+
+
+class AssessmentQuoteSummary(models.Model):
+    """Model for overall assessment quote management and summaries"""
+    
+    SUMMARY_STATUS = [
+        ('collecting', 'Collecting Quotes'),
+        ('analysis', 'Analyzing Quotes'),
+        ('ready', 'Ready for Review'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    
+    assessment = models.OneToOneField(
+        VehicleAssessment, 
+        on_delete=models.CASCADE, 
+        related_name='quote_summary'
+    )
+    status = models.CharField(max_length=20, choices=SUMMARY_STATUS, default='collecting')
+    
+    # Quote collection metrics
+    total_parts_identified = models.IntegerField(default=0)
+    parts_with_quotes = models.IntegerField(default=0)
+    total_quote_requests = models.IntegerField(default=0)
+    quotes_received = models.IntegerField(default=0)
+    
+    # Cost summaries by provider type
+    assessor_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    dealer_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    independent_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    network_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    
+    # Market analysis
+    market_average_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    recommended_total = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    potential_savings = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    
+    # Recommendation
+    recommended_provider_mix = models.JSONField(default=dict, blank=True)
+    recommendation_reasoning = models.TextField(blank=True)
+    
+    # Metadata
+    created_date = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
+    completed_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='completed_quote_summaries'
+    )
+    
+    class Meta:
+        verbose_name_plural = "Assessment Quote Summaries"
+        indexes = [
+            models.Index(fields=['assessment']),
+            models.Index(fields=['status', 'last_updated']),
+            models.Index(fields=['created_date']),
+        ]
+    
+    def __str__(self):
+        return f"Quote Summary - {self.assessment.assessment_id}"
+    
+    def calculate_completion_percentage(self):
+        """Calculate quote collection completion percentage"""
+        if self.total_parts_identified == 0:
+            return 0
+        return (self.parts_with_quotes / self.total_parts_identified) * 100
+    
+    def get_best_provider_total(self):
+        """Get the lowest total cost among all providers"""
+        totals = [
+            self.assessor_total,
+            self.dealer_total,
+            self.independent_total,
+            self.network_total
+        ]
+        valid_totals = [t for t in totals if t is not None]
+        return min(valid_totals) if valid_totals else None
+    
+    def calculate_potential_savings(self):
+        """Calculate potential savings compared to highest quote"""
+        totals = [
+            self.assessor_total,
+            self.dealer_total,
+            self.independent_total,
+            self.network_total
+        ]
+        valid_totals = [t for t in totals if t is not None]
+        
+        if len(valid_totals) < 2:
+            return 0
+        
+        highest = max(valid_totals)
+        lowest = min(valid_totals)
+        return highest - lowest
+    
+    def update_summary_metrics(self):
+        """Update summary metrics from related data"""
+        # Count parts and quotes
+        self.total_parts_identified = self.assessment.damaged_parts.count()
+        self.parts_with_quotes = self.assessment.damaged_parts.filter(
+            quotes__isnull=False
+        ).distinct().count()
+        
+        self.total_quote_requests = self.assessment.part_quote_requests.count()
+        self.quotes_received = PartQuote.objects.filter(
+            quote_request__assessment=self.assessment
+        ).count()
+        
+        # Calculate provider totals
+        provider_totals = {}
+        for provider_type in ['assessor', 'dealer', 'independent', 'network']:
+            quotes = PartQuote.objects.filter(
+                quote_request__assessment=self.assessment,
+                provider_type=provider_type,
+                status='validated'
+            )
+            if quotes.exists():
+                provider_totals[provider_type] = sum(q.total_cost for q in quotes)
+        
+        self.assessor_total = provider_totals.get('assessor')
+        self.dealer_total = provider_totals.get('dealer')
+        self.independent_total = provider_totals.get('independent')
+        self.network_total = provider_totals.get('network')
+        
+        # Calculate market average
+        market_averages = PartMarketAverage.objects.filter(
+            damaged_part__assessment=self.assessment
+        )
+        if market_averages.exists():
+            self.market_average_total = sum(ma.average_total_cost for ma in market_averages)
+        
+        # Calculate potential savings
+        self.potential_savings = self.calculate_potential_savings()
+        
+        self.save()
+
+
+# Quote System Configuration Models
+
+class QuoteSystemConfiguration(models.Model):
+    """System-wide configuration for the parts-based quote system"""
+    
+    # Singleton pattern - only one configuration record
+    id = models.AutoField(primary_key=True)
+    
+    # Cost calculation settings
+    default_labor_rate = models.DecimalField(
+        max_digits=6, 
+        decimal_places=2, 
+        default=45.00,
+        help_text="Default hourly labor rate in GBP"
+    )
+    paint_cost_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=15.00,
+        help_text="Paint cost as percentage of part cost for body panels"
+    )
+    additional_cost_percentage = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=5.00,
+        help_text="Additional costs percentage (consumables, shop supplies)"
+    )
+    
+    # Quote request settings
+    default_quote_expiry_days = models.IntegerField(
+        default=7,
+        help_text="Default number of days before quote requests expire"
+    )
+    minimum_quotes_required = models.IntegerField(
+        default=2,
+        help_text="Minimum number of quotes required for market analysis"
+    )
+    confidence_threshold = models.IntegerField(
+        default=70,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Minimum confidence level for market averages (0-100)"
+    )
+    
+    # Provider settings
+    enable_assessor_estimates = models.BooleanField(
+        default=True,
+        help_text="Enable internal assessor estimates"
+    )
+    enable_dealer_quotes = models.BooleanField(
+        default=True,
+        help_text="Enable authorized dealer quote requests"
+    )
+    enable_independent_quotes = models.BooleanField(
+        default=True,
+        help_text="Enable independent garage quote requests"
+    )
+    enable_network_quotes = models.BooleanField(
+        default=True,
+        help_text="Enable insurance network quote requests"
+    )
+    
+    # Recommendation engine settings
+    price_weight = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        default=0.40,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Weight for price in recommendation scoring (0.0-1.0)"
+    )
+    quality_weight = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        default=0.25,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Weight for quality in recommendation scoring (0.0-1.0)"
+    )
+    timeline_weight = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        default=0.15,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Weight for timeline in recommendation scoring (0.0-1.0)"
+    )
+    warranty_weight = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        default=0.10,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Weight for warranty in recommendation scoring (0.0-1.0)"
+    )
+    reliability_weight = models.DecimalField(
+        max_digits=3, 
+        decimal_places=2, 
+        default=0.10,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Weight for reliability in recommendation scoring (0.0-1.0)"
+    )
+    
+    # System monitoring settings
+    enable_performance_logging = models.BooleanField(
+        default=True,
+        help_text="Enable detailed performance logging for quote operations"
+    )
+    log_retention_days = models.IntegerField(
+        default=90,
+        help_text="Number of days to retain detailed logs"
+    )
+    enable_health_monitoring = models.BooleanField(
+        default=True,
+        help_text="Enable system health monitoring and alerts"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        help_text="User who last updated the configuration"
+    )
+    
+    class Meta:
+        verbose_name = "Quote System Configuration"
+        verbose_name_plural = "Quote System Configuration"
+    
+    def __str__(self):
+        return f"Quote System Configuration (Updated: {self.updated_at.strftime('%Y-%m-%d %H:%M')})"
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one configuration record exists
+        if not self.pk and QuoteSystemConfiguration.objects.exists():
+            raise ValueError("Only one QuoteSystemConfiguration instance is allowed")
+        
+        # Validate recommendation weights sum to 1.0
+        total_weight = (
+            self.price_weight + 
+            self.quality_weight + 
+            self.timeline_weight + 
+            self.warranty_weight + 
+            self.reliability_weight
+        )
+        if abs(float(total_weight) - 1.0) > 0.01:
+            raise ValueError("Recommendation weights must sum to 1.0")
+        
+        super().save(*args, **kwargs)
+    
+    @classmethod
+    def get_config(cls):
+        """Get the current system configuration"""
+        config, created = cls.objects.get_or_create(pk=1)
+        return config
+
+
+class ProviderConfiguration(models.Model):
+    """Configuration for individual provider types"""
+    
+    PROVIDER_TYPES = [
+        ('assessor', 'Assessor Estimates'),
+        ('dealer', 'Authorized Dealers'),
+        ('independent', 'Independent Garages'),
+        ('network', 'Insurance Networks'),
+    ]
+    
+    provider_type = models.CharField(max_length=20, choices=PROVIDER_TYPES, unique=True)
+    is_enabled = models.BooleanField(default=True)
+    
+    # API configuration
+    api_endpoint = models.URLField(blank=True, null=True, help_text="API endpoint for provider integration")
+    api_key = models.CharField(max_length=255, blank=True, help_text="API key for authentication")
+    api_timeout_seconds = models.IntegerField(default=30, help_text="API request timeout in seconds")
+    
+    # Email configuration
+    email_enabled = models.BooleanField(default=False, help_text="Enable email-based quote requests")
+    email_template = models.TextField(blank=True, help_text="Email template for quote requests")
+    
+    # Performance settings
+    max_concurrent_requests = models.IntegerField(default=5, help_text="Maximum concurrent requests to this provider")
+    retry_attempts = models.IntegerField(default=3, help_text="Number of retry attempts for failed requests")
+    retry_delay_seconds = models.IntegerField(default=60, help_text="Delay between retry attempts")
+    
+    # Quality metrics
+    reliability_score = models.IntegerField(
+        default=50,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+        help_text="Provider reliability score (0-100)"
+    )
+    average_response_time_hours = models.DecimalField(
+        max_digits=5, 
+        decimal_places=2, 
+        default=24.00,
+        help_text="Average response time in hours"
+    )
+    
+    # Cost adjustments
+    cost_multiplier = models.DecimalField(
+        max_digits=4, 
+        decimal_places=3, 
+        default=1.000,
+        help_text="Multiplier applied to provider quotes (e.g., 1.1 for 10% markup)"
+    )
+    
+    # Metadata
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Provider Configuration"
+        verbose_name_plural = "Provider Configurations"
+        ordering = ['provider_type']
+    
+    def __str__(self):
+        status = "Enabled" if self.is_enabled else "Disabled"
+        return f"{self.get_provider_type_display()} - {status}"
+
+
+class QuoteSystemHealthMetrics(models.Model):
+    """System health monitoring for the quote system"""
+    
+    # Timestamp
+    recorded_at = models.DateTimeField(auto_now_add=True)
+    
+    # Quote request metrics
+    total_quote_requests_24h = models.IntegerField(default=0)
+    successful_quote_requests_24h = models.IntegerField(default=0)
+    failed_quote_requests_24h = models.IntegerField(default=0)
+    
+    # Quote response metrics
+    total_quotes_received_24h = models.IntegerField(default=0)
+    average_response_time_hours = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    
+    # Provider performance
+    assessor_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    dealer_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    independent_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    network_success_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    
+    # System performance
+    average_parts_identification_time_seconds = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    average_market_calculation_time_seconds = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    average_recommendation_time_seconds = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    
+    # Error tracking
+    api_errors_24h = models.IntegerField(default=0)
+    database_errors_24h = models.IntegerField(default=0)
+    validation_errors_24h = models.IntegerField(default=0)
+    
+    # Data quality metrics
+    high_confidence_market_averages = models.IntegerField(default=0)
+    low_confidence_market_averages = models.IntegerField(default=0)
+    outlier_quotes_detected = models.IntegerField(default=0)
+    
+    class Meta:
+        verbose_name = "Quote System Health Metrics"
+        verbose_name_plural = "Quote System Health Metrics"
+        ordering = ['-recorded_at']
+        indexes = [
+            models.Index(fields=['recorded_at']),
+        ]
+    
+    def __str__(self):
+        return f"Health Metrics - {self.recorded_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def get_overall_success_rate(self):
+        """Calculate overall system success rate"""
+        if self.total_quote_requests_24h == 0:
+            return 0
+        return (self.successful_quote_requests_24h / self.total_quote_requests_24h) * 100
+    
+    def get_system_health_status(self):
+        """Get overall system health status"""
+        success_rate = self.get_overall_success_rate()
+        error_rate = (self.api_errors_24h + self.database_errors_24h + self.validation_errors_24h) / max(1, self.total_quote_requests_24h) * 100
+        
+        if success_rate >= 95 and error_rate <= 1:
+            return 'excellent'
+        elif success_rate >= 90 and error_rate <= 5:
+            return 'good'
+        elif success_rate >= 80 and error_rate <= 10:
+            return 'fair'
+        else:
+            return 'poor'
+
+
+class QuoteSystemAuditLog(models.Model):
+    """Audit log for all quote system operations"""
+    
+    ACTION_TYPES = [
+        ('parts_identification', 'Parts Identification'),
+        ('quote_request_created', 'Quote Request Created'),
+        ('quote_request_dispatched', 'Quote Request Dispatched'),
+        ('quote_received', 'Quote Received'),
+        ('quote_validated', 'Quote Validated'),
+        ('quote_rejected', 'Quote Rejected'),
+        ('market_average_calculated', 'Market Average Calculated'),
+        ('recommendation_generated', 'Recommendation Generated'),
+        ('configuration_updated', 'Configuration Updated'),
+        ('provider_enabled', 'Provider Enabled'),
+        ('provider_disabled', 'Provider Disabled'),
+        ('system_error', 'System Error'),
+        ('user_action', 'User Action'),
+    ]
+    
+    SEVERITY_LEVELS = [
+        ('info', 'Information'),
+        ('warning', 'Warning'),
+        ('error', 'Error'),
+        ('critical', 'Critical'),
+    ]
+    
+    # Core fields
+    timestamp = models.DateTimeField(auto_now_add=True)
+    action_type = models.CharField(max_length=30, choices=ACTION_TYPES)
+    severity = models.CharField(max_length=10, choices=SEVERITY_LEVELS, default='info')
+    
+    # User and session info
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    session_key = models.CharField(max_length=40, blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    
+    # Related objects
+    assessment_id = models.CharField(max_length=50, blank=True, db_index=True)
+    quote_request_id = models.CharField(max_length=50, blank=True, db_index=True)
+    quote_id = models.PositiveIntegerField(null=True, blank=True, db_index=True)
+    
+    # Action details
+    message = models.TextField()
+    details = models.JSONField(default=dict, blank=True)
+    
+    # Performance metrics
+    execution_time_ms = models.PositiveIntegerField(null=True, blank=True)
+    
+    class Meta:
+        verbose_name = "Quote System Audit Log"
+        verbose_name_plural = "Quote System Audit Logs"
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['timestamp', 'action_type']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['assessment_id', 'timestamp']),
+            models.Index(fields=['severity', 'timestamp']),
+        ]
+    
+    def __str__(self):
+        return f"{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')} - {self.get_action_type_display()}"
+    
+    @classmethod
+    def log_action(cls, action_type, message, user=None, assessment_id=None, 
+                   quote_request_id=None, quote_id=None, severity='info', 
+                   details=None, execution_time_ms=None, request=None):
+        """Convenience method to create audit log entries"""
+        log_entry = cls(
+            action_type=action_type,
+            severity=severity,
+            user=user,
+            assessment_id=assessment_id,
+            quote_request_id=quote_request_id,
+            quote_id=quote_id,
+            message=message,
+            details=details or {},
+            execution_time_ms=execution_time_ms
+        )
+        
+        if request:
+            log_entry.session_key = request.session.session_key or ''
+            log_entry.ip_address = request.META.get('REMOTE_ADDR')
+            log_entry.user_agent = request.META.get('HTTP_USER_AGENT', '')
+        
+        log_entry.save()
+        return log_entry
