@@ -5,7 +5,11 @@ from django.utils.safestring import mark_safe
 from maintenance.models import ScheduledMaintenance
 from .models import (
     InsurancePolicy, Vehicle, MaintenanceSchedule, MaintenanceCompliance,
-    Accident, VehicleConditionScore, RiskAlert, RiskAssessmentMetrics
+    Accident, VehicleConditionScore, RiskAlert, RiskAssessmentMetrics,
+    # Quote System Models
+    DamagedPart, PartQuoteRequest, PartQuote, PartMarketAverage, 
+    AssessmentQuoteSummary, QuoteSystemConfiguration, ProviderConfiguration,
+    QuoteSystemHealthMetrics, QuoteSystemAuditLog
 )
 
 # Inline admin classes
@@ -538,3 +542,786 @@ for admin_class in [InsurancePolicyAdmin, VehicleAdmin, MaintenanceScheduleAdmin
                    MaintenanceComplianceAdmin, AccidentAdmin, VehicleConditionScoreAdmin, 
                    RiskAlertAdmin, RiskAssessmentMetricsAdmin]:
     admin_class.Media = Media
+
+
+# ============================================================================
+# PARTS-BASED QUOTE SYSTEM ADMIN INTERFACES
+# ============================================================================
+
+# Inline admin classes for quote system
+class DamagedPartInline(admin.TabularInline):
+    model = DamagedPart
+    extra = 0
+    readonly_fields = ['identified_date', 'estimated_cost_display']
+    fields = ['part_name', 'part_category', 'damage_severity', 'estimated_labor_hours', 'estimated_cost_display']
+    
+    def estimated_cost_display(self, obj):
+        if obj.pk:
+            cost_range = obj.get_estimated_cost_range()
+            return f"£{cost_range['estimated_cost']:.2f}"
+        return "Not calculated"
+    estimated_cost_display.short_description = 'Est. Cost'
+
+class PartQuoteInline(admin.TabularInline):
+    model = PartQuote
+    extra = 0
+    readonly_fields = ['quote_date', 'total_cost', 'is_valid_display']
+    fields = ['provider_type', 'provider_name', 'part_cost', 'labor_cost', 'total_cost', 'is_valid_display']
+    
+    def is_valid_display(self, obj):
+        if obj.pk and obj.is_valid():
+            return format_html('<span style="color: green;">✓ Valid</span>')
+        return format_html('<span style="color: red;">✗ Expired</span>')
+    is_valid_display.short_description = 'Status'
+
+class PartQuoteRequestInline(admin.TabularInline):
+    model = PartQuoteRequest
+    extra = 0
+    readonly_fields = ['request_id', 'request_date', 'status', 'quote_count']
+    fields = ['request_id', 'status', 'include_assessor', 'include_dealer', 'include_independent', 'include_network', 'quote_count']
+    
+    def quote_count(self, obj):
+        if obj.pk:
+            count = obj.quotes.count()
+            return f"{count} quotes"
+        return "0 quotes"
+    quote_count.short_description = 'Quotes'
+
+# ============================================================================
+# QUOTE SYSTEM ADMIN CLASSES
+# ============================================================================
+
+@admin.register(DamagedPart)
+class DamagedPartAdmin(admin.ModelAdmin):
+    list_display = ['part_name', 'assessment_info', 'part_category', 'damage_severity', 'estimated_labor_hours', 'quote_count', 'identified_date']
+    list_filter = ['part_category', 'damage_severity', 'section_type', 'requires_replacement', 'identified_date']
+    search_fields = ['part_name', 'part_number', 'damage_description', 'assessment__id']
+    readonly_fields = ['identified_date', 'quote_count', 'estimated_cost_display', 'market_average_display']
+    inlines = [PartQuoteRequestInline, PartQuoteInline]
+    
+    fieldsets = (
+        ('Assessment & Part Info', {
+            'fields': ('assessment', 'section_type', 'part_name', 'part_number', 'part_category')
+        }),
+        ('Damage Details', {
+            'fields': ('damage_severity', 'damage_description', 'requires_replacement')
+        }),
+        ('Labor & Cost', {
+            'fields': ('estimated_labor_hours', 'estimated_cost_display', 'market_average_display')
+        }),
+        ('Images & Notes', {
+            'fields': ('damage_images', 'notes')
+        }),
+        ('Metadata', {
+            'fields': ('identified_date',),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def assessment_info(self, obj):
+        if obj.assessment:
+            return f"Assessment #{obj.assessment.id}"
+        return "No assessment"
+    assessment_info.short_description = 'Assessment'
+    
+    def quote_count(self, obj):
+        if obj.pk:
+            count = obj.quotes.count()
+            if count > 0:
+                return format_html('<a href="{}?damaged_part__id__exact={}">{} quotes</a>', 
+                                 reverse('admin:insurance_app_partquote_changelist'), obj.id, count)
+            return '0 quotes'
+        return 'Not saved'
+    quote_count.short_description = 'Quotes'
+    
+    def estimated_cost_display(self, obj):
+        if obj.pk:
+            try:
+                cost_range = obj.get_estimated_cost_range()
+                return f"£{cost_range['estimated_cost']:.2f}"
+            except:
+                return "Not calculated"
+        return "Not saved"
+    estimated_cost_display.short_description = 'Estimated Cost'
+    
+    def market_average_display(self, obj):
+        if obj.pk:
+            try:
+                market_avg = obj.market_averages.first()
+                if market_avg:
+                    return f"£{market_avg.average_total_cost:.2f} (±{market_avg.standard_deviation:.2f})"
+                return "No market data"
+            except:
+                return "Not available"
+        return "Not saved"
+    market_average_display.short_description = 'Market Average'
+
+@admin.register(PartQuoteRequest)
+class PartQuoteRequestAdmin(admin.ModelAdmin):
+    list_display = ['request_id', 'damaged_part_info', 'status', 'provider_selection', 'dispatched_by', 'dispatched_at', 'quote_count']
+    list_filter = ['status', 'include_assessor', 'include_dealer', 'include_independent', 'include_network', 'request_date', 'expiry_date']
+    search_fields = ['request_id', 'damaged_part__part_name', 'assessment__id', 'vehicle_make', 'vehicle_model']
+    readonly_fields = ['request_id', 'request_date', 'quote_count', 'is_expired_display', 'days_until_expiry']
+    inlines = [PartQuoteInline]
+    date_hierarchy = 'request_date'
+    
+    fieldsets = (
+        ('Request Info', {
+            'fields': ('request_id', 'damaged_part', 'assessment', 'status')
+        }),
+        ('Vehicle Context', {
+            'fields': ('vehicle_make', 'vehicle_model', 'vehicle_year')
+        }),
+        ('Provider Selection', {
+            'fields': ('include_assessor', 'include_dealer', 'include_independent', 'include_network')
+        }),
+        ('Timeline', {
+            'fields': ('request_date', 'expiry_date', 'is_expired_display', 'days_until_expiry')
+        }),
+        ('Dispatch Info', {
+            'fields': ('dispatched_by', 'dispatched_at')
+        }),
+        ('Statistics', {
+            'fields': ('quote_count',),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def damaged_part_info(self, obj):
+        if obj.damaged_part:
+            return f"{obj.damaged_part.part_name} ({obj.damaged_part.damage_severity})"
+        return "No part"
+    damaged_part_info.short_description = 'Damaged Part'
+    
+    def provider_selection(self, obj):
+        providers = []
+        if obj.include_assessor:
+            providers.append("Assessor")
+        if obj.include_dealer:
+            providers.append("Dealer")
+        if obj.include_independent:
+            providers.append("Independent")
+        if obj.include_network:
+            providers.append("Network")
+        return ", ".join(providers) if providers else "None selected"
+    provider_selection.short_description = 'Providers'
+    
+    def quote_count(self, obj):
+        if obj.pk:
+            count = obj.quotes.count()
+            if count > 0:
+                return format_html('<a href="{}?quote_request__id__exact={}">{} quotes</a>', 
+                                 reverse('admin:insurance_app_partquote_changelist'), obj.id, count)
+            return '0 quotes'
+        return 'Not saved'
+    quote_count.short_description = 'Quotes'
+    
+    def is_expired_display(self, obj):
+        if obj.pk and obj.is_expired():
+            return format_html('<span style="color: red; font-weight: bold;">EXPIRED</span>')
+        return format_html('<span style="color: green;">Active</span>')
+    is_expired_display.short_description = 'Status'
+    
+    def days_until_expiry(self, obj):
+        if obj.pk:
+            days = obj.days_until_expiry()
+            if days < 0:
+                return format_html('<span style="color: red;">{} days ago</span>', abs(days))
+            elif days <= 1:
+                return format_html('<span style="color: orange;">{} days</span>', days)
+            else:
+                return f"{days} days"
+        return "Not saved"
+    days_until_expiry.short_description = 'Days Until Expiry'
+
+@admin.register(PartQuote)
+class PartQuoteAdmin(admin.ModelAdmin):
+    list_display = ['provider_info', 'damaged_part_info', 'total_cost', 'part_type', 'quote_date', 'is_valid_display', 'confidence_score']
+    list_filter = ['provider_type', 'part_type', 'quote_date', 'valid_until']
+    search_fields = ['provider_name', 'damaged_part__part_name', 'quote_request__request_id']
+    readonly_fields = ['quote_date', 'is_valid_display', 'days_until_expiry', 'cost_breakdown_display']
+    date_hierarchy = 'quote_date'
+    
+    fieldsets = (
+        ('Provider Info', {
+            'fields': ('quote_request', 'damaged_part', 'provider_type', 'provider_name', 'provider_contact')
+        }),
+        ('Cost Breakdown', {
+            'fields': ('part_cost', 'labor_cost', 'paint_cost', 'additional_costs', 'total_cost', 'cost_breakdown_display')
+        }),
+        ('Part Specifications', {
+            'fields': ('part_type',)
+        }),
+        ('Timeline & Warranty', {
+            'fields': ('estimated_delivery_days', 'estimated_completion_days', 'part_warranty_months', 'labor_warranty_months')
+        }),
+        ('Validity', {
+            'fields': ('quote_date', 'valid_until', 'is_valid_display', 'days_until_expiry')
+        }),
+        ('Quality', {
+            'fields': ('confidence_score', 'notes')
+        })
+    )
+    
+    def provider_info(self, obj):
+        return f"{obj.get_provider_type_display()} - {obj.provider_name}"
+    provider_info.short_description = 'Provider'
+    
+    def damaged_part_info(self, obj):
+        if obj.damaged_part:
+            return f"{obj.damaged_part.part_name}"
+        return "No part"
+    damaged_part_info.short_description = 'Part'
+    
+    def is_valid_display(self, obj):
+        if obj.pk and obj.is_valid():
+            return format_html('<span style="color: green;">✓ Valid</span>')
+        return format_html('<span style="color: red;">✗ Expired</span>')
+    is_valid_display.short_description = 'Status'
+    
+    def days_until_expiry(self, obj):
+        if obj.pk:
+            days = obj.days_until_expiry()
+            if days < 0:
+                return format_html('<span style="color: red;">Expired {} days ago</span>', abs(days))
+            elif days <= 1:
+                return format_html('<span style="color: orange;">Expires in {} days</span>', days)
+            else:
+                return f"Expires in {days} days"
+        return "Not saved"
+    days_until_expiry.short_description = 'Expiry'
+    
+    def cost_breakdown_display(self, obj):
+        if obj.pk:
+            breakdown = [
+                f"Part: £{obj.part_cost:.2f}",
+                f"Labor: £{obj.labor_cost:.2f}",
+            ]
+            if obj.paint_cost > 0:
+                breakdown.append(f"Paint: £{obj.paint_cost:.2f}")
+            if obj.additional_costs > 0:
+                breakdown.append(f"Additional: £{obj.additional_costs:.2f}")
+            breakdown.append(f"<strong>Total: £{obj.total_cost:.2f}</strong>")
+            return mark_safe('<br>'.join(breakdown))
+        return "Not saved"
+    cost_breakdown_display.short_description = 'Cost Breakdown'
+
+@admin.register(PartMarketAverage)
+class PartMarketAverageAdmin(admin.ModelAdmin):
+    list_display = ['damaged_part_info', 'average_total_cost', 'quote_count', 'confidence_level', 'variance_display', 'calculated_date']
+    list_filter = ['confidence_level', 'calculated_date']
+    search_fields = ['damaged_part__part_name', 'damaged_part__assessment__id']
+    readonly_fields = ['calculated_date', 'variance_display', 'outlier_info', 'statistics_display']
+    date_hierarchy = 'calculated_date'
+    
+    fieldsets = (
+        ('Part Info', {
+            'fields': ('damaged_part',)
+        }),
+        ('Market Statistics', {
+            'fields': ('average_total_cost', 'min_total_cost', 'max_total_cost', 'standard_deviation', 'variance_display')
+        }),
+        ('Data Quality', {
+            'fields': ('quote_count', 'confidence_level', 'outlier_info')
+        }),
+        ('Detailed Statistics', {
+            'fields': ('statistics_display',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('calculated_date',),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def damaged_part_info(self, obj):
+        if obj.damaged_part:
+            return f"{obj.damaged_part.part_name} (Assessment #{obj.damaged_part.assessment.id})"
+        return "No part"
+    damaged_part_info.short_description = 'Damaged Part'
+    
+    def variance_display(self, obj):
+        if obj.pk and obj.average_total_cost > 0:
+            variance_pct = (obj.standard_deviation / obj.average_total_cost) * 100
+            if variance_pct <= 10:
+                color = "green"
+                status = "Low"
+            elif variance_pct <= 25:
+                color = "orange"
+                status = "Medium"
+            else:
+                color = "red"
+                status = "High"
+            return format_html('<span style="color: {};">{} ({:.1f}%)</span>', color, status, variance_pct)
+        return "Not calculated"
+    variance_display.short_description = 'Variance'
+    
+    def outlier_info(self, obj):
+        if obj.pk:
+            try:
+                outliers = obj.get_outlier_quotes()
+                if outliers:
+                    return f"{len(outliers)} outlier(s) detected"
+                return "No outliers"
+            except:
+                return "Not available"
+        return "Not saved"
+    outlier_info.short_description = 'Outliers'
+    
+    def statistics_display(self, obj):
+        if obj.pk:
+            stats = [
+                f"Average: £{obj.average_total_cost:.2f}",
+                f"Range: £{obj.min_total_cost:.2f} - £{obj.max_total_cost:.2f}",
+                f"Standard Deviation: £{obj.standard_deviation:.2f}",
+                f"Quotes Used: {obj.quote_count}",
+                f"Confidence: {obj.confidence_level}%"
+            ]
+            return mark_safe('<br>'.join(stats))
+        return "Not saved"
+    statistics_display.short_description = 'Statistics Summary'
+
+@admin.register(AssessmentQuoteSummary)
+class AssessmentQuoteSummaryAdmin(admin.ModelAdmin):
+    list_display = ['assessment_info', 'total_parts_identified', 'recommended_total', 'status', 'recommendation_status', 'created_date']
+    list_filter = ['status', 'created_date']
+    search_fields = ['assessment__id']
+    readonly_fields = ['created_date', 'last_updated', 'cost_breakdown_display', 'provider_summary_display']
+    date_hierarchy = 'created_date'
+    
+    fieldsets = (
+        ('Assessment Info', {
+            'fields': ('assessment',)
+        }),
+        ('Summary Statistics', {
+            'fields': ('status', 'total_parts_identified', 'parts_with_quotes', 'total_quote_requests', 'quotes_received')
+        }),
+        ('Provider Totals', {
+            'fields': ('assessor_total', 'dealer_total', 'independent_total', 'network_total')
+        }),
+        ('Recommendations', {
+            'fields': ('market_average_total', 'recommended_total', 'potential_savings', 'recommended_provider_mix', 'recommendation_reasoning')
+        }),
+        ('Detailed Breakdown', {
+            'fields': ('cost_breakdown_display', 'provider_summary_display'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_date', 'last_updated'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def assessment_info(self, obj):
+        if obj.assessment:
+            return f"Assessment #{obj.assessment.id}"
+        return "No assessment"
+    assessment_info.short_description = 'Assessment'
+    
+    def recommendation_status(self, obj):
+        if obj.recommended_total:
+            return format_html('<span style="color: green;">✓ Available</span>')
+        return format_html('<span style="color: orange;">Pending</span>')
+    recommendation_status.short_description = 'Recommendations'
+    
+    def cost_breakdown_display(self, obj):
+        if obj.pk:
+            breakdown = []
+            if obj.market_average_total:
+                breakdown.append(f"Market Average: £{obj.market_average_total:.2f}")
+            if obj.recommended_total:
+                breakdown.append(f"Recommended Total: £{obj.recommended_total:.2f}")
+            if obj.assessor_total:
+                breakdown.append(f"Assessor: £{obj.assessor_total:.2f}")
+            if obj.dealer_total:
+                breakdown.append(f"Dealer: £{obj.dealer_total:.2f}")
+            if obj.independent_total:
+                breakdown.append(f"Independent: £{obj.independent_total:.2f}")
+            if obj.network_total:
+                breakdown.append(f"Network: £{obj.network_total:.2f}")
+            if obj.potential_savings:
+                breakdown.append(f"<strong>Potential Savings: £{obj.potential_savings:.2f}</strong>")
+            return mark_safe('<br>'.join(breakdown)) if breakdown else "No cost data"
+        return "Not saved"
+    cost_breakdown_display.short_description = 'Cost Breakdown'
+    
+    def provider_summary_display(self, obj):
+        if obj.pk:
+            summary = []
+            providers = [
+                ('Assessor', obj.assessor_total),
+                ('Dealer', obj.dealer_total),
+                ('Independent', obj.independent_total),
+                ('Network', obj.network_total)
+            ]
+            for name, cost in providers:
+                if cost and cost > 0:
+                    summary.append(f"{name}: £{cost:.2f}")
+            return mark_safe('<br>'.join(summary)) if summary else "No provider quotes"
+        return "Not saved"
+    provider_summary_display.short_description = 'Provider Summary'
+
+@admin.register(QuoteSystemConfiguration)
+class QuoteSystemConfigurationAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'default_labor_rate', 'provider_status', 'recommendation_weights', 'updated_by', 'updated_at']
+    readonly_fields = ['created_at', 'updated_at', 'recommendation_weights_display', 'provider_status_display']
+    
+    fieldsets = (
+        ('Cost Calculation Settings', {
+            'fields': ('default_labor_rate', 'paint_cost_percentage', 'additional_cost_percentage')
+        }),
+        ('Quote Request Settings', {
+            'fields': ('default_quote_expiry_days', 'minimum_quotes_required', 'confidence_threshold')
+        }),
+        ('Provider Settings', {
+            'fields': ('enable_assessor_estimates', 'enable_dealer_quotes', 'enable_independent_quotes', 'enable_network_quotes', 'provider_status_display')
+        }),
+        ('Recommendation Engine Settings', {
+            'fields': ('price_weight', 'quality_weight', 'timeline_weight', 'warranty_weight', 'reliability_weight', 'recommendation_weights_display')
+        }),
+        ('System Monitoring Settings', {
+            'fields': ('enable_performance_logging', 'log_retention_days', 'enable_health_monitoring')
+        }),
+        ('Metadata', {
+            'fields': ('updated_by', 'created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def has_add_permission(self, request):
+        # Only allow one configuration instance
+        return not QuoteSystemConfiguration.objects.exists()
+    
+    def has_delete_permission(self, request, obj=None):
+        # Don't allow deletion of the configuration
+        return False
+    
+    def provider_status(self, obj):
+        enabled = []
+        if obj.enable_assessor_estimates:
+            enabled.append("Assessor")
+        if obj.enable_dealer_quotes:
+            enabled.append("Dealer")
+        if obj.enable_independent_quotes:
+            enabled.append("Independent")
+        if obj.enable_network_quotes:
+            enabled.append("Network")
+        return f"{len(enabled)}/4 enabled"
+    provider_status.short_description = 'Providers'
+    
+    def recommendation_weights(self, obj):
+        return f"P:{obj.price_weight} Q:{obj.quality_weight} T:{obj.timeline_weight}"
+    recommendation_weights.short_description = 'Weights (P/Q/T)'
+    
+    def provider_status_display(self, obj):
+        providers = [
+            ('Assessor Estimates', obj.enable_assessor_estimates),
+            ('Dealer Quotes', obj.enable_dealer_quotes),
+            ('Independent Quotes', obj.enable_independent_quotes),
+            ('Network Quotes', obj.enable_network_quotes)
+        ]
+        status_list = []
+        for name, enabled in providers:
+            status = "✓ Enabled" if enabled else "✗ Disabled"
+            color = "green" if enabled else "red"
+            status_list.append(f'<span style="color: {color};">{name}: {status}</span>')
+        return mark_safe('<br>'.join(status_list))
+    provider_status_display.short_description = 'Provider Status'
+    
+    def recommendation_weights_display(self, obj):
+        weights = [
+            f"Price: {obj.price_weight} ({float(obj.price_weight)*100:.0f}%)",
+            f"Quality: {obj.quality_weight} ({float(obj.quality_weight)*100:.0f}%)",
+            f"Timeline: {obj.timeline_weight} ({float(obj.timeline_weight)*100:.0f}%)",
+            f"Warranty: {obj.warranty_weight} ({float(obj.warranty_weight)*100:.0f}%)",
+            f"Reliability: {obj.reliability_weight} ({float(obj.reliability_weight)*100:.0f}%)"
+        ]
+        total = float(obj.price_weight + obj.quality_weight + obj.timeline_weight + obj.warranty_weight + obj.reliability_weight)
+        weights.append(f"<strong>Total: {total:.2f} (should be 1.00)</strong>")
+        return mark_safe('<br>'.join(weights))
+    recommendation_weights_display.short_description = 'Weight Breakdown'
+    
+    def save_model(self, request, obj, form, change):
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+@admin.register(ProviderConfiguration)
+class ProviderConfigurationAdmin(admin.ModelAdmin):
+    list_display = ['provider_type', 'is_enabled', 'reliability_score', 'average_response_time_hours', 'cost_multiplier', 'api_status']
+    list_filter = ['provider_type', 'is_enabled', 'email_enabled']
+    readonly_fields = ['created_at', 'updated_at', 'configuration_summary']
+    
+    fieldsets = (
+        ('Provider Info', {
+            'fields': ('provider_type', 'is_enabled')
+        }),
+        ('API Configuration', {
+            'fields': ('api_endpoint', 'api_key', 'api_timeout_seconds')
+        }),
+        ('Email Configuration', {
+            'fields': ('email_enabled', 'email_template')
+        }),
+        ('Performance Settings', {
+            'fields': ('max_concurrent_requests', 'retry_attempts', 'retry_delay_seconds')
+        }),
+        ('Quality Metrics', {
+            'fields': ('reliability_score', 'average_response_time_hours', 'cost_multiplier')
+        }),
+        ('Summary', {
+            'fields': ('configuration_summary',),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        })
+    )
+    
+    def api_status(self, obj):
+        if obj.api_endpoint and obj.api_key:
+            return format_html('<span style="color: green;">✓ Configured</span>')
+        elif obj.email_enabled:
+            return format_html('<span style="color: orange;">Email Only</span>')
+        else:
+            return format_html('<span style="color: red;">✗ Not Configured</span>')
+    api_status.short_description = 'Integration'
+    
+    def configuration_summary(self, obj):
+        summary = [
+            f"Provider: {obj.get_provider_type_display()}",
+            f"Status: {'Enabled' if obj.is_enabled else 'Disabled'}",
+            f"Reliability: {obj.reliability_score}/100",
+            f"Response Time: {obj.average_response_time_hours}h",
+            f"Cost Multiplier: {obj.cost_multiplier}x"
+        ]
+        if obj.api_endpoint:
+            summary.append(f"API: {obj.api_endpoint}")
+        if obj.email_enabled:
+            summary.append("Email: Enabled")
+        return mark_safe('<br>'.join(summary))
+    configuration_summary.short_description = 'Configuration Summary'
+
+@admin.register(QuoteSystemHealthMetrics)
+class QuoteSystemHealthMetricsAdmin(admin.ModelAdmin):
+    list_display = ['recorded_at', 'system_health_status_display', 'overall_success_rate_display', 'total_quote_requests_24h', 'error_summary']
+    list_filter = ['recorded_at']
+    readonly_fields = ['recorded_at', 'system_health_status_display', 'overall_success_rate_display', 'provider_performance_display', 'error_summary_display', 'performance_summary_display']
+    date_hierarchy = 'recorded_at'
+    
+    fieldsets = (
+        ('Timestamp', {
+            'fields': ('recorded_at',)
+        }),
+        ('Overall Health', {
+            'fields': ('system_health_status_display', 'overall_success_rate_display')
+        }),
+        ('Quote Request Metrics', {
+            'fields': ('total_quote_requests_24h', 'successful_quote_requests_24h', 'failed_quote_requests_24h')
+        }),
+        ('Quote Response Metrics', {
+            'fields': ('total_quotes_received_24h', 'average_response_time_hours')
+        }),
+        ('Provider Performance', {
+            'fields': ('assessor_success_rate', 'dealer_success_rate', 'independent_success_rate', 'network_success_rate', 'provider_performance_display')
+        }),
+        ('System Performance', {
+            'fields': ('average_parts_identification_time_seconds', 'average_market_calculation_time_seconds', 'average_recommendation_time_seconds', 'performance_summary_display')
+        }),
+        ('Error Tracking', {
+            'fields': ('api_errors_24h', 'database_errors_24h', 'validation_errors_24h', 'error_summary_display')
+        }),
+        ('Data Quality', {
+            'fields': ('high_confidence_market_averages', 'low_confidence_market_averages', 'outlier_quotes_detected')
+        })
+    )
+    
+    def has_add_permission(self, request):
+        # These are system-generated metrics
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        # These are read-only metrics
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        # Allow deletion for cleanup
+        return True
+    
+    def system_health_status_display(self, obj):
+        status = obj.get_system_health_status()
+        colors = {
+            'excellent': 'green',
+            'good': 'blue',
+            'fair': 'orange',
+            'poor': 'red'
+        }
+        return format_html('<span style="color: {}; font-weight: bold;">{}</span>', 
+                         colors.get(status, 'black'), status.upper())
+    system_health_status_display.short_description = 'Health Status'
+    
+    def overall_success_rate_display(self, obj):
+        rate = obj.get_overall_success_rate()
+        color = 'green' if rate >= 95 else 'orange' if rate >= 80 else 'red'
+        return format_html('<span style="color: {};">{:.1f}%</span>', color, rate)
+    overall_success_rate_display.short_description = 'Success Rate'
+    
+    def total_requests_24h(self, obj):
+        return f"{obj.total_quote_requests_24h} requests"
+    total_requests_24h.short_description = 'Total Requests (24h)'
+    
+    def error_summary(self, obj):
+        total_errors = obj.api_errors_24h + obj.database_errors_24h + obj.validation_errors_24h
+        if total_errors == 0:
+            return format_html('<span style="color: green;">No errors</span>')
+        else:
+            return format_html('<span style="color: red;">{} errors</span>', total_errors)
+    error_summary.short_description = 'Errors (24h)'
+    
+    def provider_performance_display(self, obj):
+        providers = [
+            ('Assessor', obj.assessor_success_rate),
+            ('Dealer', obj.dealer_success_rate),
+            ('Independent', obj.independent_success_rate),
+            ('Network', obj.network_success_rate)
+        ]
+        performance_list = []
+        for name, rate in providers:
+            color = 'green' if rate >= 95 else 'orange' if rate >= 80 else 'red'
+            performance_list.append(f'<span style="color: {color};">{name}: {rate:.1f}%</span>')
+        return mark_safe('<br>'.join(performance_list))
+    provider_performance_display.short_description = 'Provider Performance'
+    
+    def error_summary_display(self, obj):
+        errors = [
+            f"API Errors: {obj.api_errors_24h}",
+            f"Database Errors: {obj.database_errors_24h}",
+            f"Validation Errors: {obj.validation_errors_24h}"
+        ]
+        total = obj.api_errors_24h + obj.database_errors_24h + obj.validation_errors_24h
+        errors.append(f"<strong>Total: {total}</strong>")
+        return mark_safe('<br>'.join(errors))
+    error_summary_display.short_description = 'Error Breakdown'
+    
+    def performance_summary_display(self, obj):
+        performance = [
+            f"Parts Identification: {obj.average_parts_identification_time_seconds:.2f}s",
+            f"Market Calculation: {obj.average_market_calculation_time_seconds:.2f}s",
+            f"Recommendation: {obj.average_recommendation_time_seconds:.2f}s",
+            f"Quote Response Time: {obj.average_response_time_hours:.1f}h"
+        ]
+        return mark_safe('<br>'.join(performance))
+    performance_summary_display.short_description = 'Performance Summary'
+
+@admin.register(QuoteSystemAuditLog)
+class QuoteSystemAuditLogAdmin(admin.ModelAdmin):
+    list_display = ['timestamp', 'action_type', 'severity', 'user', 'object_info', 'ip_address']
+    list_filter = ['action_type', 'severity', 'timestamp']
+    search_fields = ['user__username', 'object_id', 'description', 'ip_address']
+    readonly_fields = ['timestamp', 'details_display']
+    date_hierarchy = 'timestamp'
+    
+    fieldsets = (
+        ('Action Info', {
+            'fields': ('timestamp', 'action_type', 'severity')
+        }),
+        ('User & Session', {
+            'fields': ('user', 'session_key', 'ip_address', 'user_agent')
+        }),
+        ('Object Info', {
+            'fields': ('object_type', 'object_id', 'object_repr')
+        }),
+        ('Details', {
+            'fields': ('description', 'additional_data', 'details_display')
+        })
+    )
+    
+    def has_add_permission(self, request):
+        # These are system-generated logs
+        return False
+    
+    def has_change_permission(self, request, obj=None):
+        # These are read-only logs
+        return False
+    
+    def has_delete_permission(self, request, obj=None):
+        # Allow deletion for log cleanup
+        return True
+    
+    def object_info(self, obj):
+        if obj.object_type and obj.object_id:
+            return f"{obj.object_type} #{obj.object_id}"
+        return "System action"
+    object_info.short_description = 'Object'
+    
+    def details_display(self, obj):
+        details = []
+        if obj.description:
+            details.append(f"Description: {obj.description}")
+        if obj.additional_data:
+            details.append(f"Data: {obj.additional_data}")
+        if obj.user_agent:
+            details.append(f"User Agent: {obj.user_agent}")
+        return mark_safe('<br>'.join(details)) if details else "No additional details"
+    details_display.short_description = 'Additional Details'
+
+# Custom admin actions for quote system
+def recalculate_market_averages(modeladmin, request, queryset):
+    """Recalculate market averages for selected damaged parts"""
+    from insurance_app.market_analysis import MarketAverageCalculator
+    
+    calculator = MarketAverageCalculator()
+    updated_count = 0
+    
+    for damaged_part in queryset:
+        try:
+            calculator.calculate_market_average(damaged_part)
+            updated_count += 1
+        except Exception as e:
+            modeladmin.message_user(request, f'Error calculating market average for {damaged_part}: {str(e)}', level='ERROR')
+    
+    if updated_count > 0:
+        modeladmin.message_user(request, f'Market averages recalculated for {updated_count} damaged parts.')
+
+recalculate_market_averages.short_description = 'Recalculate market averages'
+
+def generate_recommendations(modeladmin, request, queryset):
+    """Generate recommendations for selected assessments"""
+    from insurance_app.recommendation_engine import QuoteRecommendationEngine
+    
+    engine = QuoteRecommendationEngine()
+    updated_count = 0
+    
+    for assessment in queryset:
+        try:
+            engine.generate_assessment_recommendations(assessment)
+            updated_count += 1
+        except Exception as e:
+            modeladmin.message_user(request, f'Error generating recommendations for {assessment}: {str(e)}', level='ERROR')
+    
+    if updated_count > 0:
+        modeladmin.message_user(request, f'Recommendations generated for {updated_count} assessments.')
+
+generate_recommendations.short_description = 'Generate recommendations'
+
+def expire_old_quotes(modeladmin, request, queryset):
+    """Mark expired quotes as invalid"""
+    from django.utils import timezone
+    
+    expired_count = 0
+    for quote in queryset:
+        if quote.valid_until < timezone.now():
+            # Mark as expired (you might want to add an is_expired field)
+            expired_count += 1
+    
+    modeladmin.message_user(request, f'{expired_count} expired quotes processed.')
+
+expire_old_quotes.short_description = 'Process expired quotes'
+
+# Add actions to relevant admin classes
+DamagedPartAdmin.actions = [recalculate_market_averages]
+PartQuoteAdmin.actions = [expire_old_quotes]
+
+# Update admin site configuration
+admin.site.site_header = 'Carfinity Insurance & Quote Management'
+admin.site.site_title = 'Insurance & Quote Admin'
+admin.site.index_title = 'Insurance Risk Assessment & Parts-Based Quote Administration'

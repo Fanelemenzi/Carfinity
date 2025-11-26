@@ -1,0 +1,485 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quote Summary - {{ assessment.assessment_id }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/quote-summary.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h2 class="mb-1">Quote Summary</h2>
+                            <p class="text-muted mb-0">
+                                Assessment: <strong>{{ assessment.assessment_id }}</strong> | 
+                                Vehicle: <strong>{{ assessment.vehicle.make }} {{ assessment.vehicle.model }} ({{ assessment.vehicle.manufacture_year }})</strong>
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-{{ assessment.status|default:'secondary' }} fs-6 mb-2">
+                                {{ assessment.get_status_display }}
+                            </span>
+                            <br>
+                            <small class="text-muted">Last Updated: {{ quote_summary.last_updated|date:"M d, Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Collection Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Quote Collection Progress</h5>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-primary">{{ quote_summary.total_parts_identified }}</h3>
+                                <small class="text-muted">Parts Identified</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-success">{{ quote_summary.parts_with_quotes }}</h3>
+                                <small class="text-muted">Parts with Quotes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-info">{{ quote_summary.quotes_received }}</h3>
+                                <small class="text-muted">Total Quotes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <h3 class="text-warning">{{ completion_percentage|floatformat:0 }}%</h3>
+                                <small class="text-muted">Complete</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="progress mt-3" style="height: 8px;">
+                        <div class="progress-bar bg-success" role="progressbar" 
+                             style="width: {{ completion_percentage }}%" 
+                             aria-valuenow="{{ completion_percentage }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Provider Comparison Overview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Provider Cost Comparison</h5>
+                    <div class="row">
+                        {% if quote_summary.assessor_total %}
+                        <div class="col-md-3">
+                            <div class="provider-card assessor-card">
+                                <div class="provider-header">
+                                    <i class="fas fa-user-tie"></i>
+                                    <span>Assessor Estimate</span>
+                                </div>
+                                <div class="provider-cost">£{{ quote_summary.assessor_total|floatformat:2 }}</div>
+                                <div class="provider-variance">
+                                    {% if assessor_variance %}
+                                        <span class="badge bg-{{ assessor_variance.class }}">
+                                            {{ assessor_variance.percentage|floatformat:1 }}% {{ assessor_variance.direction }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if quote_summary.dealer_total %}
+                        <div class="col-md-3">
+                            <div class="provider-card dealer-card">
+                                <div class="provider-header">
+                                    <i class="fas fa-building"></i>
+                                    <span>Authorized Dealer</span>
+                                </div>
+                                <div class="provider-cost">£{{ quote_summary.dealer_total|floatformat:2 }}</div>
+                                <div class="provider-variance">
+                                    {% if dealer_variance %}
+                                        <span class="badge bg-{{ dealer_variance.class }}">
+                                            {{ dealer_variance.percentage|floatformat:1 }}% {{ dealer_variance.direction }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if quote_summary.independent_total %}
+                        <div class="col-md-3">
+                            <div class="provider-card independent-card">
+                                <div class="provider-header">
+                                    <i class="fas fa-wrench"></i>
+                                    <span>Independent Garage</span>
+                                </div>
+                                <div class="provider-cost">£{{ quote_summary.independent_total|floatformat:2 }}</div>
+                                <div class="provider-variance">
+                                    {% if independent_variance %}
+                                        <span class="badge bg-{{ independent_variance.class }}">
+                                            {{ independent_variance.percentage|floatformat:1 }}% {{ independent_variance.direction }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if quote_summary.network_total %}
+                        <div class="col-md-3">
+                            <div class="provider-card network-card">
+                                <div class="provider-header">
+                                    <i class="fas fa-network-wired"></i>
+                                    <span>Insurance Network</span>
+                                </div>
+                                <div class="provider-cost">£{{ quote_summary.network_total|floatformat:2 }}</div>
+                                <div class="provider-variance">
+                                    {% if network_variance %}
+                                        <span class="badge bg-{{ network_variance.class }}">
+                                            {{ network_variance.percentage|floatformat:1 }}% {{ network_variance.direction }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if quote_summary.market_average_total %}
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="market-average-card">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Market Average:</strong> £{{ quote_summary.market_average_total|floatformat:2 }}
+                                    </div>
+                                    {% if quote_summary.potential_savings %}
+                                    <div>
+                                        <span class="badge bg-success">
+                                            Potential Savings: £{{ quote_summary.potential_savings|floatformat:2 }}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendation Section -->
+    {% if recommendation %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success">
+                        <i class="fas fa-thumbs-up me-2"></i>Recommended Solution
+                    </h5>
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="recommendation-details">
+                                <h6>{{ recommendation.strategy_display }}</h6>
+                                <p class="mb-2">{{ recommendation.reasoning }}</p>
+                                <div class="recommendation-breakdown">
+                                    <strong>Total Cost: £{{ recommendation.total_cost|floatformat:2 }}</strong>
+                                    {% if recommendation.savings_amount %}
+                                    <span class="text-success ms-3">
+                                        <i class="fas fa-arrow-down"></i>
+                                        Saves £{{ recommendation.savings_amount|floatformat:2 }}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="recommendation-score">
+                                <div class="score-circle">
+                                    <span class="score-value">{{ recommendation.overall_score|floatformat:0 }}</span>
+                                    <small>Score</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Alternative Strategies -->
+                    {% if recommendation.alternatives %}
+                    <div class="mt-3">
+                        <h6>Alternative Options:</h6>
+                        <div class="row">
+                            {% for alt in recommendation.alternatives %}
+                            <div class="col-md-4">
+                                <div class="alternative-option">
+                                    <strong>{{ alt.strategy_display }}</strong><br>
+                                    <span class="text-muted">£{{ alt.total_cost|floatformat:2 }}</span>
+                                    <small class="d-block">{{ alt.brief_reason }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Part-by-Part Comparison -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Part-by-Part Comparison</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="partsComparisonTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Part Name</th>
+                                    <th>Category</th>
+                                    <th>Damage</th>
+                                    <th>Assessor</th>
+                                    <th>Dealer</th>
+                                    <th>Independent</th>
+                                    <th>Network</th>
+                                    <th>Market Avg</th>
+                                    <th>Best Quote</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for part_data in parts_comparison %}
+                                <tr data-part-id="{{ part_data.part.id }}">
+                                    <td>
+                                        <strong>{{ part_data.part.part_name }}</strong>
+                                        {% if part_data.part.part_number %}
+                                        <br><small class="text-muted">{{ part_data.part.part_number }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ part_data.part.get_part_category_display }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ part_data.damage_severity_class }}">
+                                            {{ part_data.part.get_damage_severity_display }}
+                                        </span>
+                                    </td>
+                                    
+                                    <!-- Provider Quotes -->
+                                    {% for provider in part_data.provider_quotes %}
+                                    <td class="quote-cell {{ provider.provider_type }}-quote">
+                                        {% if provider.quote %}
+                                            <div class="quote-amount">£{{ provider.quote.total_cost|floatformat:2 }}</div>
+                                            <small class="quote-details">
+                                                {{ provider.quote.get_part_type_display }}<br>
+                                                {{ provider.quote.estimated_completion_days }}d completion
+                                            </small>
+                                            {% if provider.is_outlier %}
+                                            <span class="badge bg-warning badge-sm">Outlier</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="text-muted">No quote</span>
+                                        {% endif %}
+                                    </td>
+                                    {% endfor %}
+                                    
+                                    <!-- Market Average -->
+                                    <td class="market-avg-cell">
+                                        {% if part_data.market_average %}
+                                            <div class="market-amount">£{{ part_data.market_average.average_total_cost|floatformat:2 }}</div>
+                                            <small class="confidence-indicator">
+                                                {{ part_data.market_average.confidence_level }}% confidence
+                                            </small>
+                                        {% else %}
+                                            <span class="text-muted">Calculating...</span>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <!-- Best Quote -->
+                                    <td class="best-quote-cell">
+                                        {% if part_data.best_quote %}
+                                            <div class="best-quote-amount text-success">
+                                                £{{ part_data.best_quote.total_cost|floatformat:2 }}
+                                            </div>
+                                            <small class="best-quote-provider">
+                                                {{ part_data.best_quote.provider_name }}
+                                            </small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    
+                                    <!-- Actions -->
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary btn-sm" 
+                                                    onclick="viewPartDetails({{ part_data.part.id }})"
+                                                    title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            <button class="btn btn-outline-success btn-sm" 
+                                                    onclick="selectPartQuote({{ part_data.part.id }})"
+                                                    title="Select Quote">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted py-4">
+                                        No damaged parts identified yet.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Selection Interface -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">Final Quote Selection</h5>
+                    <form id="quoteSelectionForm" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="finalize_quotes">
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Selection Strategy:</label>
+                                <select class="form-select" name="selection_strategy" id="selectionStrategy">
+                                    <option value="recommended">Use Recommended Mix</option>
+                                    <option value="lowest_cost">Lowest Cost Overall</option>
+                                    <option value="fastest_completion">Fastest Completion</option>
+                                    <option value="highest_quality">Highest Quality</option>
+                                    <option value="custom">Custom Selection</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Priority Factor:</label>
+                                <select class="form-select" name="priority_factor">
+                                    <option value="balanced">Balanced Approach</option>
+                                    <option value="cost_focused">Cost Focused</option>
+                                    <option value="quality_focused">Quality Focused</option>
+                                    <option value="speed_focused">Speed Focused</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="customSelectionPanel" class="d-none">
+                            <h6>Custom Part Selection:</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Part</th>
+                                            <th>Selected Quote</th>
+                                            <th>Cost</th>
+                                            <th>Provider</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="customSelectionTable">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div class="selection-summary mt-3 p-3 bg-light rounded">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong>Total Selected Cost:</strong>
+                                    <span id="selectedTotalCost" class="text-primary fs-5">£0.00</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Estimated Completion:</strong>
+                                    <span id="selectedCompletionTime" class="text-info">-</span>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Potential Savings:</strong>
+                                    <span id="selectedSavings" class="text-success">£0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success btn-lg me-2">
+                                <i class="fas fa-check me-2"></i>Finalize Quote Selection
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-lg me-2" 
+                                    onclick="exportQuoteSummary()">
+                                <i class="fas fa-download me-2"></i>Export Summary
+                            </button>
+                            <a href="{% url 'assessments:assessment_detail' assessment.id %}" 
+                               class="btn btn-outline-primary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Assessment
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Part Details Modal -->
+<div class="modal fade" id="partDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Part Quote Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="partDetailsContent">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quote Selection Modal -->
+<div class="modal fade" id="quoteSelectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select Quote for Part</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="quoteSelectionContent">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/quote-summary.js' %}"></script>
+{% endblock %}

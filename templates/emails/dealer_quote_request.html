@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parts Quote Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .info-item {
+            padding: 5px 0;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .highlight {
+            background-color: #fff3cd;
+            padding: 10px;
+            border-radius: 3px;
+            border-left: 4px solid #ffc107;
+        }
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 0.9em;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>Parts Quote Request</h2>
+        <p><strong>Request ID:</strong> {{ quote_request.request_id }}</p>
+        <p><strong>Date:</strong> {{ quote_request.request_date|date:"F j, Y g:i A" }}</p>
+        <p><strong>Expires:</strong> {{ quote_request.expiry_date|date:"F j, Y g:i A" }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Vehicle Information</h3>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Make:</div>
+                <div>{{ request_data.vehicle.make }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Model:</div>
+                <div>{{ request_data.vehicle.model }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Year:</div>
+                <div>{{ request_data.vehicle.year }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Registration:</div>
+                <div>{{ request_data.vehicle.registration|default:"Not provided" }}</div>
+            </div>
+        </div>
+        {% if request_data.vehicle.vin %}
+        <div class="info-item">
+            <div class="info-label">VIN:</div>
+            <div>{{ request_data.vehicle.vin }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Part Details</h3>
+        <div class="info-item">
+            <div class="info-label">Part Name:</div>
+            <div><strong>{{ damaged_part.part_name }}</strong></div>
+        </div>
+        {% if damaged_part.part_number %}
+        <div class="info-item">
+            <div class="info-label">Part Number:</div>
+            <div>{{ damaged_part.part_number }}</div>
+        </div>
+        {% endif %}
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Category:</div>
+                <div>{{ damaged_part.get_part_category_display }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Damage Severity:</div>
+                <div>{{ damaged_part.get_damage_severity_display }}</div>
+            </div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Damage Description:</div>
+            <div>{{ damaged_part.damage_description }}</div>
+        </div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Requires Replacement:</div>
+                <div>{{ damaged_part.requires_replacement|yesno:"Yes,No" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Estimated Labor Hours:</div>
+                <div>{{ damaged_part.estimated_labor_hours }} hours</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="highlight">
+        <h3>Quote Requirements</h3>
+        <p>Please provide a detailed quote including:</p>
+        <ul>
+            <li><strong>Part Cost:</strong> Cost of the replacement part (OEM preferred)</li>
+            <li><strong>Labor Cost:</strong> Labor charges for installation</li>
+            <li><strong>Paint Cost:</strong> Paint and finishing costs (if applicable)</li>
+            <li><strong>Additional Costs:</strong> Any other charges (disposal, consumables, etc.)</li>
+            <li><strong>Total Cost:</strong> Complete quote total</li>
+            <li><strong>Timeline:</strong> Estimated delivery and completion times</li>
+            <li><strong>Warranty:</strong> Part and labor warranty terms</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Contact Information</h3>
+        <div class="info-item">
+            <div class="info-label">Assessor:</div>
+            <div>{{ request_data.contact.assessor_name }}</div>
+        </div>
+        <div class="info-item">
+            <div class="info-label">Email:</div>
+            <div>{{ request_data.contact.assessor_email }}</div>
+        </div>
+        {% if request_data.contact.organization %}
+        <div class="info-item">
+            <div class="info-label">Organization:</div>
+            <div>{{ request_data.contact.organization }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="footer">
+        <p><strong>Important:</strong> This quote request expires on {{ quote_request.expiry_date|date:"F j, Y" }}. 
+        Please respond before this date to ensure your quote is considered.</p>
+        
+        <p>To submit your quote, please reply to this email with the requested information or contact 
+        {{ request_data.contact.assessor_name }} directly at {{ request_data.contact.assessor_email }}.</p>
+        
+        <p>Thank you for your prompt attention to this request.</p>
+    </div>
+</body>
+</html>

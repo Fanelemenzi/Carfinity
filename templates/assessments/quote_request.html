@@ -1,0 +1,726 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Quote Request Dispatch - {{ assessment.assessment_id }}{% endblock %}
+
+{% block extra_css %}
+<link href="{% static 'css/quote-request.css' %}" rel="stylesheet">
+<style>
+.provider-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+}
+
+.provider-card:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.provider-card.selected {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.performance-indicator {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.performance-excellent { background-color: #dcfce7; color: #166534; }
+.performance-good { background-color: #fef3c7; color: #92400e; }
+.performance-fair { background-color: #fed7aa; color: #c2410c; }
+.performance-poor { background-color: #fecaca; color: #dc2626; }
+
+.part-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.part-card.selected {
+    border-color: #3b82f6;
+    background-color: #f8fafc;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-draft { background-color: #f3f4f6; color: #374151; }
+.status-pending { background-color: #fef3c7; color: #92400e; }
+.status-sent { background-color: #dbeafe; color: #1e40af; }
+.status-received { background-color: #dcfce7; color: #166534; }
+.status-expired { background-color: #fecaca; color: #dc2626; }
+.status-cancelled { background-color: #f3f4f6; color: #6b7280; }
+
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f4f6;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Quote Request Dispatch</h1>
+                <p class="text-gray-600">Assessment: {{ assessment.assessment_id }} - {{ assessment.vehicle }}</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{% url 'assessments:parts_review' assessment.id %}" 
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Parts Review
+                </a>
+                <a href="{% url 'assessments:assessment_detail' assessment.id %}" 
+                   class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-eye mr-2"></i>View Assessment
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-blue-100 rounded-lg">
+                    <i class="fas fa-clipboard-list text-blue-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Total Requests</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ request_stats.total_requests }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-yellow-100 rounded-lg">
+                    <i class="fas fa-clock text-yellow-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Pending</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ request_stats.pending_requests }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-green-100 rounded-lg">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Completed</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ request_stats.completed_requests }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-4">
+            <div class="flex items-center">
+                <div class="p-2 bg-red-100 rounded-lg">
+                    <i class="fas fa-times-circle text-red-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-500">Expired</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ request_stats.expired_requests }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Quote Request Form -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Create Quote Requests</h2>
+                    <p class="text-sm text-gray-600">Select parts and providers to request quotes</p>
+                </div>
+                
+                <form id="quote-request-form" method="post" class="p-6">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="dispatch_quotes">
+                    
+                    <!-- Provider Selection -->
+                    <div class="mb-6">
+                        <h3 class="text-md font-medium text-gray-900 mb-3">Select Providers</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Assessor Estimate -->
+                            <div class="provider-card" data-provider="assessor">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="include_assessor" class="provider-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-900">Assessor Estimate</span>
+                                            <span class="performance-indicator performance-excellent">
+                                                {{ provider_performance.assessor.reliability_score }}% Reliable
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Internal estimate using industry standards</p>
+                                        <div class="flex items-center mt-2 text-xs text-gray-500">
+                                            <span class="mr-4">Response: {{ provider_performance.assessor.response_rate }}%</span>
+                                            <span>Time: Immediate</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Authorized Dealers -->
+                            <div class="provider-card" data-provider="dealer">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="include_dealer" class="provider-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-900">Authorized Dealers</span>
+                                            <span class="performance-indicator performance-good">
+                                                {{ provider_performance.dealer.reliability_score }}% Reliable
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">OEM parts with manufacturer warranty</p>
+                                        <div class="flex items-center mt-2 text-xs text-gray-500">
+                                            <span class="mr-4">Response: {{ provider_performance.dealer.response_rate }}%</span>
+                                            <span>Time: ~{{ provider_performance.dealer.avg_response_time }}h</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Independent Garages -->
+                            <div class="provider-card" data-provider="independent">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="include_independent" class="provider-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-900">Independent Garages</span>
+                                            <span class="performance-indicator performance-fair">
+                                                {{ provider_performance.independent.reliability_score }}% Reliable
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Competitive pricing with aftermarket parts</p>
+                                        <div class="flex items-center mt-2 text-xs text-gray-500">
+                                            <span class="mr-4">Response: {{ provider_performance.independent.response_rate }}%</span>
+                                            <span>Time: ~{{ provider_performance.independent.avg_response_time }}h</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Insurance Networks -->
+                            <div class="provider-card" data-provider="network">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" name="include_network" class="provider-checkbox mr-3">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-medium text-gray-900">Insurance Networks</span>
+                                            <span class="performance-indicator performance-good">
+                                                {{ provider_performance.network.reliability_score }}% Reliable
+                                            </span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Pre-negotiated rates with guaranteed work</p>
+                                        <div class="flex items-center mt-2 text-xs text-gray-500">
+                                            <span class="mr-4">Response: {{ provider_performance.network.response_rate }}%</span>
+                                            <span>Time: ~{{ provider_performance.network.avg_response_time }}h</span>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Parts Selection -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-md font-medium text-gray-900">Select Parts</h3>
+                            <div class="flex space-x-2">
+                                <button type="button" id="select-all-parts" class="text-sm text-blue-600 hover:text-blue-800">
+                                    Select All
+                                </button>
+                                <button type="button" id="clear-all-parts" class="text-sm text-gray-600 hover:text-gray-800">
+                                    Clear All
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {% if damaged_parts %}
+                            <div class="space-y-2 max-h-96 overflow-y-auto">
+                                {% for part in damaged_parts %}
+                                <div class="part-card" data-part-id="{{ part.id }}">
+                                    <label class="flex items-center cursor-pointer">
+                                        <input type="checkbox" name="selected_parts" value="{{ part.id }}" class="part-checkbox mr-3">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-medium text-gray-900">{{ part.part_name }}</span>
+                                                <span class="text-sm text-gray-500">{{ part.get_damage_severity_display }}</span>
+                                            </div>
+                                            <p class="text-sm text-gray-600 mt-1">{{ part.damage_description|truncatechars:100 }}</p>
+                                            <div class="flex items-center mt-2 text-xs text-gray-500">
+                                                <span class="mr-4">Category: {{ part.get_part_category_display }}</span>
+                                                <span class="mr-4">Labor: {{ part.estimated_labor_hours }}h</span>
+                                                {% if part.quote_requests.exists %}
+                                                    <span class="text-orange-600">Has existing requests</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-exclamation-triangle text-4xl mb-4"></i>
+                                <p>No damaged parts found for this assessment.</p>
+                                <p class="text-sm mt-2">
+                                    <a href="{% url 'assessments:parts_review' assessment.id %}" class="text-blue-600 hover:text-blue-800">
+                                        Go to Parts Review to identify damaged parts
+                                    </a>
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    {% if damaged_parts %}
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            <span id="selected-count">0</span> parts selected, 
+                            <span id="provider-count">0</span> providers selected
+                        </div>
+                        <button type="submit" id="dispatch-btn" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                disabled>
+                            <i class="fas fa-paper-plane mr-2"></i>Dispatch Quote Requests
+                        </button>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+
+        <!-- Quote Request History -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">Request History</h2>
+                    <p class="text-sm text-gray-600">Recent quote requests</p>
+                </div>
+                
+                <div id="request-history" class="p-6">
+                    {% if quote_requests %}
+                        <div class="space-y-4 max-h-96 overflow-y-auto">
+                            {% for request in quote_requests %}
+                            <div class="border border-gray-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="font-medium text-sm text-gray-900">{{ request.request_id }}</span>
+                                    <span class="status-badge status-{{ request.status }}">
+                                        {{ request.get_status_display }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-2">{{ request.damaged_part.part_name }}</p>
+                                <div class="flex items-center justify-between text-xs text-gray-500">
+                                    <span>{{ request.request_date|date:"M d, H:i" }}</span>
+                                    {% if request.status in 'draft,pending,sent' %}
+                                        <button type="button" class="cancel-request-btn text-red-600 hover:text-red-800"
+                                                data-request-id="{{ request.request_id }}">
+                                            Cancel
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2 text-xs text-gray-500">
+                                    Providers: 
+                                    {% if request.include_assessor %}Assessor{% endif %}
+                                    {% if request.include_dealer %}{% if request.include_assessor %}, {% endif %}Dealer{% endif %}
+                                    {% if request.include_independent %}{% if request.include_assessor or request.include_dealer %}, {% endif %}Independent{% endif %}
+                                    {% if request.include_network %}{% if request.include_assessor or request.include_dealer or request.include_independent %}, {% endif %}Network{% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-8 text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-4"></i>
+                            <p>No quote requests yet</p>
+                            <p class="text-sm mt-2">Create your first quote request using the form</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay" class="loading-overlay">
+    <div class="bg-white rounded-lg p-6 text-center">
+        <div class="loading-spinner mx-auto mb-4"></div>
+        <p class="text-gray-600">Dispatching quote requests...</p>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Confirm Quote Request Dispatch</h3>
+        <p class="text-gray-600 mb-6" id="confirmation-message"></p>
+        <div class="flex justify-end space-x-3">
+            <button type="button" id="cancel-confirmation" class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg">
+                Cancel
+            </button>
+            <button type="button" id="confirm-dispatch" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                Confirm Dispatch
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/quote-request.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('quote-request-form');
+    const providerCheckboxes = document.querySelectorAll('.provider-checkbox');
+    const partCheckboxes = document.querySelectorAll('.part-checkbox');
+    const dispatchBtn = document.getElementById('dispatch-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+    const providerCountSpan = document.getElementById('provider-count');
+    const selectAllBtn = document.getElementById('select-all-parts');
+    const clearAllBtn = document.getElementById('clear-all-parts');
+    const loadingOverlay = document.getElementById('loading-overlay');
+    const confirmationModal = document.getElementById('confirmation-modal');
+    const confirmationMessage = document.getElementById('confirmation-message');
+    const cancelConfirmation = document.getElementById('cancel-confirmation');
+    const confirmDispatch = document.getElementById('confirm-dispatch');
+
+    // Update counts and button state
+    function updateCounts() {
+        const selectedParts = document.querySelectorAll('.part-checkbox:checked').length;
+        const selectedProviders = document.querySelectorAll('.provider-checkbox:checked').length;
+        
+        selectedCountSpan.textContent = selectedParts;
+        providerCountSpan.textContent = selectedProviders;
+        
+        dispatchBtn.disabled = selectedParts === 0 || selectedProviders === 0;
+    }
+
+    // Provider card selection visual feedback
+    providerCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.provider-card');
+            if (this.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+            updateCounts();
+        });
+    });
+
+    // Part card selection visual feedback
+    partCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const card = this.closest('.part-card');
+            if (this.checked) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+            updateCounts();
+        });
+    });
+
+    // Select all parts
+    selectAllBtn.addEventListener('click', function() {
+        partCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+            checkbox.closest('.part-card').classList.add('selected');
+        });
+        updateCounts();
+    });
+
+    // Clear all parts
+    clearAllBtn.addEventListener('click', function() {
+        partCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+            checkbox.closest('.part-card').classList.remove('selected');
+        });
+        updateCounts();
+    });
+
+    // Form submission with confirmation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedParts = document.querySelectorAll('.part-checkbox:checked').length;
+        const selectedProviders = document.querySelectorAll('.provider-checkbox:checked').length;
+        
+        confirmationMessage.textContent = `You are about to dispatch quote requests for ${selectedParts} parts to ${selectedProviders} provider types. This action cannot be undone.`;
+        confirmationModal.classList.remove('hidden');
+        confirmationModal.classList.add('flex');
+    });
+
+    // Cancel confirmation
+    cancelConfirmation.addEventListener('click', function() {
+        confirmationModal.classList.add('hidden');
+        confirmationModal.classList.remove('flex');
+    });
+
+    // Confirm dispatch
+    confirmDispatch.addEventListener('click', function() {
+        confirmationModal.classList.add('hidden');
+        confirmationModal.classList.remove('flex');
+        
+        // Show loading overlay
+        loadingOverlay.style.display = 'flex';
+        
+        // Submit form
+        const formData = new FormData(form);
+        
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingOverlay.style.display = 'none';
+            
+            if (data.success) {
+                // Show success message
+                showMessage(data.message, 'success');
+                
+                // Refresh the page to show updated request history
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            loadingOverlay.style.display = 'none';
+            showMessage('An error occurred while dispatching quote requests.', 'error');
+            console.error('Error:', error);
+        });
+    });
+
+    // Cancel request buttons
+    document.querySelectorAll('.cancel-request-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const requestId = this.dataset.requestId;
+            
+            if (confirm(`Are you sure you want to cancel quote request ${requestId}?`)) {
+                const formData = new FormData();
+                formData.append('action', 'cancel_request');
+                formData.append('request_id', requestId);
+                formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage(data.message, 'success');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showMessage(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showMessage('An error occurred while cancelling the request.', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        });
+    });
+
+    // Show message function
+    function showMessage(message, type) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `fixed top-4 right-4 p-4 rounded-lg z-50 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'} text-white`;
+        messageDiv.textContent = message;
+        document.body.appendChild(messageDiv);
+        
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 5000);
+    }
+
+    // Auto-refresh request history every 30 seconds using status API
+    setInterval(function() {
+        const statusUrl = '{% url "assessments:quote_request_status_api" assessment.id %}';
+        fetch(statusUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateRequestHistory(data.requests);
+                updateStatistics(data.stats);
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing request status:', error);
+        });
+    }, 30000);
+
+    // Function to update request history display
+    function updateRequestHistory(requests) {
+        const historyContainer = document.getElementById('request-history');
+        if (!historyContainer) return;
+
+        let html = '';
+        if (requests.length > 0) {
+            html = '<div class="space-y-4 max-h-96 overflow-y-auto">';
+            requests.forEach(request => {
+                const providers = [];
+                if (request.providers.assessor) providers.push('Assessor');
+                if (request.providers.dealer) providers.push('Dealer');
+                if (request.providers.independent) providers.push('Independent');
+                if (request.providers.network) providers.push('Network');
+
+                const requestDate = new Date(request.request_date).toLocaleDateString('en-GB', {
+                    month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+
+                html += `
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-medium text-sm text-gray-900">${request.request_id}</span>
+                            <span class="status-badge status-${request.status}">
+                                ${request.status_display}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-2">${request.part_name}</p>
+                        <div class="flex items-center justify-between text-xs text-gray-500">
+                            <span>${requestDate}</span>
+                            ${['draft', 'pending', 'sent'].includes(request.status) ? 
+                                `<button type="button" class="cancel-request-btn text-red-600 hover:text-red-800" data-request-id="${request.request_id}">Cancel</button>` : 
+                                ''
+                            }
+                        </div>
+                        <div class="mt-2 text-xs text-gray-500">
+                            Providers: ${providers.join(', ')}
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+        } else {
+            html = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-4xl mb-4"></i>
+                    <p>No quote requests yet</p>
+                    <p class="text-sm mt-2">Create your first quote request using the form</p>
+                </div>
+            `;
+        }
+        
+        historyContainer.innerHTML = html;
+        
+        // Re-attach event listeners for cancel buttons
+        document.querySelectorAll('.cancel-request-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const requestId = this.dataset.requestId;
+                
+                if (confirm(`Are you sure you want to cancel quote request ${requestId}?`)) {
+                    const formData = new FormData();
+                    formData.append('action', 'cancel_request');
+                    formData.append('request_id', requestId);
+                    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+                    
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 1000);
+                        } else {
+                            showMessage(data.message, 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showMessage('An error occurred while cancelling the request.', 'error');
+                        console.error('Error:', error);
+                    });
+                }
+            });
+        });
+    }
+
+    // Function to update statistics display
+    function updateStatistics(stats) {
+        const statElements = {
+            'total_requests': document.querySelector('.grid .bg-white:nth-child(1) .text-lg'),
+            'pending_requests': document.querySelector('.grid .bg-white:nth-child(2) .text-lg'),
+            'completed_requests': document.querySelector('.grid .bg-white:nth-child(3) .text-lg'),
+            'expired_requests': document.querySelector('.grid .bg-white:nth-child(4) .text-lg')
+        };
+
+        Object.keys(statElements).forEach(key => {
+            const element = statElements[key];
+            if (element && stats[key] !== undefined) {
+                element.textContent = stats[key];
+            }
+        });
+    }
+
+    // Initial count update
+    updateCounts();
+});
+</script>
+{% endblock %}

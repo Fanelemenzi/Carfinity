@@ -1,0 +1,537 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Parts Review - {{ assessment.assessment_id }} - Carfinity{% endblock %}
+
+{% block content %}
+<br></br>
+{% if user.is_authenticated %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parts Review - {{ assessment.assessment_id }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1e40af',
+                        secondary: '#374151',
+                        accent: '#f59e0b',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-xl font-bold text-gray-900">
+                            <i class="fas fa-cogs text-danger mr-2"></i>
+                            Parts Review & Quote Request
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-user mr-1"></i>
+                        {{ user.get_full_name|default:user.username }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header Card -->
+        <div class="bg-white rounded-lg shadow p-6 border border-gray-200 mb-8">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+                        Damaged Parts Review
+                    </h2>
+                    <p class="text-gray-600">Review and edit identified damaged parts for assessment {{ assessment.assessment_id }}</p>
+                </div>
+                <div class="flex space-x-3">
+                    <button onclick="identifyParts()" 
+                        class="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-search mr-2"></i>Re-identify Parts
+                    </button>
+                    <a href="{% url 'assessments:quote_request_dispatch' assessment.id %}"
+                        class="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-paper-plane mr-2"></i>Request Quotes
+                    </a>
+                    <a href="{% url 'assessments:assessment_detail' assessment.id %}"
+                        class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Info -->
+        <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                    <div>
+                        <h3 class="text-sm font-medium text-blue-800">Assessment: {{ assessment.assessment_id }}</h3>
+                        <p class="text-sm text-blue-700">Vehicle: {{ assessment.vehicle }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-blue-700">Status: <span class="font-medium">{{ assessment.get_status_display }}</span></p>
+                    <p class="text-sm text-blue-700">Cost Method: <span class="font-medium">{{ assessment.get_cost_calculation_method|title }}</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parts Identification Status -->
+        <div class="mb-6">
+            <div class="bg-white rounded-lg shadow border border-gray-200 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-list-check text-primary mr-2"></i>
+                        Parts Identification Status
+                    </h3>
+                    <div class="flex items-center space-x-2">
+                        {% if assessment.parts_identification_complete %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>Complete
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>Pending
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if not assessment.parts_identification_complete %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-yellow-800">Parts identification not complete</h3>
+                            <div class="mt-2 text-sm text-yellow-700">
+                                <p>Click "Re-identify Parts" to scan the assessment and identify damaged parts automatically.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Parts List -->
+        <div class="bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-wrench text-danger mr-2"></i>
+                        Damaged Parts ({{ damaged_parts|length }})
+                    </h3>
+                    <div class="flex space-x-2">
+                        <button onclick="addNewPart()" 
+                            class="bg-success hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>Add Part
+                        </button>
+                        <button onclick="selectAllParts()" 
+                            class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-check-square mr-2"></i>Select All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 py-6">
+                {% if damaged_parts %}
+                    <div id="parts-container" class="space-y-4">
+                        {% for part in damaged_parts %}
+                        <div class="part-item border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition duration-200" data-part-id="{{ part.id }}">
+                            <div class="flex items-start space-x-4">
+                                <!-- Selection Checkbox -->
+                                <div class="flex items-center pt-1">
+                                    <input type="checkbox" 
+                                           class="part-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" 
+                                           data-part-id="{{ part.id }}"
+                                           onchange="updateSelectionCount()">
+                                </div>
+                                
+                                <!-- Part Details -->
+                                <div class="flex-1 min-w-0">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <!-- Part Name -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Part Name</label>
+                                            <input type="text" 
+                                                   class="part-name w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                   value="{{ part.part_name }}"
+                                                   data-part-id="{{ part.id }}"
+                                                   onchange="updatePartField(this, 'part_name')">
+                                        </div>
+                                        
+                                        <!-- Part Category -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                            <select class="part-category w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                    data-part-id="{{ part.id }}"
+                                                    onchange="updatePartField(this, 'part_category')">
+                                                <option value="body" {% if part.part_category == 'body' %}selected{% endif %}>Body Panel</option>
+                                                <option value="mechanical" {% if part.part_category == 'mechanical' %}selected{% endif %}>Mechanical Component</option>
+                                                <option value="electrical" {% if part.part_category == 'electrical' %}selected{% endif %}>Electrical Component</option>
+                                                <option value="glass" {% if part.part_category == 'glass' %}selected{% endif %}>Glass/Windows</option>
+                                                <option value="interior" {% if part.part_category == 'interior' %}selected{% endif %}>Interior Component</option>
+                                                <option value="trim" {% if part.part_category == 'trim' %}selected{% endif %}>Trim/Cosmetic</option>
+                                                <option value="wheels" {% if part.part_category == 'wheels' %}selected{% endif %}>Wheels/Tires</option>
+                                                <option value="safety" {% if part.part_category == 'safety' %}selected{% endif %}>Safety System</option>
+                                                <option value="structural" {% if part.part_category == 'structural' %}selected{% endif %}>Structural Component</option>
+                                                <option value="fluid" {% if part.part_category == 'fluid' %}selected{% endif %}>Fluid System</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Damage Severity -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Severity</label>
+                                            <select class="damage-severity w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                    data-part-id="{{ part.id }}"
+                                                    onchange="updatePartField(this, 'damage_severity')">
+                                                <option value="minor" {% if part.damage_severity == 'minor' %}selected{% endif %}>Minor Damage</option>
+                                                <option value="moderate" {% if part.damage_severity == 'moderate' %}selected{% endif %}>Moderate Damage</option>
+                                                <option value="severe" {% if part.damage_severity == 'severe' %}selected{% endif %}>Severe Damage</option>
+                                                <option value="replace" {% if part.damage_severity == 'replace' %}selected{% endif %}>Requires Replacement</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- Labor Hours -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Labor Hours</label>
+                                            <input type="number" 
+                                                   class="labor-hours w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                                   value="{{ part.estimated_labor_hours }}"
+                                                   min="0"
+                                                   step="0.5"
+                                                   data-part-id="{{ part.id }}"
+                                                   onchange="updatePartField(this, 'estimated_labor_hours')">
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Part Description -->
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Damage Description</label>
+                                        <textarea class="damage-description w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none"
+                                                  rows="2"
+                                                  data-part-id="{{ part.id }}"
+                                                  onchange="updatePartField(this, 'damage_description')"
+                                                  placeholder="Describe the damage to this part...">{{ part.damage_description }}</textarea>
+                                    </div>
+                                    
+                                    <!-- Part Metadata -->
+                                    <div class="mt-3 flex items-center justify-between text-xs text-gray-500">
+                                        <div class="flex items-center space-x-4">
+                                            <span><i class="fas fa-layer-group mr-1"></i>Section: {{ part.get_section_type_display }}</span>
+                                            <span><i class="fas fa-calendar mr-1"></i>Identified: {{ part.identified_date|date:"M d, Y" }}</span>
+                                            {% if part.part_number %}
+                                                <span><i class="fas fa-barcode mr-1"></i>Part #: {{ part.part_number }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center space-x-2">
+                                            <button onclick="editPartDetails({{ part.id }})" 
+                                                    class="text-blue-600 hover:text-blue-800 transition duration-200">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button onclick="removePart({{ part.id }})" 
+                                                    class="text-red-600 hover:text-red-800 transition duration-200">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-12">
+                        <i class="fas fa-search text-gray-400 text-4xl mb-4"></i>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">No damaged parts identified</h3>
+                        <p class="text-gray-600 mb-6">Click "Re-identify Parts" to automatically scan the assessment for damaged parts.</p>
+                        <button onclick="identifyParts()" 
+                            class="bg-primary hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-search mr-2"></i>Identify Parts Now
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quote Request Section -->
+        {% if damaged_parts %}
+        <div class="mt-8 bg-white rounded-lg shadow border border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-paper-plane text-success mr-2"></i>
+                    Quote Request
+                </h3>
+            </div>
+            
+            <div class="px-6 py-6">
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Selected Parts for Quote Request</h4>
+                            <p class="text-sm text-gray-600">Select parts above to include in quote requests</p>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            <span id="selection-count">0</span> parts selected
+                        </div>
+                    </div>
+                    
+                    <div id="selected-parts-summary" class="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[60px]">
+                        <p class="text-sm text-gray-500 text-center">No parts selected</p>
+                    </div>
+                </div>
+                
+                <!-- Provider Selection -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-900 mb-3">Select Quote Providers</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition duration-200">
+                            <input type="checkbox" 
+                                   class="provider-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3" 
+                                   value="assessor"
+                                   checked>
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Assessor Estimate</div>
+                                <div class="text-xs text-gray-500">Internal pricing database</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition duration-200">
+                            <input type="checkbox" 
+                                   class="provider-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3" 
+                                   value="dealer">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Authorized Dealers</div>
+                                <div class="text-xs text-gray-500">OEM parts & warranty</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition duration-200">
+                            <input type="checkbox" 
+                                   class="provider-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3" 
+                                   value="independent">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Independent Garages</div>
+                                <div class="text-xs text-gray-500">Competitive pricing</div>
+                            </div>
+                        </label>
+                        
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:border-blue-300 cursor-pointer transition duration-200">
+                            <input type="checkbox" 
+                                   class="provider-checkbox h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mr-3" 
+                                   value="network">
+                            <div>
+                                <div class="text-sm font-medium text-gray-900">Insurance Networks</div>
+                                <div class="text-xs text-gray-500">Pre-negotiated rates</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex justify-between items-center">
+                    <div class="text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Quote requests will be sent to selected providers for the selected parts
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="previewQuoteRequest()" 
+                            class="bg-gray-600 hover:bg-gray-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-eye mr-2"></i>Preview Request
+                        </button>
+                        <button onclick="sendQuoteRequests()" 
+                            class="bg-success hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-paper-plane mr-2"></i>Send Quote Requests
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Add Part Modal -->
+    <div id="addPartModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">
+                        <i class="fas fa-plus text-success mr-2"></i>
+                        Add New Damaged Part
+                    </h3>
+                </div>
+                <form id="addPartForm">
+                    <div class="px-6 py-4 space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Part Name *</label>
+                                <input type="text" 
+                                       name="part_name"
+                                       id="new-part-name"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="e.g., Front Bumper"
+                                       required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                                <select name="part_category"
+                                        id="new-part-category"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                    <option value="">Select category...</option>
+                                    <option value="body">Body Panel</option>
+                                    <option value="mechanical">Mechanical Component</option>
+                                    <option value="electrical">Electrical Component</option>
+                                    <option value="glass">Glass/Windows</option>
+                                    <option value="interior">Interior Component</option>
+                                    <option value="trim">Trim/Cosmetic</option>
+                                    <option value="wheels">Wheels/Tires</option>
+                                    <option value="safety">Safety System</option>
+                                    <option value="structural">Structural Component</option>
+                                    <option value="fluid">Fluid System</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Damage Severity *</label>
+                                <select name="damage_severity"
+                                        id="new-damage-severity"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        required>
+                                    <option value="">Select severity...</option>
+                                    <option value="minor">Minor Damage</option>
+                                    <option value="moderate">Moderate Damage</option>
+                                    <option value="severe">Severe Damage</option>
+                                    <option value="replace">Requires Replacement</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Labor Hours</label>
+                                <input type="number" 
+                                       name="estimated_labor_hours"
+                                       id="new-labor-hours"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       min="0"
+                                       step="0.5"
+                                       value="1.0">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Section Type</label>
+                                <select name="section_type"
+                                        id="new-section-type"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="exterior">Exterior</option>
+                                    <option value="mechanical">Mechanical</option>
+                                    <option value="interior">Interior</option>
+                                    <option value="electrical">Electrical</option>
+                                    <option value="wheels">Wheels</option>
+                                    <option value="safety">Safety</option>
+                                    <option value="structural">Structural</option>
+                                    <option value="fluids">Fluids</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Part Number</label>
+                                <input type="text" 
+                                       name="part_number"
+                                       id="new-part-number"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Optional part number">
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Damage Description *</label>
+                            <textarea name="damage_description"
+                                      id="new-damage-description"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                      rows="3"
+                                      placeholder="Describe the damage to this part..."
+                                      required></textarea>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <textarea name="notes"
+                                      id="new-notes"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                      rows="2"
+                                      placeholder="Additional notes about this part..."></textarea>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 bg-gray-50 flex justify-end space-x-3">
+                        <button type="button" onclick="closeAddPartModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition duration-200">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="saveNewPart()"
+                            class="bg-success hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition duration-200">
+                            <i class="fas fa-plus mr-2"></i>Add Part
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden z-50">
+        <div class="flex items-center justify-center min-h-screen">
+            <div class="bg-white rounded-lg shadow-xl p-6 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-gray-600">Processing...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables for template
+        window.assessmentId = {{ assessment.id }};
+        window.csrfToken = '{{ csrf_token }}';
+    </script>
+    <script src="{% static 'js/parts_review.js' %}"></script>
+    <script>
+        // Initialize parts review manager when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initPartsReview({{ assessment.id }}, '{{ csrf_token }}');
+        });
+    </script>
+</body>
+
+</html>
+
+{% else %}
+{% include "dashboard/login_dashboard.html" %}
+{% endif %}
+{% endblock %}

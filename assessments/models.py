@@ -191,6 +191,26 @@ class VehicleAssessment(models.Model):
         help_text="Deadline for agent review completion"
     )
     
+    # Parts-Based Quote System Integration
+    uses_parts_based_quotes = models.BooleanField(
+        default=True,
+        help_text="Whether this assessment uses parts-based quotes (True) or hardcoded costs (False)"
+    )
+    parts_identification_complete = models.BooleanField(
+        default=False,
+        help_text="Whether damaged parts have been identified and processed"
+    )
+    quote_collection_status = models.CharField(
+        max_length=20,
+        choices=[
+            ('not_started', 'Not Started'),
+            ('in_progress', 'In Progress'),
+            ('completed', 'Completed'),
+        ],
+        default='not_started',
+        help_text="Current status of quote collection process"
+    )
+    
     # Metadata
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -233,6 +253,149 @@ class VehicleAssessment(models.Model):
             'auto_approve_threshold': getattr(self.organization, 'insurance_details', None) and 
                                     self.organization.insurance_details.auto_approve_low_risk
         }
+    
+    def get_cost_calculation_method(self):
+        """Return whether using hardcoded or parts-based costs"""
+        return 'parts_based' if self.uses_parts_based_quotes else 'hardcoded'
+    
+    def uses_hardcoded_costs(self):
+        """Check if assessment uses hardcoded cost calculations"""
+        return not self.uses_parts_based_quotes
+    
+    def uses_parts_based_costs(self):
+        """Check if assessment uses parts-based quote calculations"""
+        return self.uses_parts_based_quotes
+    
+    def can_collect_quotes(self):
+        """Check if assessment is ready for quote collection"""
+        return (
+            self.uses_parts_based_quotes and 
+            self.parts_identification_complete and 
+            self.status in ['completed', 'under_review']
+        )
+        
+    def can_start_quote_collection(self):
+        """Check if quote collection can be started"""
+        return (
+            self.assessment.uses_parts_based_quotes and 
+            self.assessment.parts_identification_complete and
+            self.assessment.quote_collection_status == 'not_started'
+        )
+    
+    def get_quote_collection_progress(self):
+        """Get progress information for quote collection"""
+        if not self.uses_parts_based_quotes:
+            return {
+                'method': 'hardcoded',
+                'status': 'not_applicable',
+                'progress_percentage': 100,
+                'message': 'Using hardcoded cost calculations'
+            }
+        
+        if not self.parts_identification_complete:
+            return {
+                'method': 'parts_based',
+                'status': 'parts_identification_pending',
+                'progress_percentage': 0,
+                'message': 'Waiting for parts identification'
+            }
+        
+        # Calculate progress based on quote collection status
+        progress_map = {
+            'not_started': 25,
+            'in_progress': 60,
+            'completed': 100
+        }
+        
+        return {
+            'method': 'parts_based',
+            'status': self.quote_collection_status,
+            'progress_percentage': progress_map.get(self.quote_collection_status, 0),
+            'message': f'Quote collection {self.get_quote_collection_status_display().lower()}'
+        }
+    
+    def get_current_repair_cost(self):
+        """Get the current repair cost based on the calculation method"""
+        if self.uses_parts_based_quotes:
+            try:
+                from insurance_app.models import AssessmentQuoteSummary
+                quote_summary = AssessmentQuoteSummary.objects.get(assessment=self)
+                return quote_summary.get_best_provider_total() or self.estimated_repair_cost
+            except (ImportError, AssessmentQuoteSummary.DoesNotExist):
+                pass
+        
+        return self.estimated_repair_cost
+    
+    def get_market_average_cost(self):
+        """Get the market average cost for parts-based assessments"""
+        if self.uses_parts_based_quotes:
+            try:
+                from insurance_app.models import AssessmentQuoteSummary
+                quote_summary = AssessmentQuoteSummary.objects.get(assessment=self)
+                return quote_summary.market_average_total
+            except (ImportError, AssessmentQuoteSummary.DoesNotExist):
+                pass
+        
+        return None
+    
+    def calculate_settlement_amount(self):
+        """Calculate settlement amount based on current cost calculation method"""
+        repair_cost = self.get_current_repair_cost()
+        market_value = self.vehicle_market_value
+        salvage_value = self.salvage_value or Decimal('0')
+        
+        if not repair_cost or not market_value:
+            return None
+        
+        # Check if total loss (repair cost > 70% of market value)
+        threshold = market_value * Decimal('0.7')
+        if repair_cost > threshold:
+            # Total loss settlement = market value - salvage value
+            return market_value - salvage_value
+        else:
+            # Repair settlement = repair cost
+            return repair_cost
+    
+    def is_total_loss_by_cost(self):
+        """Check if assessment is total loss based on cost calculation"""
+        repair_cost = self.get_current_repair_cost()
+        market_value = self.vehicle_market_value
+        
+        if not repair_cost or not market_value:
+            return False
+        
+        threshold = market_value * Decimal('0.7')
+        return repair_cost > threshold
+    
+    def get_cost_summary(self):
+        """Get comprehensive cost summary for the assessment"""
+        repair_cost = self.get_current_repair_cost()
+        market_average = self.get_market_average_cost()
+        settlement = self.calculate_settlement_amount()
+        
+        summary = {
+            'method': self.get_cost_calculation_method(),
+            'repair_cost': repair_cost,
+            'market_value': self.vehicle_market_value,
+            'salvage_value': self.salvage_value,
+            'settlement_amount': settlement,
+            'is_total_loss': self.is_total_loss_by_cost(),
+        }
+        
+        if self.uses_parts_based_quotes:
+            try:
+                from insurance_app.models import AssessmentQuoteSummary
+                quote_summary = AssessmentQuoteSummary.objects.get(assessment=self)
+                summary.update({
+                    'market_average': market_average,
+                    'potential_savings': quote_summary.potential_savings,
+                    'quote_count': quote_summary.get_total_quote_count(),
+                    'best_provider': quote_summary.get_best_provider_type(),
+                })
+            except (ImportError, AssessmentQuoteSummary.DoesNotExist):
+                pass
+        
+        return summary
 
 
 class ExteriorBodyDamage(models.Model):
