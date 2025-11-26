@@ -12,6 +12,7 @@ router.register(r'risk-alerts', views.RiskAlertViewSet, basename='insurance-risk
 
 # Parts-Based Quote System API Endpoints
 from . import api_views
+from . import log_views
 router.register(r'damaged-parts', api_views.DamagedPartViewSet, basename='damaged-part')
 router.register(r'quote-requests', api_views.PartQuoteRequestViewSet, basename='quote-request')
 router.register(r'quotes', api_views.PartQuoteViewSet, basename='quote')
@@ -78,4 +79,11 @@ urlpatterns = [
     path('api/assessments/<int:assessment_id>/quote-requests/', 
          api_views.create_quote_requests, 
          name='create_quote_requests'),
+    
+    # Logging System URLs
+    path('logs/', log_views.LogViewerView.as_view(), name='log_viewer'),
+    path('api/logs/', log_views.logs_api, name='logs_api'),
+    path('api/logs/stats/', log_views.logs_stats_api, name='logs_stats_api'),
+    path('api/logs/clear/', log_views.clear_logs_api, name='clear_logs_api'),
+    path('api/logs/export/', log_views.export_logs_api, name='export_logs_api'),
 ]

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - Carfinity</title>
+    <link rel="stylesheet" href="/static/css/log-viewer.css">
+</head>
+<body>
+    <div class="header">
+        <h1>System Logs</h1>
+        <div class="controls">
+            <div class="control-group">
+                <label for="logLevel">Level:</label>
+                <select id="logLevel">
+                    <option value="">All Levels</option>
+                    <option value="DEBUG">Debug</option>
+                    <option value="INFO">Info</option>
+                    <option value="WARNING">Warning</option>
+                    <option value="ERROR">Error</option>
+                    <option value="CRITICAL">Critical</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="logSource">Source:</label>
+                <select id="logSource">
+                    <option value="">All Sources</option>
+                    <option value="quote_system">Quote System</option>
+                    <option value="notifications">Notifications</option>
+                    <option value="assessments">Assessments</option>
+                    <option value="insurance_app">Insurance App</option>
+                    <option value="django">Django</option>
+                </select>
+            </div>
+            
+            <div class="control-group">
+                <label for="searchTerm">Search:</label>
+                <input type="text" id="searchTerm" placeholder="Search logs...">
+            </div>
+            
+            <div class="control-group">
+                <button id="refreshBtn" title="Ctrl+R">Refresh</button>
+                <button id="clearBtn" title="Ctrl+K">Clear</button>
+                <button id="autoRefreshBtn">Auto Refresh: OFF</button>
+                <button id="exportBtn">Export</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="status-bar">
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span id="connectionStatus">Connected</span>
+        </div>
+        <div>
+            <span id="logCount">0 logs</span> | 
+            <span id="errorCount" style="color: #e74c3c;">0</span> errors | 
+            <span id="warningCount" style="color: #f39c12;">0</span> warnings | 
+            <span id="lastUpdate">Never updated</span>
+        </div>
+    </div>
+
+    <div class="logs-container" id="logsContainer">
+        <div class="loading" id="loadingIndicator">Loading logs...</div>
+    </div>
+
+    <script src="/static/js/log-viewer.js"></script>
+</body>
+</html>

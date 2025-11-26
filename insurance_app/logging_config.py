@@ -5,11 +5,83 @@ This module provides structured logging for all quote system operations.
 
 import logging
 import json
+import os
 from datetime import datetime
 from django.conf import settings
 from django.utils import timezone
 
 from .models import QuoteSystemAuditLog, QuoteSystemConfiguration
+
+
+# Configure logging based on environment
+def configure_quote_system_logging():
+    """Configure logging for the quote system based on environment"""
+    
+    # Determine if we're in production
+    is_production = getattr(settings, 'DEBUG', True) == False or \
+                   os.environ.get('DJANGO_ENV') == 'production' or \
+                   os.environ.get('ENVIRONMENT') == 'production'
+    
+    # Create quote system logger
+    logger = logging.getLogger('quote_system')
+    logger.setLevel(logging.DEBUG if not is_production else logging.INFO)
+    
+    # Remove existing handlers to avoid duplicates
+    logger.handlers.clear()
+    
+    # File handler for all environments
+    try:
+        log_dir = getattr(settings, 'LOG_DIR', 'logs')
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir, exist_ok=True)
+        
+        file_handler = logging.FileHandler(
+            os.path.join(log_dir, 'quote_system.log'),
+            encoding='utf-8'
+        )
+        file_handler.setLevel(logging.DEBUG)
+        
+        # Detailed formatter for file logs
+        file_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
+        file_handler.setFormatter(file_formatter)
+        logger.addHandler(file_handler)
+        
+    except Exception as e:
+        # Fallback if file logging fails
+        print(f"Warning: Could not configure file logging: {e}")
+    
+    # Console handler only for development
+    if not is_production:
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        
+        # Simpler formatter for console
+        console_formatter = logging.Formatter(
+            '%(levelname)s - %(name)s - %(message)s'
+        )
+        console_handler.setFormatter(console_formatter)
+        logger.addHandler(console_handler)
+    
+    # Error file handler for production
+    if is_production:
+        try:
+            error_handler = logging.FileHandler(
+                os.path.join(log_dir, 'quote_system_errors.log'),
+                encoding='utf-8'
+            )
+            error_handler.setLevel(logging.ERROR)
+            error_handler.setFormatter(file_formatter)
+            logger.addHandler(error_handler)
+        except Exception:
+            pass
+    
+    return logger
+
+
+# Initialize logging configuration
+configure_quote_system_logging()
 
 class QuoteSystemLogger:
     """
@@ -19,6 +91,11 @@ class QuoteSystemLogger:
     def __init__(self, component_name='quote_system'):
         self.component_name = component_name
         self.logger = logging.getLogger(f'quote_system.{component_name}')
+        
+        # Ensure the logger inherits from the configured quote_system logger
+        if not self.logger.handlers:
+            parent_logger = logging.getLogger('quote_system')
+            self.logger.parent = parent_logger
         
         # Check if performance logging is enabled
         try:

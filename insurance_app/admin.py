@@ -808,18 +808,18 @@ class PartQuoteAdmin(admin.ModelAdmin):
 
 @admin.register(PartMarketAverage)
 class PartMarketAverageAdmin(admin.ModelAdmin):
-    list_display = ['damaged_part_info', 'average_total_cost', 'quote_count', 'confidence_level', 'variance_display', 'calculation_date']
-    list_filter = ['confidence_level', 'calculation_date']
+    list_display = ['damaged_part_info', 'average_total_cost', 'quote_count', 'confidence_level', 'variance_display', 'calculated_date']
+    list_filter = ['confidence_level', 'calculated_date']
     search_fields = ['damaged_part__part_name', 'damaged_part__assessment__id']
-    readonly_fields = ['calculation_date', 'variance_display', 'outlier_info', 'statistics_display']
-    date_hierarchy = 'calculation_date'
+    readonly_fields = ['calculated_date', 'variance_display', 'outlier_info', 'statistics_display']
+    date_hierarchy = 'calculated_date'
     
     fieldsets = (
         ('Part Info', {
             'fields': ('damaged_part',)
         }),
         ('Market Statistics', {
-            'fields': ('average_total_cost', 'minimum_cost', 'maximum_cost', 'standard_deviation', 'variance_display')
+            'fields': ('average_total_cost', 'min_total_cost', 'max_total_cost', 'standard_deviation', 'variance_display')
         }),
         ('Data Quality', {
             'fields': ('quote_count', 'confidence_level', 'outlier_info')
@@ -829,7 +829,7 @@ class PartMarketAverageAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
         ('Metadata', {
-            'fields': ('calculation_date',),
+            'fields': ('calculated_date',),
             'classes': ('collapse',)
         })
     )
@@ -872,7 +872,7 @@ class PartMarketAverageAdmin(admin.ModelAdmin):
         if obj.pk:
             stats = [
                 f"Average: £{obj.average_total_cost:.2f}",
-                f"Range: £{obj.minimum_cost:.2f} - £{obj.maximum_cost:.2f}",
+                f"Range: £{obj.min_total_cost:.2f} - £{obj.max_total_cost:.2f}",
                 f"Standard Deviation: £{obj.standard_deviation:.2f}",
                 f"Quotes Used: {obj.quote_count}",
                 f"Confidence: {obj.confidence_level}%"
@@ -883,10 +883,10 @@ class PartMarketAverageAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentQuoteSummary)
 class AssessmentQuoteSummaryAdmin(admin.ModelAdmin):
-    list_display = ['assessment_info', 'total_parts', 'total_estimated_cost', 'quote_collection_status', 'recommendation_status', 'created_date']
-    list_filter = ['quote_collection_status', 'has_recommendations', 'created_date']
+    list_display = ['assessment_info', 'total_parts_identified', 'recommended_total', 'status', 'recommendation_status', 'created_date']
+    list_filter = ['status', 'created_date']
     search_fields = ['assessment__id']
-    readonly_fields = ['created_date', 'updated_date', 'cost_breakdown_display', 'provider_summary_display']
+    readonly_fields = ['created_date', 'last_updated', 'cost_breakdown_display', 'provider_summary_display']
     date_hierarchy = 'created_date'
     
     fieldsets = (
@@ -894,20 +894,20 @@ class AssessmentQuoteSummaryAdmin(admin.ModelAdmin):
             'fields': ('assessment',)
         }),
         ('Summary Statistics', {
-            'fields': ('total_parts', 'total_estimated_cost', 'quote_collection_status')
+            'fields': ('status', 'total_parts_identified', 'parts_with_quotes', 'total_quote_requests', 'quotes_received')
         }),
         ('Provider Totals', {
-            'fields': ('assessor_total_cost', 'dealer_total_cost', 'independent_total_cost', 'network_total_cost')
+            'fields': ('assessor_total', 'dealer_total', 'independent_total', 'network_total')
         }),
         ('Recommendations', {
-            'fields': ('has_recommendations', 'recommended_provider_mix', 'potential_savings')
+            'fields': ('market_average_total', 'recommended_total', 'potential_savings', 'recommended_provider_mix', 'recommendation_reasoning')
         }),
         ('Detailed Breakdown', {
             'fields': ('cost_breakdown_display', 'provider_summary_display'),
             'classes': ('collapse',)
         }),
         ('Metadata', {
-            'fields': ('created_date', 'updated_date'),
+            'fields': ('created_date', 'last_updated'),
             'classes': ('collapse',)
         })
     )
@@ -919,25 +919,29 @@ class AssessmentQuoteSummaryAdmin(admin.ModelAdmin):
     assessment_info.short_description = 'Assessment'
     
     def recommendation_status(self, obj):
-        if obj.has_recommendations:
+        if obj.recommended_total:
             return format_html('<span style="color: green;">✓ Available</span>')
         return format_html('<span style="color: orange;">Pending</span>')
     recommendation_status.short_description = 'Recommendations'
     
     def cost_breakdown_display(self, obj):
         if obj.pk:
-            breakdown = [f"Total Estimated: £{obj.total_estimated_cost:.2f}"]
-            if obj.assessor_total_cost:
-                breakdown.append(f"Assessor: £{obj.assessor_total_cost:.2f}")
-            if obj.dealer_total_cost:
-                breakdown.append(f"Dealer: £{obj.dealer_total_cost:.2f}")
-            if obj.independent_total_cost:
-                breakdown.append(f"Independent: £{obj.independent_total_cost:.2f}")
-            if obj.network_total_cost:
-                breakdown.append(f"Network: £{obj.network_total_cost:.2f}")
+            breakdown = []
+            if obj.market_average_total:
+                breakdown.append(f"Market Average: £{obj.market_average_total:.2f}")
+            if obj.recommended_total:
+                breakdown.append(f"Recommended Total: £{obj.recommended_total:.2f}")
+            if obj.assessor_total:
+                breakdown.append(f"Assessor: £{obj.assessor_total:.2f}")
+            if obj.dealer_total:
+                breakdown.append(f"Dealer: £{obj.dealer_total:.2f}")
+            if obj.independent_total:
+                breakdown.append(f"Independent: £{obj.independent_total:.2f}")
+            if obj.network_total:
+                breakdown.append(f"Network: £{obj.network_total:.2f}")
             if obj.potential_savings:
                 breakdown.append(f"<strong>Potential Savings: £{obj.potential_savings:.2f}</strong>")
-            return mark_safe('<br>'.join(breakdown))
+            return mark_safe('<br>'.join(breakdown)) if breakdown else "No cost data"
         return "Not saved"
     cost_breakdown_display.short_description = 'Cost Breakdown'
     
@@ -945,10 +949,10 @@ class AssessmentQuoteSummaryAdmin(admin.ModelAdmin):
         if obj.pk:
             summary = []
             providers = [
-                ('Assessor', obj.assessor_total_cost),
-                ('Dealer', obj.dealer_total_cost),
-                ('Independent', obj.independent_total_cost),
-                ('Network', obj.network_total_cost)
+                ('Assessor', obj.assessor_total),
+                ('Dealer', obj.dealer_total),
+                ('Independent', obj.independent_total),
+                ('Network', obj.network_total)
             ]
             for name, cost in providers:
                 if cost and cost > 0:
@@ -1099,9 +1103,9 @@ class ProviderConfigurationAdmin(admin.ModelAdmin):
 
 @admin.register(QuoteSystemHealthMetrics)
 class QuoteSystemHealthMetricsAdmin(admin.ModelAdmin):
-    list_display = ['recorded_at', 'system_health_status', 'overall_success_rate', 'total_requests_24h', 'error_summary']
+    list_display = ['recorded_at', 'system_health_status_display', 'overall_success_rate_display', 'total_quote_requests_24h', 'error_summary']
     list_filter = ['recorded_at']
-    readonly_fields = ['recorded_at', 'system_health_status', 'overall_success_rate', 'provider_performance_display', 'error_summary_display', 'performance_summary_display']
+    readonly_fields = ['recorded_at', 'system_health_status_display', 'overall_success_rate_display', 'provider_performance_display', 'error_summary_display', 'performance_summary_display']
     date_hierarchy = 'recorded_at'
     
     fieldsets = (
@@ -1109,7 +1113,7 @@ class QuoteSystemHealthMetricsAdmin(admin.ModelAdmin):
             'fields': ('recorded_at',)
         }),
         ('Overall Health', {
-            'fields': ('system_health_status', 'overall_success_rate')
+            'fields': ('system_health_status_display', 'overall_success_rate_display')
         }),
         ('Quote Request Metrics', {
             'fields': ('total_quote_requests_24h', 'successful_quote_requests_24h', 'failed_quote_requests_24h')
@@ -1143,7 +1147,7 @@ class QuoteSystemHealthMetricsAdmin(admin.ModelAdmin):
         # Allow deletion for cleanup
         return True
     
-    def system_health_status(self, obj):
+    def system_health_status_display(self, obj):
         status = obj.get_system_health_status()
         colors = {
             'excellent': 'green',
@@ -1153,13 +1157,13 @@ class QuoteSystemHealthMetricsAdmin(admin.ModelAdmin):
         }
         return format_html('<span style="color: {}; font-weight: bold;">{}</span>', 
                          colors.get(status, 'black'), status.upper())
-    system_health_status.short_description = 'Health Status'
+    system_health_status_display.short_description = 'Health Status'
     
-    def overall_success_rate(self, obj):
+    def overall_success_rate_display(self, obj):
         rate = obj.get_overall_success_rate()
         color = 'green' if rate >= 95 else 'orange' if rate >= 80 else 'red'
         return format_html('<span style="color: {};">{:.1f}%</span>', color, rate)
-    overall_success_rate.short_description = 'Success Rate'
+    overall_success_rate_display.short_description = 'Success Rate'
     
     def total_requests_24h(self, obj):
         return f"{obj.total_quote_requests_24h} requests"

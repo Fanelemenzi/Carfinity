@@ -16,7 +16,7 @@ This document explains how the backend calculates repair estimates for each vehi
 
 ## System Architecture
 
-The repair cost calculation system is implemented in `insurance_app/views.py` within the `AssessmentDetailView` class. The system uses a multi-layered approach:
+The repair cost calculation uses a multi-layered approach:
 
 - **Section Assessment**: Each vehicle section is assessed independently
 - **Damage Severity Mapping**: Damage levels are mapped to base repair costs
