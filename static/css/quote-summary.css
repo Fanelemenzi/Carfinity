@@ -1,0 +1,351 @@
+/* Quote Summary Styles */
+
+.provider-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: #fff;
+}
+
+.provider-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.provider-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.provider-header i {
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.provider-cost {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.provider-variance {
+    font-size: 0.875rem;
+}
+
+/* Provider-specific colors */
+.assessor-card {
+    border-left: 4px solid #007bff;
+}
+
+.assessor-card .provider-cost {
+    color: #007bff;
+}
+
+.dealer-card {
+    border-left: 4px solid #dc3545;
+}
+
+.dealer-card .provider-cost {
+    color: #dc3545;
+}
+
+.independent-card {
+    border-left: 4px solid #28a745;
+}
+
+.independent-card .provider-cost {
+    color: #28a745;
+}
+
+.network-card {
+    border-left: 4px solid #ffc107;
+}
+
+.network-card .provider-cost {
+    color: #e0a800;
+}
+
+/* Market Average Card */
+.market-average-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+/* Quote Comparison Table */
+#partsComparisonTable {
+    font-size: 0.9rem;
+}
+
+.quote-cell {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.quote-amount {
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.quote-details {
+    color: #6c757d;
+    line-height: 1.2;
+}
+
+.market-avg-cell {
+    text-align: center;
+    background-color: #f8f9fa;
+}
+
+.market-amount {
+    font-weight: bold;
+    color: #495057;
+}
+
+.confidence-indicator {
+    color: #6c757d;
+}
+
+.best-quote-cell {
+    text-align: center;
+    background-color: #d4edda;
+}
+
+.best-quote-amount {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.best-quote-provider {
+    color: #155724;
+}
+
+/* Provider-specific quote cell colors */
+.assessor-quote .quote-amount {
+    color: #007bff;
+}
+
+.dealer-quote .quote-amount {
+    color: #dc3545;
+}
+
+.independent-quote .quote-amount {
+    color: #28a745;
+}
+
+.network-quote .quote-amount {
+    color: #e0a800;
+}
+
+/* Damage severity badges */
+.badge.bg-minor {
+    background-color: #d1ecf1 !important;
+    color: #0c5460;
+}
+
+.badge.bg-moderate {
+    background-color: #fff3cd !important;
+    color: #856404;
+}
+
+.badge.bg-severe {
+    background-color: #f8d7da !important;
+    color: #721c24;
+}
+
+.badge.bg-replace {
+    background-color: #d1ecf1 !important;
+    color: #0c5460;
+}
+
+/* Recommendation Section */
+.recommendation-details h6 {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.recommendation-breakdown {
+    font-size: 1.1rem;
+    margin-top: 0.5rem;
+}
+
+.score-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    margin: 0 auto;
+}
+
+.score-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.score-circle small {
+    font-size: 0.7rem;
+    opacity: 0.9;
+}
+
+.alternative-option {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.alternative-option:hover {
+    background: #e9ecef;
+}
+
+/* Selection Summary */
+.selection-summary {
+    border: 2px dashed #dee2e6;
+}
+
+.selection-summary.active {
+    border-color: #28a745;
+    background-color: #d4edda !important;
+}
+
+/* Custom Selection Panel */
+#customSelectionPanel {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    background: #f8f9fa;
+}
+
+/* Progress Bar Enhancements */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 10px;
+}
+
+.progress-bar {
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .provider-card {
+        margin-bottom: 1rem;
+    }
+    
+    .score-circle {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .score-value {
+        font-size: 1.2rem;
+    }
+    
+    #partsComparisonTable {
+        font-size: 0.8rem;
+    }
+    
+    .quote-amount {
+        font-size: 0.9rem;
+    }
+    
+    .provider-cost {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem 0.75rem;
+    }
+    
+    .provider-card {
+        padding: 0.75rem;
+    }
+    
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* Loading States */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hover Effects */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.02);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Animation for cards */
+.card {
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Badge enhancements */
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.4rem;
+}
+
+/* Variance indicators */
+.bg-success {
+    background-color: #d4edda !important;
+    color: #155724 !important;
+}
+
+.bg-warning {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.bg-danger {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}

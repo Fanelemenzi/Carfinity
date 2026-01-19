@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -198,6 +198,46 @@ class ServiceHistoryPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'page_size'
     max_page_size = 50
+
+
+class VehicleSwitchAPIView(APIView):
+    """
+    API view for switching between user vehicles
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, vehicle_id):
+        """
+        Switch to a different vehicle for the dashboard
+        """
+        try:
+            # Verify the user owns this vehicle
+            vehicle = Vehicle.objects.get(
+                id=vehicle_id,
+                ownerships__user=request.user,
+                ownerships__is_current_owner=True
+            )
+            
+            # Return success response
+            return JsonResponse({
+                'success': True,
+                'vehicle_id': vehicle.id,
+                'vehicle_name': f"{vehicle.manufacture_year} {vehicle.make} {vehicle.model}",
+                'message': 'Vehicle switched successfully'
+            })
+            
+        except Vehicle.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': 'Vehicle not found or access denied'
+            }, status=404)
+            
+        except Exception as e:
+            logger.error(f"Error switching vehicle for user {request.user.id}: {str(e)}")
+            return JsonResponse({
+                'success': False,
+                'error': 'Failed to switch vehicle'
+            }, status=500)
 
 
 class DashboardAPIView(APIView):

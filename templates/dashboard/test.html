@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Carfinity — AutoCare Dashboard</title>
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* background color tuned to the attached image (soft blue-grey) */
+        body {
+            background-color: #d9e4ec;
+        }
+    </style>
+</head>
+
+<body class="antialiased text-slate-800">
+
+    <header class="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-white p-2 shadow flex items-center justify-center">
+                <!-- simple logo -->
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="">
+                    <path d="M3 12h18" stroke="#1f2937" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M12 3v18" stroke="#1f2937" stroke-width="1.5" stroke-linecap="round" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-semibold">Carfinity AutoCare</h1>
+                <p class="text-sm text-slate-600">Dashboard • Vehicle maintenance & insights</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="text-sm text-slate-600">Welcome, Fanelesiyibonge</div>
+            <button class="bg-white shadow rounded-full px-3 py-2 text-sm">Settings</button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 pb-12">
+        <!-- Grid layout: 12 columns -->
+        <div class="grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6">
+
+            <!-- Left column: Promo/Deals (vertical) -->
+            <div class="md:col-span-2 lg:col-span-3 space-y-6">
+                <!-- Cashback / Deals -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-sm font-medium">Cashback From Partners</h2>
+                        <button class="text-slate-400">↗</button>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
+                            <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+                                alt="Google" class="w-7 h-7 object-contain">
+                            <div>
+                                <div class="text-sm font-semibold">Google</div>
+                                <div class="text-xs text-slate-500">Cashback 1.5%</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                                alt="Apple" class="w-7 h-7 object-contain">
+                            <div>
+                                <div class="text-sm font-semibold">Apple</div>
+                                <div class="text-xs text-slate-500">Cashback 1.1%</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
+                            <img src="https://seeklogo.com/images/M/mailchimp-logo-8483A3B3C7-seeklogo.com.png"
+                                alt="MailChimp" class="w-7 h-7 object-contain">
+                            <div>
+                                <div class="text-sm font-semibold">MailChimp</div>
+                                <div class="text-xs text-slate-500">Cashback 3.2%</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
+                            <img src="https://cdn.worldvectorlogo.com/logos/figma-1.svg" alt="Figma"
+                                class="w-7 h-7 object-contain">
+                            <div>
+                                <div class="text-sm font-semibold">Figma</div>
+                                <div class="text-xs text-slate-500">Cashback 2.8%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Templates / Mandatory payments -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <h3 class="text-sm font-medium">Payment Templates</h3>
+                    <div class="mt-4">
+                        <div class="text-3xl font-bold">$486.32</div>
+                        <div class="text-xs text-slate-500 mt-2">Mandatory payments • Essential dues</div>
+                        <div class="mt-4 flex items-center gap-2">
+                            <img src="https://i.pravatar.cc/36?img=32" class="w-9 h-9 rounded-full" alt="">
+                            <img src="https://i.pravatar.cc/36?img=12" class="w-9 h-9 rounded-full" alt="">
+                            <img src="https://i.pravatar.cc/36?img=15" class="w-9 h-9 rounded-full" alt="">
+                            <div class="ml-2 text-sm text-slate-600 bg-slate-100 rounded-full px-3 py-1">+8</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Small KPI badges -->
+                <div class="space-y-3">
+                    <div class="bg-white rounded-2xl p-4 shadow flex items-center justify-between">
+                        <div class="text-sm text-slate-600">Weekly Revenue</div>
+                        <div class="text-sm font-semibold">+2,332 USD <span
+                                class="inline-block ml-2 text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full">+12%</span>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 shadow flex items-center justify-between">
+                        <div class="text-sm text-slate-600">Expenses</div>
+                        <div class="text-sm font-semibold">-4,222 USD <span
+                                class="inline-block ml-2 text-xs bg-rose-100 text-rose-700 px-2 py-1 rounded-full">-24%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center wide area -->
+            <div class="md:col-span-4 lg:col-span-6 space-y-6">
+                <!-- Top Analytics (wide) -->
+                <div class="bg-white rounded-2xl p-6 shadow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm font-medium text-slate-500">Analytics</h3>
+                            <div class="mt-2 text-2xl font-extrabold">$242,63</div>
+                        </div>
+                        <div class="text-sm text-slate-400">↗</div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-3 gap-4">
+                        <div class="rounded-xl p-4 bg-emerald-50">
+                            <div class="text-xs text-slate-600 mb-2">Mon</div>
+                            <div class="h-24 flex items-end">
+                                <div class="w-full bg-emerald-500 rounded-t-xl" style="height:64%"></div>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">64%</div>
+                        </div>
+                        <div class="rounded-xl p-4 bg-emerald-50">
+                            <div class="text-xs text-slate-600 mb-2">Tue</div>
+                            <div class="h-24 flex items-end">
+                                <div class="w-full bg-emerald-300 rounded-t-xl" style="height:52%"></div>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">52%</div>
+                        </div>
+                        <div class="rounded-xl p-4 bg-emerald-50">
+                            <div class="text-xs text-slate-600 mb-2">Wed</div>
+                            <div class="h-24 flex items-end">
+                                <div class="w-full bg-emerald-200 rounded-t-xl" style="height:46%"></div>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-2">46%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Large red/orange statistics card -->
+                <div class="bg-gradient-to-br from-orange-500 to-rose-500 text-white rounded-2xl p-6 shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="text-sm opacity-90">Statistics</h3>
+                            <div class="text-3xl font-extrabold mt-2">$184,44</div>
+                        </div>
+                        <div class="text-white/60">↗</div>
+                    </div>
+
+                    <div class="mt-6">
+                        <canvas id="statChart" height="80"></canvas>
+                    </div>
+
+                </div>
+
+                <!-- Cost Analysis and Card -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="col-span-2 bg-white rounded-2xl p-5 shadow">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-medium">Cost Analysis</h3>
+                            <div class="text-xs text-slate-400">Last 6 months</div>
+                        </div>
+                        <div class="mt-4">
+                            <canvas id="costChart" height="120"></canvas>
+                        </div>
+                        <div class="mt-3 flex gap-3 text-xs text-slate-500">
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 bg-sky-500 rounded-full"></span>
+                                Engine</div>
+                            <div class="flex items-center gap-2"><span class="w-2 h-2 bg-amber-400 rounded-full"></span>
+                                Tires</div>
+                            <div class="flex items-center gap-2"><span
+                                    class="w-2 h-2 bg-emerald-400 rounded-full"></span> General</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow">
+                        <div class="text-sm font-medium">VISA • Debit Card</div>
+                        <div class="mt-4 text-3xl font-extrabold text-sky-600">$22,428.26</div>
+                        <div class="mt-6 text-xs text-slate-500">**** 9090 • Exp 04/24</div>
+                        <div class="mt-6">
+                            <button class="w-full bg-sky-600 text-white rounded-xl py-2">Manage Card</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bookings & Quick Links -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2 bg-white rounded-2xl p-5 shadow">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-medium">Bookings & Appointments</h3>
+                            <div class="text-xs text-slate-400">Sync with calendar</div>
+                        </div>
+
+                        <ul class="mt-4 space-y-3">
+                            <li class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                                <div>
+                                    <div class="text-sm font-semibold">Oil change</div>
+                                    <div class="text-xs text-slate-500">Apr 25, 2025 • 10:00 AM • Joey's Garage</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="text-xs px-3 py-1 rounded-md bg-white shadow">Reschedule</button>
+                                    <button class="text-xs px-3 py-1 rounded-md bg-red-50 text-rose-700">Cancel</button>
+                                </div>
+                            </li>
+
+                            <li class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                                <div>
+                                    <div class="text-sm font-semibold">Tire rotation</div>
+                                    <div class="text-xs text-slate-500">May 03, 2025 • 14:00 • Uptown Auto</div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button class="text-xs px-3 py-1 rounded-md bg-white shadow">Reschedule</button>
+                                    <button class="text-xs px-3 py-1 rounded-md bg-red-50 text-rose-700">Cancel</button>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="mt-4">
+                            <button class="px-4 py-2 rounded-xl bg-slate-800 text-white">Book Service</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-5 shadow">
+                        <div class="text-sm font-medium">Quick Links</div>
+                        <div class="mt-4 grid grid-cols-3 gap-3">
+                            <button class="rounded-xl p-3 bg-slate-50 text-xs">Request</button>
+                            <button class="rounded-xl p-3 bg-slate-50 text-xs">Send</button>
+                            <button class="rounded-xl p-3 bg-slate-50 text-xs">Receive</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right column: Vehicle Overview, VIN Decoder, Mechanic Services -->
+            <div class="md:col-span-2 lg:col-span-3 space-y-6">
+                <!-- Vehicle Overview -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h3 class="text-sm font-medium">Vehicle Overview</h3>
+                            <div class="mt-2 text-sm text-slate-500">Toyota Corolla • 2020</div>
+                            <div class="text-xs text-slate-400">VIN: 2FTRX18W1XCA12345</div>
+                        </div>
+                        <img src="https://via.placeholder.com/120x70?text=Car" alt="vehicle"
+                            class="rounded-xl shadow-sm">
+                    </div>
+
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <div class="bg-slate-50 rounded-xl p-3 text-xs">
+                            <div class="text-slate-600">Engine health</div>
+                            <div class="font-medium">Good</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-xs">
+                            <div class="text-slate-600">Oil life</div>
+                            <div class="font-medium">80%</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-xs">
+                            <div class="text-slate-600">Tire pressure</div>
+                            <div class="font-medium">32 PSI</div>
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3 text-xs">
+                            <div class="text-slate-600">Battery</div>
+                            <div class="font-medium">12.6V</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 flex gap-2">
+                        <button class="flex-1 bg-white border rounded-xl py-2">Remote Lock</button>
+                        <button class="flex-1 bg-slate-800 text-white rounded-xl py-2">Locate</button>
+                    </div>
+                </div>
+
+                <!-- VIN Decoder -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-medium">VIN Decoder</h3>
+                        <div class="text-xs text-slate-400">Auto-decode</div>
+                    </div>
+
+                    <div class="mt-3 grid grid-cols-2 gap-3 text-sm text-slate-600">
+                        <div><span class="block text-slate-800 font-semibold">Engine</span> 1.8L • 4-cylinder</div>
+                        <div><span class="block text-slate-800 font-semibold">Transmission</span> Auto • CVT</div>
+                        <div><span class="block text-slate-800 font-semibold">Trim</span> LE</div>
+                        <div><span class="block text-slate-800 font-semibold">Plant</span> Tokyo</div>
+                    </div>
+                </div>
+
+                <!-- Mechanic Services + Alerts -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-medium">Mechanic Services</h3>
+                        <div class="text-xs text-slate-400">Nearby</div>
+                    </div>
+
+                    <div class="mt-4 space-y-3">
+                        <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                            <div>
+                                <div class="font-semibold">Joey's Garage</div>
+                                <div class="text-xs text-slate-500">Oil change, Diagnostics • 3.4km</div>
+                            </div>
+                            <div class="text-sm">
+                                <button class="px-3 py-1 rounded-md bg-sky-600 text-white text-xs">Book</button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+                            <div>
+                                <div class="font-semibold">Uptown Auto</div>
+                                <div class="text-xs text-slate-500">Tires, Brakes • 5.0km</div>
+                            </div>
+                            <div class="text-sm">
+                                <button class="px-3 py-1 rounded-md bg-sky-600 text-white text-xs">Book</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h4 class="text-xs text-slate-600 font-medium">Alerts & Notifications</h4>
+                        <div class="mt-3 space-y-2">
+                            <div class="flex items-start gap-3 bg-rose-50 border-l-4 border-rose-400 p-3 rounded-xl">
+                                <div class="text-xs text-rose-700 font-semibold">Urgent</div>
+                                <div class="text-xs text-slate-600">Engine fault code P0420 detected. Please check
+                                    immediately.</div>
+                            </div>
+                            <div class="flex items-start gap-3 bg-amber-50 border-l-4 border-amber-400 p-3 rounded-xl">
+                                <div class="text-xs text-amber-700 font-semibold">Upcoming</div>
+                                <div class="text-xs text-slate-600">Oil change due in 500 km / 10 days.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maintenance History -->
+                <div class="bg-white rounded-2xl p-5 shadow">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-sm font-medium">Maintenance History</h3>
+                        <div class="text-xs text-slate-400">Timeline</div>
+                    </div>
+
+                    <div class="mt-4 space-y-3 text-sm text-slate-600">
+                        <div class="flex justify-between">
+                            <div>2025-03-10 • Oil change</div>
+                            <div class="text-slate-800 font-medium">$42.00</div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div>2024-11-01 • Brake pads replacement</div>
+                            <div class="text-slate-800 font-medium">$160.00</div>
+                        </div>
+                        <div class="flex justify-between">
+                            <div>2024-07-06 • Battery replacement</div>
+                            <div class="text-slate-800 font-medium">$120.00</div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scripts: Chart setup -->
+    <script>
+        // Cost Analysis (Bar / line mix)
+        const costCtx = document.getElementById('costChart').getContext('2d');
+        const costChart = new Chart(costCtx, {
+            type: 'bar',
+            data: {
+                labels: ['May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+                datasets: [
+                    {
+                        label: 'Engine',
+                        data: [120, 180, 150, 90, 200, 170],
+                        backgroundColor: '#0ea5b7', // sky-ish
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'Tires',
+                        data: [80, 70, 110, 95, 75, 120],
+                        backgroundColor: '#f59e0b', // amber-ish
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'General',
+                        data: [50, 60, 40, 80, 90, 60],
+                        backgroundColor: '#10b981', // emerald-ish
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                responsive: true,
+                scales: {
+                    x: { stacked: true, grid: { display: false } },
+                    y: { stacked: true, beginAtZero: true }
+                }
+            }
+        });
+
+        // Statistics small line chart (white on red/orange card)
+        const statCtx = document.getElementById('statChart').getContext('2d');
+        const statChart = new Chart(statCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    data: [120, 140, 130, 160, 727, 200, 180],
+                    fill: false,
+                    borderColor: 'rgba(255,255,255,0.95)',
+                    tension: 0.35,
+                    pointBackgroundColor: 'rgba(255,255,255,0.95)',
+                    pointRadius: 4
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: true, grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.85)' } },
+                    y: { display: false }
+                },
+                elements: { line: { borderWidth: 3 } }
+            }
+        });
+
+    </script>
+</body>
+
+</html>

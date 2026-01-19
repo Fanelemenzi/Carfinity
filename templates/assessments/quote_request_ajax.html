@@ -1,0 +1,38 @@
+<!-- AJAX template for quote request status updates -->
+<div class="space-y-4 max-h-96 overflow-y-auto">
+    {% if quote_requests %}
+        {% for request in quote_requests %}
+        <div class="border border-gray-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-medium text-sm text-gray-900">{{ request.request_id }}</span>
+                <span class="status-badge status-{{ request.status }}">
+                    {{ request.get_status_display }}
+                </span>
+            </div>
+            <p class="text-sm text-gray-600 mb-2">{{ request.damaged_part.part_name }}</p>
+            <div class="flex items-center justify-between text-xs text-gray-500">
+                <span>{{ request.request_date|date:"M d, H:i" }}</span>
+                {% if request.status in 'draft,pending,sent' %}
+                    <button type="button" class="cancel-request-btn text-red-600 hover:text-red-800"
+                            data-request-id="{{ request.request_id }}">
+                        Cancel
+                    </button>
+                {% endif %}
+            </div>
+            <div class="mt-2 text-xs text-gray-500">
+                Providers: 
+                {% if request.include_assessor %}Assessor{% endif %}
+                {% if request.include_dealer %}{% if request.include_assessor %}, {% endif %}Dealer{% endif %}
+                {% if request.include_independent %}{% if request.include_assessor or request.include_dealer %}, {% endif %}Independent{% endif %}
+                {% if request.include_network %}{% if request.include_assessor or request.include_dealer or request.include_independent %}, {% endif %}Network{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-8 text-gray-500">
+            <i class="fas fa-inbox text-4xl mb-4"></i>
+            <p>No quote requests yet</p>
+            <p class="text-sm mt-2">Create your first quote request using the form</p>
+        </div>
+    {% endif %}
+</div>

@@ -100,3 +100,11 @@ test_admin_form_rendering.py
 simple_admin_test.py
 check_admin_interface.py
 test_organization_dropdown.py
+check_photos.py
+test_comprehensive_reports.py
+test_final_report.py
+test_performance_final.py
+test_report_edge_cases.py
+test_report_flow_simple.py
+test_report_generation_flow.py
+test_report_stress.py

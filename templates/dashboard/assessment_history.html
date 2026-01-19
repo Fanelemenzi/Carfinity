@@ -143,7 +143,7 @@
             <p class="text-gray-600">{{ assessment.assessment_id }} - {{ assessment.vehicle }}</p>
         </div>
         <div class="flex gap-3">
-            <a href="{% url 'insurance_app:assessment_detail' assessment.assessment_id %}" 
+            <a href="{% url 'insurance:assessment_detail' assessment.assessment_id %}" 
                class="btn btn-secondary">
                 <i class="fas fa-arrow-left mr-2"></i>Back to Assessment
             </a>
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resultDiv.classList.remove('hidden');
             
             // Make AJAX request to compare versions
-            fetch(`{% url 'insurance_app:assessment_version_compare' assessment.assessment_id %}?version_a=${versionA}&version_b=${versionB}`)
+            fetch(`{% url 'insurance:assessment_version_compare' assessment.assessment_id %}?version_a=${versionA}&version_b=${versionB}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadMoreBtn.addEventListener('click', function() {
             const currentCount = historyItems.length;
             
-            fetch(`{% url 'insurance_app:assessment_history' assessment.assessment_id %}?format=json&offset=${currentCount}`)
+            fetch(`{% url 'insurance:assessment_history' assessment.assessment_id %}?format=json&offset=${currentCount}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.history.length > 0) {

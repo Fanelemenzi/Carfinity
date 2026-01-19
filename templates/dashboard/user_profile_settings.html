@@ -1,0 +1,374 @@
+<!-- User Profile & Settings Component -->
+<div class="light-card rounded-2xl md:rounded-3xl p-4 md:p-6 hover-lift">
+  <div class="flex items-center justify-between mb-4 md:mb-6">
+    <h3 class="text-lg md:text-xl font-bold text-gray-800 flex items-center gap-2">
+      <svg class="w-4 h-4 md:w-5 md:h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+      </svg>
+      Profile & Settings
+    </h3>
+    <button id="edit-profile" class="px-4 py-2 border border-gray-400 text-gray-700 rounded-lg md:rounded-xl hover-lift">
+      <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+      </svg>
+      Edit Profile
+    </button>
+  </div>
+
+  <!-- Profile Information -->
+  <div class="mb-4 md:mb-6">
+    <div class="flex items-center gap-4 mb-4">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+        <span class="text-white font-bold text-2xl">{{ user_first_name|default:"U"|first }}</span>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold text-gray-800">{{ user.first_name|default:"User" }} {{ user.last_name|default:"Name" }}</h4>
+        <p class="text-sm text-gray-600">{{ user.email|default:"user@example.com" }}</p>
+        <p class="text-xs text-gray-700">Member since {{ user.date_joined|date:"M Y"|default:"Jan 2024" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tabs -->
+  <div class="flex gap-2 mb-4 md:mb-6">
+    <button class="settings-tab active px-4 py-2 rounded-lg md:rounded-xl bg-gray-600 text-white text-sm font-medium" data-tab="vehicles">
+      Vehicles
+    </button>
+    <button class="settings-tab px-4 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-blue-100 hover:border-blue-300 hover:text-blue-700" data-tab="notifications">
+      Notifications
+    </button>
+    <button class="settings-tab px-4 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-green-100 hover:border-green-300 hover:text-green-700" data-tab="payments">
+      Payments
+    </button>
+    <button class="settings-tab px-4 py-2 rounded-lg md:rounded-xl bg-gray-100 border border-gray-300 text-gray-600 text-sm font-medium hover:bg-purple-100 hover:border-purple-300 hover:text-purple-700" data-tab="preferences">
+      Preferences
+    </button>
+  </div>
+
+  <!-- Settings Content -->
+  <div id="settings-content" class="max-h-80 overflow-y-auto custom-scrollbar">
+    
+    <!-- Vehicles Tab -->
+    <div class="settings-panel" data-tab="vehicles">
+      <div class="space-y-4">
+        <div class="flex items-center justify-between mb-4">
+          <h5 class="font-semibold text-gray-800">Registered Vehicles</h5>
+          <button id="add-vehicle" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl text-sm font-medium hover-lift">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Add Vehicle
+          </button>
+        </div>
+        
+        <!-- Vehicle List -->
+        {% if user_vehicles %}
+        {% for vehicle in user_vehicles %}
+        <div class="vehicle-item p-3 md:p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-gray-600 flex items-center justify-center">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 006 0m-6 0a3 3 0 106 0m-6 0H6a2 2 0 00-2 2v1a2 2 0 002 2h1m11-6a3 3 0 106 0m-6 0a3 3 0 006 0m-6 0H18a2 2 0 012 2v1a2 2 0 01-2 2h-1"/>
+                </svg>
+              </div>
+              <div>
+                <div class="font-medium text-gray-800">{{ vehicle.manufacture_year }} {{ vehicle.make }} {{ vehicle.model }}</div>
+                <div class="text-sm text-gray-600">VIN: {{ vehicle.vin|truncatechars:12|default:"N/A" }}</div>
+                {% if vehicle.is_primary %}
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Primary</span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="p-2 border border-gray-400 text-gray-700 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button class="p-2 border border-red-300 text-red-600 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center py-8">
+          <div class="text-gray-500 mb-4">
+            <svg class="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a3 3 0 006 0m-6 0a3 3 0 106 0m-6 0H6a2 2 0 00-2 2v1a2 2 0 002 2h1m11-6a3 3 0 106 0m-6 0a3 3 0 006 0m-6 0H18a2 2 0 012 2v1a2 2 0 01-2 2h-1"/>
+            </svg>
+          </div>
+          <p class="text-gray-600 mb-4">No vehicles registered</p>
+          <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl font-medium hover-lift">
+            Add Your First Vehicle
+          </button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Notifications Tab -->
+    <div class="settings-panel hidden" data-tab="notifications">
+      <div class="space-y-4">
+        <h5 class="font-semibold text-gray-800 mb-4">Notification Preferences</h5>
+        
+        <!-- Email Notifications -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h6 class="font-medium text-gray-800">Email Notifications</h6>
+              <p class="text-sm text-gray-600">Receive updates via email</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+            </label>
+          </div>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="checkbox" class="rounded border-gray-300 bg-white text-gray-600 focus:ring-gray-500" checked>
+              <span>Maintenance reminders</span>
+            </label>
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="checkbox" class="rounded border-gray-300 bg-white text-gray-600 focus:ring-gray-500" checked>
+              <span>Service confirmations</span>
+            </label>
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="checkbox" class="rounded border-gray-300 bg-white text-gray-600 focus:ring-gray-500">
+              <span>Promotional offers</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Push Notifications -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h6 class="font-medium text-gray-800">Push Notifications</h6>
+              <p class="text-sm text-gray-600">Receive instant notifications</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+            </label>
+          </div>
+          <div class="space-y-2 text-sm">
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="checkbox" class="rounded border-gray-300 bg-white text-gray-600 focus:ring-gray-500" checked>
+              <span>Urgent alerts</span>
+            </label>
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="checkbox" class="rounded border-gray-300 bg-white text-gray-600 focus:ring-gray-500">
+              <span>Appointment reminders</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments Tab -->
+    <div class="settings-panel hidden" data-tab="payments">
+      <div class="space-y-4">
+        <div class="flex items-center justify-between mb-4">
+          <h5 class="font-semibold text-gray-800">Payment Methods</h5>
+          <button id="add-payment" class="px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl text-sm font-medium hover-lift">
+            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Add Card
+          </button>
+        </div>
+        
+        <!-- Payment Methods List -->
+        <div class="payment-item p-3 md:p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-8 rounded bg-blue-600 flex items-center justify-center">
+                <span class="text-white text-xs font-bold">VISA</span>
+              </div>
+              <div>
+                <div class="font-medium text-gray-800">•••• •••• •••• 4242</div>
+                <div class="text-sm text-gray-600">Expires 12/26</div>
+                <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">Default</span>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="p-2 border border-gray-400 text-gray-700 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button class="p-2 border border-red-300 text-red-600 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="payment-item p-3 md:p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-8 rounded bg-red-600 flex items-center justify-center">
+                <span class="text-white text-xs font-bold">MC</span>
+              </div>
+              <div>
+                <div class="font-medium text-gray-800">•••• •••• •••• 8888</div>
+                <div class="text-sm text-gray-600">Expires 08/27</div>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="p-2 border border-gray-400 text-gray-700 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+              </button>
+              <button class="p-2 border border-red-300 text-red-600 rounded-lg hover-lift">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preferences Tab -->
+    <div class="settings-panel hidden" data-tab="preferences">
+      <div class="space-y-4">
+        <h5 class="font-semibold text-gray-800 mb-4">App Preferences</h5>
+        
+        <!-- Theme Settings -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <h6 class="font-medium text-gray-800 mb-3">Theme</h6>
+          <div class="space-y-2">
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="radio" name="theme" value="dark" class="text-gray-600 focus:ring-gray-500">
+              <span>Dark Mode</span>
+            </label>
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="radio" name="theme" value="light" class="text-gray-600 focus:ring-gray-500" checked>
+              <span>Light Mode</span>
+            </label>
+            <label class="flex items-center gap-2 text-gray-700">
+              <input type="radio" name="theme" value="auto" class="text-gray-600 focus:ring-gray-500">
+              <span>Auto (System)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Data Sync -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h6 class="font-medium text-gray-800">Data Sync</h6>
+              <p class="text-sm text-gray-600">Sync data across devices</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" class="sr-only peer" checked>
+              <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-gray-600"></div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Language -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <h6 class="font-medium text-gray-800 mb-3">Language</h6>
+          <select class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg md:rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+            <option value="en">English</option>
+            <option value="es">Español</option>
+            <option value="fr">Français</option>
+            <option value="de">Deutsch</option>
+          </select>
+        </div>
+
+        <!-- Units -->
+        <div class="p-4 rounded-xl md:rounded-2xl grey-card">
+          <h6 class="font-medium text-gray-800 mb-3">Units</h6>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Distance</label>
+              <select class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg md:rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+                <option value="km">Kilometers</option>
+                <option value="miles">Miles</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 mb-2">Currency</label>
+              <select class="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg md:rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500">
+                <option value="eur">EUR (€)</option>
+                <option value="usd">USD ($)</option>
+                <option value="gbp">GBP (£)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="flex gap-3 mt-4 md:mt-6 pt-4 border-t border-gray-300">
+    <button class="flex-1 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg md:rounded-xl font-medium hover-lift">
+      Save Changes
+    </button>
+    <button class="px-6 py-3 border border-gray-400 text-gray-700 rounded-lg md:rounded-xl hover-lift">
+      Cancel
+    </button>
+    <button class="px-6 py-3 border border-red-300 text-red-600 rounded-lg md:rounded-xl hover-lift">
+      Logout
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab functionality
+  const tabs = document.querySelectorAll('.settings-tab');
+  const panels = document.querySelectorAll('.settings-panel');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      
+      // Update active tab
+      tabs.forEach(t => {
+        t.classList.remove('active', 'bg-gray-600', 'text-white');
+        t.classList.add('bg-gray-100', 'border-gray-300', 'text-gray-600');
+      });
+      
+      this.classList.add('active', 'bg-gray-600', 'text-white');
+      this.classList.remove('bg-gray-100', 'border-gray-300', 'text-gray-600');
+      
+      // Show/hide panels
+      panels.forEach(panel => {
+        if (panel.dataset.tab === tabName) {
+          panel.classList.remove('hidden');
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  // Save changes functionality
+  document.querySelector('[data-action="save"]').addEventListener('click', function() {
+    // Here you would implement save functionality
+    console.log('Saving changes...');
+    this.textContent = 'Saved!';
+    this.classList.add('bg-green-600');
+    
+    setTimeout(() => {
+      this.textContent = 'Save Changes';
+      this.classList.remove('bg-green-600');
+    }, 2000);
+  });
+});
+</script>

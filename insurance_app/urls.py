@@ -10,6 +10,15 @@ router.register(r'maintenance-schedules', views.MaintenanceScheduleViewSet, base
 router.register(r'maintenance-compliance', views.MaintenanceComplianceViewSet, basename='insurance-maintenance-compliance')
 router.register(r'risk-alerts', views.RiskAlertViewSet, basename='insurance-risk-alert')
 
+# Parts-Based Quote System API Endpoints
+from . import api_views
+from . import log_views
+router.register(r'damaged-parts', api_views.DamagedPartViewSet, basename='damaged-part')
+router.register(r'quote-requests', api_views.PartQuoteRequestViewSet, basename='quote-request')
+router.register(r'quotes', api_views.PartQuoteViewSet, basename='quote')
+router.register(r'market-averages', api_views.MarketAverageViewSet, basename='market-average')
+router.register(r'recommendations', api_views.QuoteRecommendationViewSet, basename='recommendation')
+
 app_name = 'insurance'
 
 urlpatterns = [
@@ -56,4 +65,25 @@ urlpatterns = [
     path('api/vehicles/<int:pk>/risk-assessment/', 
          views.VehicleViewSet.as_view({'get': 'risk_assessment'}), 
          name='vehicle_risk_assessment'),
+    
+    # Parts Review API endpoints
+    path('api/assessments/<int:assessment_id>/identify-parts/', 
+         api_views.identify_parts_for_assessment, 
+         name='identify_parts_for_assessment'),
+    path('api/assessments/<int:assessment_id>/damaged-parts/', 
+         api_views.create_damaged_part, 
+         name='create_damaged_part'),
+    path('api/damaged-parts/<int:part_id>/', 
+         api_views.manage_damaged_part, 
+         name='manage_damaged_part'),
+    path('api/assessments/<int:assessment_id>/quote-requests/', 
+         api_views.create_quote_requests, 
+         name='create_quote_requests'),
+    
+    # Logging System URLs
+    path('logs/', log_views.LogViewerView.as_view(), name='log_viewer'),
+    path('api/logs/', log_views.logs_api, name='logs_api'),
+    path('api/logs/stats/', log_views.logs_stats_api, name='logs_stats_api'),
+    path('api/logs/clear/', log_views.clear_logs_api, name='clear_logs_api'),
+    path('api/logs/export/', log_views.export_logs_api, name='export_logs_api'),
 ]

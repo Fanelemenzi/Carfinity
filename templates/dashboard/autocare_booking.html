@@ -24,7 +24,7 @@
 
   <!-- Main Content -->
   <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    
+
     <!-- Booking Form -->
     <div class="bg-white rounded-lg shadow border border-gray-200">
       <div class="px-6 py-4 border-b border-gray-200">
@@ -33,10 +33,10 @@
           Schedule New Service
         </h3>
       </div>
-      
+
       <form method="post" class="p-6 space-y-6">
         {% csrf_token %}
-        
+
         <!-- Customer Information -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -151,7 +151,7 @@
           Quick Service Options
         </h3>
       </div>
-      
+
       <div class="p-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
@@ -165,7 +165,7 @@
               </div>
             </div>
           </button>
-          
+
           <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
             <div class="flex items-center">
               <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
@@ -177,7 +177,7 @@
               </div>
             </div>
           </button>
-          
+
           <button class="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left transition duration-200">
             <div class="flex items-center">
               <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
@@ -196,19 +196,19 @@
 </div>
 
 <script>
-// Set minimum date to today
-document.getElementById('preferred_date').min = new Date().toISOString().split('T')[0];
+  // Set minimum date to today
+  document.getElementById('preferred_date').min = new Date().toISOString().split('T')[0];
 
-// Quick service option handlers
-document.querySelectorAll('.grid button').forEach(button => {
-  button.addEventListener('click', function() {
-    const serviceType = this.querySelector('h4').textContent.toLowerCase().replace(' ', '_');
-    document.getElementById('service_type').value = serviceType;
-    
-    // Scroll to form
-    document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+  // Quick service option handlers
+  document.querySelectorAll('.grid button').forEach(button => {
+    button.addEventListener('click', function () {
+      const serviceType = this.querySelector('h4').textContent.toLowerCase().replace(' ', '_');
+      document.getElementById('service_type').value = serviceType;
+
+      // Scroll to form
+      document.querySelector('form').scrollIntoView({ behavior: 'smooth' });
+    });
   });
-});
 </script>
 
 {% endblock %}

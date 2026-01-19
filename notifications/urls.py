@@ -7,6 +7,7 @@ from django.urls import path
 from .views import (
     AutoCareDashboardView,
     DashboardAPIView,
+    VehicleSwitchAPIView,
     VehicleOverviewAPIView,
     UpcomingMaintenanceAPIView,
     VehicleAlertsAPIView,
@@ -24,6 +25,7 @@ urlpatterns = [
     
     # API endpoints
     path('api/dashboard/<int:vehicle_id>/', DashboardAPIView.as_view(), name='dashboard_api'),
+    path('api/vehicle/switch/<int:vehicle_id>/', VehicleSwitchAPIView.as_view(), name='vehicle_switch_api'),
     path('api/vehicle/<int:vehicle_id>/overview/', VehicleOverviewAPIView.as_view(), name='vehicle_overview_api'),
     path('api/vehicle/<int:vehicle_id>/maintenance/', UpcomingMaintenanceAPIView.as_view(), name='upcoming_maintenance_api'),
     path('api/vehicle/<int:vehicle_id>/alerts/', VehicleAlertsAPIView.as_view(), name='vehicle_alerts_api'),

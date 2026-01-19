@@ -345,7 +345,7 @@ class AssessmentDashboardView(LoginRequiredMixin, ListView):
             'changes_requested': changes_requested,
             'high_priority_assessments': high_priority_assessments,
             'avg_processing_time': f'{avg_processing_time:.1f}h' if avg_processing_time else 'N/A',
-            'total_estimated_cost': f'£{total_estimated_cost:,.0f}' if total_estimated_cost else '£0',
+            'total_estimated_cost': f'R{total_estimated_cost:,.0f}' if total_estimated_cost else 'R0',
             'status_distribution': list(status_distribution),
             'recent_assessments': recent_assessments,
             'urgent_assessments': urgent_assessments,
@@ -468,9 +468,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(exterior_damage, 'exterior'),
                 'status': 'Complete' if exterior_damage else 'Pending',
                 'severity': self.get_section_severity(exterior_damage, 'exterior'),
-                'cost': f'£{exterior_cost:,.0f}',
+                'cost': f'R{exterior_cost:,.0f}',
                 'damageLevel': self.get_section_severity(exterior_damage, 'exterior'),
-                'estimatedCost': f'£{exterior_cost:,.0f}',
+                'estimatedCost': f'R{exterior_cost:,.0f}',
                 'componentCount': self.get_component_count('exterior'),
                 'data': exterior_damage,
                 'damageDetails': damage_details,
@@ -485,9 +485,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/38 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 38,
                 'data': None,
                 'damageDetails': {'damaged_components': 0, 'total_components': 38, 'damage_percentage': 0, 'critical_damage': False, 'repair_priority': 'Low'},
@@ -506,9 +506,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(wheels_tires, 'wheels'),
                 'status': 'Complete' if wheels_tires else 'Pending',
                 'severity': self.get_section_severity(wheels_tires, 'wheels'),
-                'cost': f'£{wheels_cost:,.0f}',
+                'cost': f'R{wheels_cost:,.0f}',
                 'damageLevel': self.get_section_severity(wheels_tires, 'wheels'),
-                'estimatedCost': f'£{wheels_cost:,.0f}',
+                'estimatedCost': f'R{wheels_cost:,.0f}',
                 'componentCount': self.get_component_count('wheels'),
                 'data': wheels_tires
             })
@@ -520,9 +520,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/12 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 12,
                 'data': None
             })
@@ -538,9 +538,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(interior_damage, 'interior'),
                 'status': 'Complete' if interior_damage else 'Pending',
                 'severity': self.get_section_severity(interior_damage, 'interior'),
-                'cost': f'£{interior_cost:,.0f}',
+                'cost': f'R{interior_cost:,.0f}',
                 'damageLevel': self.get_section_severity(interior_damage, 'interior'),
-                'estimatedCost': f'£{interior_cost:,.0f}',
+                'estimatedCost': f'R{interior_cost:,.0f}',
                 'componentCount': self.get_component_count('interior'),
                 'data': interior_damage
             })
@@ -552,9 +552,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/19 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 19,
                 'data': None
             })
@@ -570,9 +570,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(mechanical_systems, 'mechanical'),
                 'status': 'Complete' if mechanical_systems else 'Pending',
                 'severity': self.get_section_severity(mechanical_systems, 'mechanical'),
-                'cost': f'£{mechanical_cost:,.0f}',
+                'cost': f'R{mechanical_cost:,.0f}',
                 'damageLevel': self.get_section_severity(mechanical_systems, 'mechanical'),
-                'estimatedCost': f'£{mechanical_cost:,.0f}',
+                'estimatedCost': f'R{mechanical_cost:,.0f}',
                 'componentCount': self.get_component_count('mechanical'),
                 'data': mechanical_systems
             })
@@ -584,9 +584,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/20 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 20,
                 'data': None
             })
@@ -602,9 +602,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(electrical_systems, 'electrical'),
                 'status': 'Complete' if electrical_systems else 'Pending',
                 'severity': self.get_section_severity(electrical_systems, 'electrical'),
-                'cost': f'£{electrical_cost:,.0f}',
+                'cost': f'R{electrical_cost:,.0f}',
                 'damageLevel': self.get_section_severity(electrical_systems, 'electrical'),
-                'estimatedCost': f'£{electrical_cost:,.0f}',
+                'estimatedCost': f'R{electrical_cost:,.0f}',
                 'componentCount': self.get_component_count('electrical'),
                 'data': electrical_systems
             })
@@ -616,9 +616,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/9 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 9,
                 'data': None
             })
@@ -634,9 +634,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(safety_systems, 'safety'),
                 'status': 'Complete' if safety_systems else 'Pending',
                 'severity': self.get_section_severity(safety_systems, 'safety'),
-                'cost': f'£{safety_cost:,.0f}',
+                'cost': f'R{safety_cost:,.0f}',
                 'damageLevel': self.get_section_severity(safety_systems, 'safety'),
-                'estimatedCost': f'£{safety_cost:,.0f}',
+                'estimatedCost': f'R{safety_cost:,.0f}',
                 'componentCount': self.get_component_count('safety'),
                 'data': safety_systems
             })
@@ -648,9 +648,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/6 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 6,
                 'data': None
             })
@@ -666,9 +666,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(frame_structural, 'structural'),
                 'status': 'Complete' if frame_structural else 'Pending',
                 'severity': self.get_section_severity(frame_structural, 'structural'),
-                'cost': f'£{structural_cost:,.0f}',
+                'cost': f'R{structural_cost:,.0f}',
                 'damageLevel': self.get_section_severity(frame_structural, 'structural'),
-                'estimatedCost': f'£{structural_cost:,.0f}',
+                'estimatedCost': f'R{structural_cost:,.0f}',
                 'componentCount': self.get_component_count('structural'),
                 'data': frame_structural
             })
@@ -680,9 +680,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/6 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 6,
                 'data': None
             })
@@ -698,9 +698,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': self.get_section_completion(fluid_systems, 'fluids'),
                 'status': 'Complete' if fluid_systems else 'Pending',
                 'severity': self.get_section_severity(fluid_systems, 'fluids'),
-                'cost': f'£{fluid_cost:,.0f}',
+                'cost': f'R{fluid_cost:,.0f}',
                 'damageLevel': self.get_section_severity(fluid_systems, 'fluids'),
-                'estimatedCost': f'£{fluid_cost:,.0f}',
+                'estimatedCost': f'R{fluid_cost:,.0f}',
                 'componentCount': self.get_component_count('fluids'),
                 'data': fluid_systems
             })
@@ -712,9 +712,9 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
                 'points': '0/6 ⚠️',
                 'status': 'Pending',
                 'severity': 'Unknown',
-                'cost': '£0',
+                'cost': 'R0',
                 'damageLevel': 'Unknown',
-                'estimatedCost': '£0',
+                'estimatedCost': 'R0',
                 'componentCount': 6,
                 'data': None
             })
@@ -743,11 +743,11 @@ class AssessmentDetailView(LoginRequiredMixin, DetailView):
             'vehicle': str(assessment.vehicle) if assessment.vehicle else 'Unknown Vehicle',
             'vin': assessment.vehicle.vin if assessment.vehicle else 'Unknown VIN',
             'incident_date': assessment.incident_date.strftime('%b %d, %Y') if assessment.incident_date else assessment.assessment_date.strftime('%b %d, %Y'),
-            'claim_value': f'£{assessment.estimated_repair_cost:,.0f}' if assessment.estimated_repair_cost else '£0',
+            'claim_value': f'R{assessment.estimated_repair_cost:,.0f}' if assessment.estimated_repair_cost else 'R0',
             'status': assessment.get_agent_status_display(),
             'damage_type': assessment.get_overall_severity_display() if assessment.overall_severity else 'Unknown',
             'assessment_progress': assessment_progress,
-            'estimated_repair_cost': f'£{assessment.estimated_repair_cost:,.0f}' if assessment.estimated_repair_cost else '£0',
+            'estimated_repair_cost': f'R{assessment.estimated_repair_cost:,.0f}' if assessment.estimated_repair_cost else 'R0',
             'assessor': assessment.assessor_name or 'Unassigned',
             'location': assessment.incident_location or 'Unknown Location',
             'incident_description': assessment.overall_notes or 'No description available.',
@@ -1230,7 +1230,7 @@ class AssessmentReportView(LoginRequiredMixin, DetailView):
             
             # Return error response
             messages.error(request, "Error generating report. Please try again.")
-            return redirect('insurance_app:assessment_detail', claim_id=assessment.id)
+            return redirect('insurance:assessment_detail', claim_id=assessment.assessment_id)
 
 
 @method_decorator([require_group('AutoAssess'), check_permission_conflicts], name='dispatch')
@@ -1384,7 +1384,7 @@ class AssessmentHistoryView(LoginRequiredMixin, View):
                 return JsonResponse({'success': False, 'error': str(e)})
             else:
                 messages.error(request, f"Error loading assessment history: {str(e)}")
-                return redirect('insurance_app:assessment_detail', assessment_id=assessment_id)
+                return redirect('insurance:assessment_detail', assessment_id=assessment_id)
     
     def _get_html_response(self, request, assessment):
         """Return HTML template response with history data"""
@@ -2477,7 +2477,7 @@ class AssessmentCommentCreateView(LoginRequiredMixin, CreateView):
         self.create_comment_notification(comment)
         
         messages.success(self.request, 'Comment added successfully!')
-        return redirect('insurance:assessment_detail', claim_id=assessment_id)
+        return redirect('insurance:assessment_detail', claim_id=assessment.assessment_id)
     
     def create_comment_notification(self, comment):
         """Create notification for new comment"""
@@ -2536,7 +2536,7 @@ def add_comment_reply(request, assessment_id, parent_comment_id):
     else:
         messages.error(request, 'Error adding reply. Please check your input.')
     
-    return redirect('insurance:assessment_detail', claim_id=assessment_id)
+    return redirect('insurance:assessment_detail', claim_id=assessment.assessment_id)
 
 
 @login_required
@@ -2577,7 +2577,7 @@ def resolve_comment(request, assessment_id, comment_id):
     else:
         messages.info(request, 'Comment does not require action.')
     
-    return redirect('insurance:assessment_detail', claim_id=assessment_id)
+    return redirect('insurance:assessment_detail', claim_id=assessment.assessment_id)
 
 
 @login_required
@@ -2623,9 +2623,16 @@ def assessment_comments_api(request, assessment_id):
 @require_group('AutoAssess')
 def user_notifications(request):
     """Get user's assessment notifications"""
-    notifications = AssessmentNotification.objects.filter(
+    # Get base queryset
+    base_notifications = AssessmentNotification.objects.filter(
         recipient=request.user
-    ).select_related('assessment', 'related_comment').order_by('-created_at')[:20]
+    ).select_related('assessment', 'related_comment')
+    
+    # Calculate unread count before slicing
+    unread_count = base_notifications.filter(status='unread').count()
+    
+    # Get recent notifications (sliced)
+    notifications = base_notifications.order_by('-created_at')[:20]
     
     notification_data = []
     for notification in notifications:
@@ -2643,7 +2650,7 @@ def user_notifications(request):
     
     return JsonResponse({
         'notifications': notification_data,
-        'unread_count': notifications.filter(status='unread').count()
+        'unread_count': unread_count
     })
 
 
@@ -3188,7 +3195,7 @@ class AssessmentSectionDetailView(LoginRequiredMixin, TemplateView):
                 'icon': '❓',
                 'status': 'Unknown',
                 'damage_level': 'Unknown',
-                'estimated_cost': '£0',
+                'estimated_cost': 'R0',
                 'component_count': 0,
                 'completion_percentage': 0,
                 'components': [],
@@ -3260,7 +3267,7 @@ class AssessmentSectionDetailView(LoginRequiredMixin, TemplateView):
                 components.append({
                     'name': display_name,
                     'status': status,
-                    'cost': f'£{cost:,}',
+                    'cost': f'R{cost:,}',
                     'severity': severity,
                     'notes': notes,
                     'field_name': field_name,
@@ -3296,7 +3303,7 @@ class AssessmentSectionDetailView(LoginRequiredMixin, TemplateView):
             'icon': section_config['icon'],
             'status': status,
             'damage_level': damage_level,
-            'estimated_cost': f'£{total_cost:,}',
+            'estimated_cost': f'R{total_cost:,}',
             'component_count': total_components,
             'completion_percentage': completion_percentage,
             'components': components,
